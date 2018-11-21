@@ -60,7 +60,7 @@ git clone git@gitlab.com:py_ren/pyren.git
 ```
 or just download it
 
-_https://_gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip
+https://gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip
 
 and extract next to directories EcuRenault, Location, Vehicles
 
