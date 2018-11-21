@@ -50,7 +50,7 @@ snat = {"01": "760", "02": "724", "04": "762", "07": "771", "08": "778", "0D": "
         "DF": "5C1", "61": "7BA", "46": "7CF", "EA": "4B3", "ED": "704", "EC": "5B7", "E9": "762", "25": "700",
         "E2": "5BB", "97": "7C8", "DE": "69C", "63": "73E", "E6": "484", "EB": "5B8", "78": "7BD", "5B": "7A5",
         "81": "761", "06": "791", "E1": "5BA", "1A": "731", "E3": "4A7", "91": "7ED", "09": "7EB", "E7": "7EC",
-        "E4": "757", "E0": "58B", "82": "7AD"}
+        "E4": "757", "E0": "58B", "82": "7AD", "47":"07A8"}
 dnat = {"01": "740", "02": "704", "04": "742", "07": "751", "08": "758", "0D": "755", "0E": "74E", "0F": "750",
         "13": "712", "1B": "7A4", "1C": "74B", "1E": "748", "23": "753", "24": "75D", "26": "745", "27": "74D",
         "29": "744", "2A": "74F", "2C": "752", "2E": "79C", "32": "756", "3A": "7D6", "40": "707", "4D": "79D",
@@ -62,7 +62,7 @@ dnat = {"01": "740", "02": "704", "04": "742", "07": "751", "08": "758", "0D": "
         "D3": "7E6", "DF": "641", "61": "7B7", "46": "7CD", "EA": "79A", "ED": "714", "E9": "742", "25": "70C",
         "E2": "63B", "97": "7D8", "DE": "6BC", "63": "73D", "E3": "73A", "E6": "622", "EB": "638", "78": "79D",
         "5B": "785", "81": "73F", "06": "790", "E1": "63A", "1A": "711", "91": "7E5", "09": "7E3", "E7": "7E4",
-        "E4": "74F", "E0": "60B", "82": "7AA"}
+        "E4": "74F", "E0": "60B", "82": "7AA", "47":"0788"}
 
 # Code snippet from https://github.com/rbei-etas/busmaster
 # Negative responses
@@ -1459,7 +1459,11 @@ class ELM:
                 self.ATR1 = True
             
             tb = time.time ()  # time of sending (ff)
-            
+
+            if Fn > 1 and Fc == (Fn-1):  # set elm timeout to maximum for last response on long command
+                self.send_raw('ATSTFF')
+                self.send_raw('ATAT1')
+
             if (Fc == 0 or Fc == (Fn-1)) and len(raw_command[Fc])<16:  #first or last frame in command and len<16 (bug in ELM)
                 frsp = self.send_raw (raw_command[Fc] + '1')  # we'll get only 1 frame: nr, fc, ff or sf
             else:
@@ -1536,6 +1540,7 @@ class ELM:
 
         #debug
         #print '\nbp8>',responses,'<\n'
+
         # now we are going to receive data. st or ff should be in responses[0]
         if len (responses) != 1:
             # print "Something went wrong. len responces != 1"
