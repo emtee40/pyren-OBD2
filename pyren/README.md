@@ -1,5 +1,5 @@
 # PYREN
-pyren is program for geting diagnostic data from Renault cars by ELM327 adapter. It works in two modes and with two types of databases accordingly.
+pyren is a program for geting diagnostic data from Renault cars by ELM327 adapter. It works in two modes and with two types of databases accordingly.
 Compatible with Windows, Linux,  MacOS and Android(only CLIP mode under Android)
 
 ## CLIP mode
@@ -95,7 +95,7 @@ sl4a/scripts
 |- EcuRenault           
 |- Location             
 |- Vehicles             
-|- pyren              
+|- pyren             
 |   |- pyren.py
 ...    ...
 |   |- <other modules>
