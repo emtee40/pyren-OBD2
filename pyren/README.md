@@ -60,7 +60,7 @@ git clone git@gitlab.com:py_ren/pyren.git
 ```
 or just download it
 
-_https://_gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip
+https://gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip
 
 and extract next to directories EcuRenault, Location, Vehicles
 
@@ -74,7 +74,7 @@ You have to get the next directory tree
 |- Vehicles                 #(for CLIP mode)
 |- ecus                     #(for DDT mode)
 |- graphics                 #(for DDT mode optional)
-|- pyren9n                  #(pyren  v.0.9.n)
+|- pyren                    #(pyren)
 |   |- pyren.py
 ...    ...
 |   |- <other modules>
@@ -95,7 +95,7 @@ sl4a/scripts
 |- EcuRenault           
 |- Location             
 |- Vehicles             
-|- pyren9n              
+|- pyren              
 |   |- pyren.py
 ...    ...
 |   |- <other modules>
@@ -116,7 +116,7 @@ Universal launcher **_pyren_launcher.py** is compatible with any OS. Run it unde
 Firs run pyren without options
 
 ```
-$cd c:\CLIP\Data\GenAppli\pyren9n
+$cd c:\CLIP\Data\GenAppli\pyren
 $python.exe ./pyren.py 
 usage: pyren.py [-h] [-v] [-p PORT] [-s SPEED] [-r RATE] [-L LANG] [-m CAR]
                 [-vv] [-e ECUID] [--si] [--cfc] [--n1c] [--csv] [--csv_only]
@@ -168,7 +168,7 @@ it shows the list of available options and COM ports
 Run pyren with a mandatory option {-p PORT} 
 
 ```
-$cd c:\CLIP\Data\GenAppli\pyren9n
+$cd c:\CLIP\Data\GenAppli\pyren
 $python.exe pyren.py -p COM3
 ``` 
 
@@ -250,7 +250,7 @@ Also I suggest you to use option **--log** and **--dump** every time you start t
 After first connection to ECU with **--dump** option you will be able to run the pyren offline in demo mode
 
  ```
-$cd c:\CLIP\Data\GenAppli\pyren9n
+$cd c:\CLIP\Data\GenAppli\pyren
 $python.exe pyren.py -pp --demo
 ``` 
 
