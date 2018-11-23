@@ -260,7 +260,7 @@ class DDT_MON():
           if fid in self.f2r.keys() and fid in self.frames.keys():
             val = self.decu.getValue(d, False, self.f2r[fid], self.frames[fid]['data'])
           else:
-            val = 'None'
+            val = mod_globals.none_val
           self.datas[d] = val
       
       clearScreen()
@@ -457,7 +457,8 @@ def main():
         mon.framefilter = mon.framefilter[:-1]
         mon.setFilter( mon.framefilter )
       else:
-        mon.framefilter = mon.framefilter + '<' + str(ord(c)) + '>'
+        pass
+        #mon.framefilter = mon.framefilter + '<' + str(ord(c)) + '>'
     
     time.sleep( 0.03 )
     ct = time.time()

@@ -842,7 +842,35 @@ class DDTECU():
       cmdPatt = cmdPatt[0:sb*2] + value + cmdPatt[(sb+bytes)*2:]
 
     return cmdPatt
-  
+
+  def getValueForConfig_second_cmd(self, d, first_cmd):
+    # sometimes the same parameter may be accesible thru 2E and 3B
+
+    res = 'ERROR'
+    rcmd = ''
+    for c in self.requests.keys():
+      if c == first_cmd: continue
+      if d in self.requests[c].ReceivedDI.keys():
+        rcmd = c
+        break
+
+    if rcmd == '':
+      return 'ERROR'
+
+    if self.datas[d].BytesASCII:
+      res = self.getValue(d, request=self.requests[rcmd])
+    else:
+      gh = self.getHex(d, request=self.requests[rcmd])
+      if gh != mod_globals.none_val:
+        res = '0x' + gh
+      else:
+        res = gh
+
+    #debug
+    #print 'getValueForConfig_second_cmd', d, self.requests[rcmd].SentBytes, res
+
+    return res
+
   def getValueForConfig(self, d):
 
     res = 'ERROR'
@@ -860,6 +888,9 @@ class DDTECU():
         res = '0x' + gh
       else:
         res = gh
+
+    if ( res==mod_globals.none_val ): #try to find second command
+      res = self.getValueForConfig_second_cmd(d,rcmd)
 
     return res
 
@@ -885,15 +916,28 @@ class DDTECU():
       for di in r.SentDI.values ():
         d = di.Name
         
-        val = self.getValueForConfig( d )
-
         if indump:
             if d in self.req4data.keys ():
+                first_cmd = self.req4data[d]
                 i_r_cmd = self.requests[self.req4data[d]].SentBytes
                 if i_r_cmd not in self.elm.ecudump.keys() or \
                         (i_r_cmd in self.elm.ecudump.keys() and self.elm.ecudump[i_r_cmd]==''):
-                  continue
+                  #try to find second
+                  second_is = False
+                  for c in self.requests.keys():
+                    if c == first_cmd: continue
+                    if d in self.requests[c].ReceivedDI.keys():
+                      #self.req4data[d] = c  # may be removed
+                      second_is = True
+                      break
+                  if not second_is:
+                    continue
                   
+        val = self.getValueForConfig( d )
+
+        #debug
+        #print '>', d,'=',val
+
         if 'ERROR' in val:
           continue
           
@@ -939,7 +983,13 @@ class DDTECU():
         config.append (sendCmd)
 
     sentValues.clear ()
-    
+
+    #debug
+    #print config
+    #print '*'*50
+    #print conf_v
+    #print '*'*50
+
     return config, conf_v
 
   def bukva( self, bt, l, sign=False):

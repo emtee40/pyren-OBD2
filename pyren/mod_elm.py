@@ -197,6 +197,20 @@ class Port:
         if self.ka_timer:
             self.ka_timer.cancel ()
 
+    def reinit(self):
+        '''
+        Need for wifi adapters with short connection timeout
+
+        :return:
+        '''
+        if self.portType != 1: return
+
+        self.hdr.close()
+        self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+        self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        self.hdr.connect ((self.ipaddr, self.tcpprt))
+        self.hdr.setblocking (True)
+
     '''
     def elm_at_KeepAlive(self):
       
@@ -1000,7 +1014,8 @@ class ELM:
                 self.lf.write ("#[" + tmstr + "]" + "KeepAlive\n")
                 self.lf.flush ()
                 
-                # send keepalive
+            # send keepalive
+            self.port.reinit() #experimental
             self.send_cmd (self.startSession)
             self.lastCMDtime = time.time ()  # for not to get into infinite loop
         
@@ -1711,6 +1726,8 @@ class ELM:
             # sys.exit()
     
     def init_can(self):
+
+        self.port.reinit()
         
         self.currentprotocol = "can"
         self.currentaddress = "7e0"  # do not tuch
@@ -1797,6 +1814,9 @@ class ELM:
         self.check_adapter ()
     
     def init_iso(self):
+
+        self.port.reinit()
+
         self.currentprotocol = "iso"
         self.currentsubprotocol = ""
         self.currentaddress = ""

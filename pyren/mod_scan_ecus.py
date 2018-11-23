@@ -80,9 +80,11 @@ class ScanEcus:
       DOMTree = xml.dom.minidom.parse(file)
       vh = DOMTree.documentElement
       if vh.hasAttribute("defaultText"):
-        vehiclename = vh.getAttribute("defaultText")
-        vehTypeCode = vh.getAttribute("vehTypeCode")
-        self.vhcls.append([vehiclename,file,vehTypeCode])
+        vehiclename = vh.getAttribute("defaultText").strip()
+        vehTypeCode = vh.getAttribute("vehTypeCode").strip()
+        vehTCOM     = int(vh.getAttribute("TCOM"))
+        vehindexTopo = int(vh.getAttribute("indexTopo"))
+        self.vhcls.append([vehiclename,file,vehTypeCode,vehTCOM,vehindexTopo])
           
   def scanAllEcus(self):
     '''scan all ecus. If savedEcus.p exists then load it and return'''
@@ -586,8 +588,9 @@ class ScanEcus:
             self.allecus[name]["ids"] = idtt
             
   def chooseModel(self, num):
-    
-    for row in self.vhcls:
+
+    # sorted by [vehiclename,file,vehTypeCode,vehTCOM,vehindexTopo]
+    for row in sorted( self.vhcls, key=lambda k : k[1]):
       self.models.append( row[2]+" "+row[0] )
         
     if num==0 or num>len(self.models):

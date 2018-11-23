@@ -106,7 +106,7 @@ class InfoDialog (tkSimpleDialog.Dialog):
     def hnid_func(self):
         self.txt.delete('1.0', tk.END)
         for t in self.orig_text.split('---\n'):
-            if 'None' not in t:
+            if mod_globals.none_val not in t:
                 self.txt.insert(tk.END, t + '---\n')
 
 class ListDialog (tkSimpleDialog.Dialog):
@@ -585,14 +585,27 @@ class DDTScreen (tk.Frame):
             self.root.after_cancel(self.jid)
         self.decu.rotaryRunAlloved.clear()
         
-        (conf_2, cv_2) = self.decu.makeConf()
+        (conf_2, cv_2_tmp) = self.decu.makeConf()
+
+        cv_2 = copy.deepcopy(cv_2_tmp)
+
+        #clear memory
+        del (conf_2)
+        del (cv_2_tmp)
 
         savedMode = mod_globals.opt_demo
         mod_globals.opt_demo = True
         saveDumpName = mod_globals.dumpName
         self.decu.loadDump(fname)
         
-        (conf_1, cv_1) = self.decu.makeConf(indump = True)
+        (conf_1, cv_1_tmp) = self.decu.makeConf(indump = True)
+
+        cv_1 = copy.deepcopy(cv_1_tmp)
+
+        # clear memory
+        del (conf_1)
+        del (cv_1_tmp)
+
         du_1 = copy.deepcopy (self.decu.elm.ecudump)
 
         mod_globals.dumpName = saveDumpName
@@ -602,6 +615,12 @@ class DDTScreen (tk.Frame):
         else:
             self.decu.clearELMcache()
 
+        #debug
+        #print cv_2
+        #print '#'*100
+        #print cv_1
+        #print '#'*100
+
         aK = list(set(cv_1) | set(cv_2))
 
         # show confirmation dialog if approve is True
@@ -610,20 +629,28 @@ class DDTScreen (tk.Frame):
             xText += '> ' + self.dumpName2str(mod_globals.dumpName) + '\n\n'
         else:
             xText += '> Current ECU state\n'
+
+        #debug
+        #print du_1
+
         flag = True
         for i in aK:
             if i in self.decu.req4data.keys ():
                 i_r_cmd = self.decu.requests[self.decu.req4data[i]].SentBytes
             else:
                 continue
+
+            #debug
+            #print '>', i, i_r_cmd
+
             if (i not in cv_1.keys()) or (i not in cv_2.keys()) or cv_1[i]!=cv_2[i]:
                 flag = False
                 xText += ("-"*30+ "\n%s\n" % (i))
 
-                if i_r_cmd not in du_1.keys() or du_1[i_r_cmd]=='':
-                    xText += "< None\n"
-                elif i in cv_1.keys() and cv_1[i] != '':
+                if i in cv_1.keys() and cv_1[i] != '':
                     xText += "< %s\n" % (cv_1[i])
+                elif i_r_cmd not in du_1.keys() or du_1[i_r_cmd]=='':
+                    xText += "< None\n"
                 else:
                     xText += "< ERROR\n"
 
@@ -645,8 +672,6 @@ class DDTScreen (tk.Frame):
 
         # request to update dInputs
         self.update_dInputs()
-        del (conf_1)
-        del (conf_2)
         del (cv_1)
         del (cv_2)
         del (du_1)
@@ -1411,7 +1436,7 @@ class DDTScreen (tk.Frame):
                 
                 if xText not in self.dValue.keys ():
                     self.dValue[xText] = tk.StringVar ()
-                    self.dValue[xText].set ('None')
+                    self.dValue[xText].set (mod_globals.none_val)
                 
                 obj = tk.Label (frame, text=self.dValue[xText], relief=tk.GROOVE, borderwidth=1, font=lFont,
                                 textvariable=self.dValue[xText])
@@ -1707,7 +1732,7 @@ class DDTScreen (tk.Frame):
 
             if xText not in self.dValue.keys():
                 self.dValue[xText] = tk.StringVar()
-                self.dValue[xText].set('None')
+                self.dValue[xText].set(mod_globals.none_val)
 
             obj = tk.Label(frame, text=self.dValue[xText], relief=tk.GROOVE, borderwidth=1, font=lFont,
                            textvariable=self.dValue[xText])
