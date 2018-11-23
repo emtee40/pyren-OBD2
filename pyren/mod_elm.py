@@ -1015,7 +1015,8 @@ class ELM:
                 self.lf.flush ()
                 
             # send keepalive
-            self.port.reinit() #experimental
+            if not mod_globals.opt_demo:
+              self.port.reinit() #experimental
             self.send_cmd (self.startSession)
             self.lastCMDtime = time.time ()  # for not to get into infinite loop
         
@@ -1727,7 +1728,8 @@ class ELM:
     
     def init_can(self):
 
-        self.port.reinit()
+        if not mod_globals.opt_demo:
+          self.port.reinit()
         
         self.currentprotocol = "can"
         self.currentaddress = "7e0"  # do not tuch
@@ -1815,7 +1817,8 @@ class ELM:
     
     def init_iso(self):
 
-        self.port.reinit()
+        if not mod_globals.opt_demo:
+          self.port.reinit()
 
         self.currentprotocol = "iso"
         self.currentsubprotocol = ""
