@@ -1826,7 +1826,8 @@ class ELM:
         self.startSession = ""
         self.lastCMDtime = 0
         self.lastinitrsp = ""
-        
+        self.notSupportedCommands = {}
+
         if self.lf != 0:
             tmstr = datetime.now ().strftime ("%x %H:%M:%S.%f")[:-3]
             self.lf.write ('#' * 60 + "\n#[" + tmstr + "] Init ISO\n" + '#' * 60 + "\n")
@@ -1838,6 +1839,8 @@ class ELM:
     
     def set_iso_addr(self, addr, ecu):
         
+        self.notSupportedCommands = {}
+
         if self.currentprotocol == "iso" and self.currentaddress == addr and self.currentsubprotocol == ecu['protocol']:
             return
 

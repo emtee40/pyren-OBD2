@@ -224,7 +224,7 @@ class ScanEcus:
     self.elm.close_protocol()
 
     #scan KWP ecud
-    if mod_globals.opt_can2:
+    if not mod_globals.opt_can2:
       self.elm.init_iso()
       for row in sorted(self.detectedEcus, key=lambda k: int(k['idf'])):
         if (row['pin']=='iso' and 
@@ -702,8 +702,7 @@ class ScanEcus:
     rerrPositive = ""
     if "ERROR" not in rsp and "ERROR" not in self.elm.lastinitrsp.upper():
       self.elm.start_session(row['startDiagReq']) 	#open session    
-      #if len(row['startDiagReq'])>0:
-      #  self.elm.cmd(row['startDiagReq']) 	#open session
+
       rrsp = self.elm.cmd(row['ids'][0])	#get identification data
 
       self.elm.cmd("at st fa")              #set timeout to 1 second
@@ -741,7 +740,7 @@ class ScanEcus:
     rerr = res
     
     return rrsp,rerr
-    
+
   def scan_can( self, row ):
     
     rrsp = ''
@@ -795,11 +794,10 @@ class ScanEcus:
   def scan_iso( self, row ):
 
     rrsp = ''
-    rerr = ''
     rerr = '0'
 
     if self.elm.lf!=0:
-      self.elm.lf.write("#check: "+row['ecuname']+" Addr:"+row['dst']+" Protocol:"+row['protocol']+"\n")
+      self.elm.lf.write("#check: "+row['ecuname']+" Addr:"+row['dst']+" Protocol:"+row['protocol']+" ids:" + row['ids'][0] + "\n")
       self.elm.lf.flush()    
 
     for r in self.reqres:
