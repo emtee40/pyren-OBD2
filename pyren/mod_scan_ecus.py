@@ -589,27 +589,35 @@ class ScanEcus:
             
   def chooseModel(self, num):
 
-    # sorted by [vehiclename,file,vehTypeCode,vehTCOM,vehindexTopo]
-    for row in sorted( self.vhcls, key=lambda k : k[1]):
+    orderBy = 1    # 0 = vehiclename
+                   # 1 = file
+                   # 2 = vehTypeCode
+                   # 3 = vehTCOM
+                   # 4 = vehindexTopo
+
+    for row in sorted( self.vhcls, key=lambda k : k[orderBy]):
       self.models.append( row[2]+" "+row[0] )
         
     if num==0 or num>len(self.models):
       ch = ChoiceLong(self.models, "Choose model :")
     else:
       ch = [self.models[num-1],num]
-    
-    model = ch[0]
+
+    choice = sorted( self.vhcls, key=lambda k : k[orderBy])[int(ch[1])-1]
+
+    model = choice[0]
+    tcomfilename = choice[1]
       
-    print "Loading data for :", model, self.vhcls[int(ch[1])-1][1],
+    print "Loading data for :", model, tcomfilename,
     sys.stdout.flush()
     
     self.allecus = {}
 
     if self.elm.lf!=0:
-      self.elm.lf.write("#load: "+model+' '+self.vhcls[int(ch[1])-1][1]+"\n")
+      self.elm.lf.write("#load: "+model+' '+tcomfilename+"\n")
       self.elm.lf.flush()    
 
-    self.load_model_ECUs( "../Vehicles/"+self.vhcls[int(ch[1])-1][1] )
+    self.load_model_ECUs( "../Vehicles/"+tcomfilename )
     print "  - "+str(len(self.allecus))+" ecus loaded"
     
   def compare_ecu( self, row, rrsp, req ):
