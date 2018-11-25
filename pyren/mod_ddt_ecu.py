@@ -731,6 +731,12 @@ class DDTECU():
     if len(hexval)%2:
       hexval = '0'+hexval
 
+    #check bytescount
+    if len(hexval)/2 < d.BytesCount:
+      hexval = '00'*(d.BytesCount-len(hexval)/2) + hexval
+      #debug
+      #print '#', d.BytesCount, ':', hexval
+
     #revert byte order if little endian
     if littleEndian:
       a = hexval
@@ -855,6 +861,8 @@ class DDTECU():
         break
 
     if rcmd == '':
+      #debug
+      print res, d, self.req4data.keys ()
       return 'ERROR'
 
     if self.datas[d].BytesASCII:

@@ -55,7 +55,7 @@ if osname == 'android':
       import pip
     except ImportError:
       pass
-    pip.main(['install', 'pyjnius-u4-qpython'])
+    #pip.main(['install', 'pyjnius-u4-qpython'])
 
   if jnius_mode:
     try:
