@@ -1834,6 +1834,7 @@ class ELM:
             self.lf.flush ()
         self.check_answer (self.cmd ("at ws"))
         self.check_answer (self.cmd ("at e1"))
+        self.check_answer (self.cmd ("at s1"))
         self.check_answer (self.cmd ("at l1"))
         self.check_answer (self.cmd ("at d1"))
     
