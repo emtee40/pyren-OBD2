@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, os, re
+import time
 import mod_globals
 import mod_elm
 
@@ -16,6 +17,7 @@ var = {}
 stack = []
 
 auto_macro = ""
+auto_dia = False
 
 mod_globals.os = os.name
 
@@ -132,14 +134,15 @@ def pars_macro( file ):
 
 def load_macro( mf='' ):
     """
-    dynamicly loaded macro should have .txt extension and plased in ./macro directory
+    dynamically loaded macro should have .txt extension and placed in ./macro directory
     """
 
     if mf=='' :
         for root, dirs, files in os.walk("./macro"):
             for mfile in files:
-                full_path = os.path.join("./macro/", mfile)
-                pars_macro(full_path)
+                if mfile.endswith('.txt'):
+                    full_path = os.path.join("./macro/", mfile)
+                    pars_macro(full_path)
     else:
         pars_macro(mf) 
         
@@ -173,7 +176,7 @@ def play_macro( mname, elm ):
       while m:
         vu = m.group(0)
         if vu in var.keys():
-          l = re.sub('\\'+vu,var[vu], l)
+          l = re.sub("\\"+vu,var[vu], l)
         else:
           print 'Error: unknown variable',vu,'in',mname
           return
@@ -191,6 +194,7 @@ def print_help():
     """
     [h]elp                 - this help
     [q]uit, [e]xit, end    - exit from terminal
+    wait|sleep x           - wait x seconds
     """
     global var
     global macro
@@ -213,6 +217,7 @@ def optParser():
   import argparse
   
   global auto_macro
+  global auto_dia
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
@@ -246,6 +251,30 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--si",
+      help="try SlowInit first",
+      dest="si",
+      default=False,
+      action="store_true")
+
+  parser.add_argument("--cfc",
+      help="turn off automatic FC and do it by script",
+      dest="cfc",
+      default=False,
+      action="store_true")
+
+  parser.add_argument("--n1c",
+      help="turn off L1 cache",
+      dest="n1c",
+      default=False,
+      action="store_true")
+
+  parser.add_argument("--dialog",
+      help="show dialog for selecting macro",
+      dest="dia",
+      default=False,
+      action="store_true")
+
   options = parser.parse_args()
   
   if not options.port and mod_globals.os != 'android':
@@ -264,9 +293,44 @@ def optParser():
     auto_macro                = options.macro
     mod_globals.opt_log       = options.logfile
     mod_globals.opt_demo      = options.demo
+    mod_globals.opt_si        = options.si
+    mod_globals.opt_cfc0      = options.cfc
+    mod_globals.opt_n1c       = options.n1c
+    auto_dia                  = options.dia
+
+def file_chooser():
+    if mod_globals.os != 'android':
+        try:
+            # Python2
+            import Tkinter as tk
+            import ttk
+            import tkFileDialog as filedialog
+        except ImportError:
+            # Python3
+            import tkinter as tk
+            import tkinter.ttk as ttk
+            import tkFileDialog as filedialog
+
+        root = tk.Tk()
+        root.withdraw()
+
+        my_filetypes = [('command files', '.cmd')]
+
+        fname = filedialog.askopenfilename(parent=root,
+                                        initialdir="./macro",
+                                        title="Please select a file:",
+                                        filetypes=my_filetypes)
+        #root.destroy()
+
+        return fname
+
+    else:
+        pass
 
 def main():
-    
+
+    global auto_macro
+    global auto_dia
     global macro
     global var
     
@@ -284,28 +348,65 @@ def main():
     elm.currentaddress = '7A'
     elm.currentprotocol = 'can'
 
-    if auto_macro!='':
+    cmd_lines = []
+    cmd_ref = 0
+
+    if auto_dia:
+        fname = file_chooser()
+        if len(fname)>0:
+            f = open(fname, 'rt')
+            cmd_lines = f.readlines()
+            f.close()
+
+    if auto_macro != '':
       if auto_macro in macro.keys():
         play_macro( auto_macro, elm )
       else:
         print 'Error: unknown macro mane:', auto_macro
-    
+
+
     while True:
-        l = raw_input(var['$addr']+':'+var['$txa']+':'+var['$prompt'] + '#').lower()
-        
+        print var['$addr']+':'+var['$txa']+':'+var['$prompt'] + '#',
+        if len(cmd_lines)==0:
+            l = raw_input().lower()
+        else:
+            if cmd_ref<len(cmd_lines):
+                l = cmd_lines[cmd_ref].strip()
+                cmd_ref += 1
+            else:
+                l = "exit"
+            print l
+
+        if '#' in l:
+            l = l.split('#')[0]
+
         l = l.strip()
-        
+
+        if len(l)==0:
+            continue
+
         if l in ['q', 'quit', 'e', 'exit', 'end']:
             break
+
         if l in ['h', 'help', '?']:
             print_help ()
             continue
+
+        l_parts = l.split()
+        if len(l_parts)>0 and l_parts[0] in ['wait','sleep']:
+            try:
+                time.sleep(int(l_parts[1]))
+                continue
+            except:
+                pass
+
         if l in macro.keys():
             play_macro( l, elm )
             continue
+
         m = re.search('\$\S+\s*=\s*\S+', l)
         if m:
-          #variable definition
+          # variable definition
           r = m.group(0).replace(' ', '').replace('\t', '')
           rl = r.split('=')
           var[rl[0]]=rl[1]
@@ -318,7 +419,7 @@ def main():
 
         print elm.cmd(l)
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
   main()
 
 

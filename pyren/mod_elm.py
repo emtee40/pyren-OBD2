@@ -663,10 +663,14 @@ class ELM:
             
             if byte == '\r' or byte == '\n':
                 
-                line = buff.strip ()
+                line = buff.strip()
                 buff = ""
                 
-                if len (line) < 6: continue
+                if len (line) < 6:
+                    continue
+
+                if ':' in line:
+                    line = line.split(':')[-1].strip()
                 
                 if ord (line[4:5]) < 0x31 or ord (line[4:5]) > 0x38: continue
                 

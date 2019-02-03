@@ -621,7 +621,7 @@ class ScanEcus:
     print "  - "+str(len(self.allecus))+" ecus loaded"
     
   def compare_ecu( self, row, rrsp, req ):
-  
+
     if len( req )/2==3: rrsp = rrsp[3:]
     
     base = 0
@@ -822,7 +822,7 @@ class ScanEcus:
       
       if rrsp!='':
         self.reqres.append([row['dst']+row['startDiagReq']+row['stdType']+row['ids'][0]+row['protocol'],rrsp,rerr]) #populate cache for not to ask again
-    
+
     compres = False
     if 'ERROR' not in rrsp:
       rrsp = rrsp[3:]
@@ -854,7 +854,7 @@ def findTCOM( addr, cmd, rsp ):
       vehTCOM     = vh.getAttribute("TCOM")
       vehicle = vehiclename+'#'+vehTCOM;
 
-      print vehicle
+      #print vehicle
 
       connector = vh.getElementsByTagName("Connector")
       cannetwork = connector.item(0).getElementsByTagName("CANNetwork")
@@ -887,7 +887,7 @@ def findTCOM( addr, cmd, rsp ):
   se = ScanEcus( None )
   print 'Loading Uces.xml'
   se.read_Uces_file(True)
-  print ecuvhc
+  #print ecuvhc
   for r in se.allecus.keys():
     if se.allecus[r]['dst']!=addr: continue
     if se.allecus[r]['ids'][0]!=cmd: continue

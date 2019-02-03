@@ -7,7 +7,6 @@ import pickle
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 import mod_globals
-import mod_ecu
 import mod_scan_ecus
 import mod_elm
 
@@ -295,6 +294,8 @@ def get_addr_from_xml( xmlfile ):
 
 def main():
   '''Main function'''
+
+  import mod_ecu
 
   optParser()
   

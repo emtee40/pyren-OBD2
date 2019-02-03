@@ -116,6 +116,7 @@ if __name__ == "__main__":
   if len(sys.argv)==1:
     print "Usage: mod_optfile.py <filename> [key]"
     print "       mod_optfile.py ALLSG"
+    print "       mod_optfile.py HEX <infile> <outfile>"
     print "Example:"
     print "   mod_optfile.py ../Location/DiagOnCan_RU.bqm"
     print "   mod_optfile.py ../EcuRenault/Sessions/SG0110016.XML P001"
@@ -144,9 +145,23 @@ if __name__ == "__main__":
           f = open(ugFileName,'wt')
           f.write( rf )
           f.close()
-    exit(0) 
-  
- 
+    exit(0)
+
+  if sys.argv[1]=='HEX':
+      lf = open(sys.argv[2], "rb")
+      of = open(sys.argv[3], "wb")
+
+      while(1):
+        i = lf.tell()
+        bytes = lf.read(2)
+        if len(bytes)<2:
+          exit()
+
+        x = 0
+        x = struct.unpack('<H', bytes)[0]
+        x = x ^ (i & 0xFFFF) ^ 0x5555
+        of.write(struct.pack('H', x))
+
   of = optfile(sys.argv[1])
 
   if len(sys.argv)==2:

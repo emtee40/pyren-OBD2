@@ -351,6 +351,7 @@ class ECU:
 
     if mod_globals.opt_csv:
       # prepare to csv save
+      self.minimumrefreshrate = 0
       csvline = u"Time"
       nparams = 0
       for dr in datarefs:
@@ -443,7 +444,7 @@ class ECU:
 
       if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
         newScreen = initScreen
-        header =  "ECU : "+self.ecudata['ecuname']+'  '+self.ecudata['doc']+'\n'
+        header =  'ECU : '+self.ecudata['ecuname']+'   (RT:'+'{0:.4f}'.format(self.elm.response_time)+')   '+self.ecudata['doc']+'\n'
         header = header + "Screen : "+path
         newScreen = newScreen + pyren_encode( header ) + '\n'
       
