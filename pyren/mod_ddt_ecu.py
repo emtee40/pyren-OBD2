@@ -17,6 +17,7 @@ def trim( st ):
 #import traceback
 
 import mod_globals
+import mod_ddt_utils
 from mod_ddt_request import *
 from mod_ddt_data    import *
 from mod_utils       import *
@@ -214,72 +215,6 @@ class DDTECU():
       return self.langmap[key]
     else:
       return data
-    
-  def minDist(self, a, b):
-    """ calculate distance between strings """
-    """ a - readen value                   """
-    """ b - pattern from eculist           """
-    
-    d = 0
-    if a==b:
-      return d
-    
-    try:
-      d = abs(int(a,16)-int(b,16))
-      return d
-    except:
-      d = 0
-
-    l = min(len(a),len(b))
-    for i in range(0,l):
-      if b[i]!='?':
-        d = d + abs(ord(a[i])-ord(b[i]))
-
-    return d
-    
-  def ecuSearch( self, vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el):
-
-    if Address not in el.keys():
-      return []
-
-    ela = el[Address]
-    print Address, '#', pyren_encode( ela['FuncName'] )
-    
-    t = ela['targets']
-    cand = {}
-    min = 0xFFFFFFFF
-    kOther = ''
-    minOther = 0xFFFFFFFF
-
-    for k in t.keys():
-      #print vehTypeCode, t[k]['Projects']
-      for ai in t[k]['AutoIdents']:
-        dist = 0
-        dist = dist + self.minDist(DiagVersion, ai['DiagVersion']) * 1000 # weight
-        dist = dist + self.minDist(Supplier, ai['Supplier']) * 1 # weight
-        dist = dist + self.minDist(Soft, ai['Soft']) * 1 # weight
-        dist = dist + self.minDist(Version, ai['Version']) * 1 # weight
-
-        if vehTypeCode in t[k]['Projects'] or dist==0:
-          if k not in cand.keys (): cand[k] = 0xFFFFFFFF
-          if dist < cand[k]: cand[k] = dist
-          if dist < min: min = dist
-        else:
-          if dist < minOther:
-            minOther = dist
-            kOther = k
-
-    print '#'*40
-    for k in cand.keys():
-      print "%7s - %s" % ( cand[k], k )
-      if cand[k]>min:
-        del cand[k]
-    print '#'*40
-
-    if len(cand)==0 and kOther!='':
-      cand[kOther] = minOther
-      
-    return cand.keys()
 
   def scanECU( self ):
     
@@ -324,45 +259,47 @@ class DDTECU():
 
       #DiagVersion F1A0
       IdRsp_F1A0 = self.elm.request( req = '22F1A0', positive = '62', cache = False )
-      if len(IdRsp_F1A0)>8:
+      if len(IdRsp_F1A0)>8 and 'NR' not in IdRsp_F1A0:
         DiagVersion = str(int(IdRsp_F1A0[9:11],16))
       #if len(DiagVersion)==1 : DiagVersion = '0'+DiagVersion
 
       #Supplier F18A
       IdRsp_F18A = self.elm.request( req = '22F18A', positive = '62', cache = False )
-      if len(IdRsp_F18A)>8:
+      if len(IdRsp_F18A)>8 and 'NR' not in IdRsp_F18A:
         Supplier = trim(IdRsp_F18A[9:].replace(' ','').decode('hex').decode('ASCII', errors='ignore'))
 
       #Soft F194
       IdRsp_F194 = self.elm.request( req = '22F194', positive = '62', cache = False )
-      if len(IdRsp_F194)>8:
+      if len(IdRsp_F194)>8 and 'NR' not in IdRsp_F194:
         Soft = trim(IdRsp_F194[9:].replace(' ','').decode('hex').decode('ASCII', errors='ignore'))
       
       #Version F195
       IdRsp_F195 = self.elm.request( req = '22F195', positive = '62', cache = False )
-      if len(IdRsp_F195)>8:
+      if len(IdRsp_F195)>8 and 'NR' not in IdRsp_F195:
         Version = trim(IdRsp_F195[9:].replace(' ','').decode('hex').decode('ASCII', errors='ignore'))
         
     hash = Address+DiagVersion+Supplier+Soft+Version
 
     print 'Address:"%s" DiagVersion:"%s" Supplier:"%s" Soft:"%s" Version:"%s"'%( Address, DiagVersion, Supplier, Soft, Version)
-            
-    #make or load eculist 
-    print "Loading eculist"
-    eculistcache = "./cache/ddt_eculist.p"
-    
-    if os.path.isfile(eculistcache):                              #if cache exists
-      eculist = pickle.load( open( eculistcache, "rb" ) )         #load it
-    else:                                                         #else
-      self.loadECUlist()                                          #loading original data
-      if eculist == None: return                                  #return if no eculist file
-      pickle.dump( eculist, open( eculistcache, "wb" ) )          #and save cache
+
+    eculist = mod_ddt_utils.loadECUlist()
+
+    ##make or load eculist
+    #print "Loading eculist"
+    #eculistcache = "./cache/ddt_eculist.p"
+    #
+    #if os.path.isfile(eculistcache):                              #if cache exists
+    #  eculist = pickle.load( open( eculistcache, "rb" ) )         #load it
+    #else:                                                         #else
+    #  eculist = mod_ddt_utils.loadECUlist()                       #loading original data
+    #  if eculist == None: return                                  #return if no eculist file
+    #  pickle.dump( eculist, open( eculistcache, "wb" ) )          #and save cache
     
     if len(mod_globals.opt_ddtxml)>0:
       fname = mod_globals.opt_ddtxml
       self.ecufname = '../ecus/'+fname
     else:
-      problist = self.ecuSearch (vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, eculist)
+      problist = ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, eculist)
 
       while 1:
         print "You may enter the file name by yourself or left empty to exit"
@@ -423,7 +360,8 @@ class DDTECU():
       for di in r.SentDI.values():
         if di.Name not in self.cmd4data.keys():
           self.cmd4data[di.Name] = r.Name
-    
+
+  '''    
   def loadECUlist(self):
   
     global eculist
@@ -477,7 +415,8 @@ class DDTECU():
                     #eculist[hash] = href
                     ail.append(air)
             eculist[Address]["targets"][href]['AutoIdents'] = ail
-  
+  '''
+
   def saveDump( self ):
     ''' save responces from all 21xx, 22xxxx commands '''
     
@@ -516,12 +455,10 @@ class DDTECU():
     
     ecudump = {}
     
-    xmlname = self.ecufname
+    xmlname = self.ecufname.split('/')[-1]
     if xmlname.upper().endswith('.XML'):
       xmlname = xmlname[:-4]
-    if xmlname.upper().startswith('../ECUS/'):
-      xmlname = xmlname[8:]
-    
+
     if len(dumpname)==0:
       flist = []
      
@@ -1076,4 +1013,72 @@ class DDTECU():
           equ = equ+str(l_Offset)
     
     return equ
+
+def minDist(a, b):
+  """ calculate distance between strings """
+  """ a - readen value                   """
+  """ b - pattern from eculist           """
+
+  d = 0
+  if a == b:
+    return d
+
+  try:
+    d = abs(int(a, 16) - int(b, 16))
+    return d
+  except:
+    d = 0
+
+  l = min(len(a), len(b))
+  for i in range(0, l):
+    if b[i] != '?':
+      d = d + abs(ord(a[i]) - ord(b[i]))
+
+  return d
+
+
+def ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, el, interactive = True):
+
+  if Address not in el.keys():
+    return []
+
+  ela = el[Address]
+  if interactive:
+    print Address, '#', pyren_encode(ela['FuncName'])
+
+  t = ela['targets']
+  cand = {}
+  min = 0xFFFFFFFF
+  kOther = ''
+  minOther = 0xFFFFFFFF
+
+  for k in t.keys():
+    for ai in t[k]['AutoIdents']:
+      dist = 0
+      dist = dist + minDist(DiagVersion, ai['DiagVersion']) * 1000  # weight
+      dist = dist + minDist(Supplier, ai['Supplier']) * 1  # weight
+      dist = dist + minDist(Soft, ai['Soft']) * 1  # weight
+      dist = dist + minDist(Version, ai['Version']) * 1  # weight
+
+      if vehTypeCode in t[k]['Projects'] or dist == 0:
+        if k not in cand.keys(): cand[k] = 0xFFFFFFFF
+        if dist < cand[k]: cand[k] = dist
+        if dist < min: min = dist
+      else:
+        if dist < minOther:
+          minOther = dist
+          kOther = k
+
+  if interactive:
+    print '#' * 40
+    for k in cand.keys():
+      print "%7s - %s" % (cand[k], k)
+      if cand[k] > min:
+        del cand[k]
+    print '#' * 40
+
+  if len(cand) == 0 and kOther != '':
+    cand[kOther] = minOther
+
+  return cand.keys()
 

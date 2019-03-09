@@ -40,6 +40,8 @@ none_val = 'None'
 
 mtcdir = '../MTCSAVE/VIN'
 
+ddtroot = '..'  # parent folder for backward compatibility. for 9n and up use ../DDT2000data
+
 os = ""
 
 language_dict = {}

@@ -552,7 +552,7 @@ class ELM:
             # self.port = serial.Serial(portName, baudrate=speed, timeout=self.portTimeout)
             self.port = Port (portName, speed, self.portTimeout)
         
-        if len (mod_globals.opt_log) > 0:
+        if len(mod_globals.opt_log)>0: # and mod_globals.opt_demo==False:
             self.lf = open ("./logs/elm_" + mod_globals.opt_log, "at")
             self.vf = open ("./logs/ecu_" + mod_globals.opt_log, "at")
         
@@ -963,9 +963,13 @@ class ELM:
             self.rsp_cache[req] = rsp
         
         # save log
-        if self.vf != 0 and 'NR' not in rsp:
+        if self.vf != 0 and 'NR' not in rsp :
             tmstr = datetime.now ().strftime ("%H:%M:%S.%f")[:-3]
-            self.vf.write (tmstr + ";" + dnat[self.currentaddress] + ";" + req + ";" + rsp + "\n")
+
+            tmp_addr = self.currentaddress
+            if self.currentaddress in dnat.keys():
+                tmp_addr = dnat[self.currentaddress]
+            self.vf.write (tmstr + ";" + tmp_addr + ";" + req + ";" + rsp + "\n")
             self.vf.flush ()
         
         return rsp
@@ -1100,7 +1104,12 @@ class ELM:
                     self.lf.flush ()
                 if self.vf != 0:
                     tmstr = datetime.now ().strftime ("%H:%M:%S.%f")[:-3]
-                    self.vf.write (tmstr + ";" + dnat[self.currentaddress] + ";" + command + ";" + line + ";" + negrsp[line[6:8]] + "\n")
+
+                    tmp_addr = self.currentaddress
+                    if self.currentaddress in dnat.keys():
+                        tmp_addr = dnat[self.currentaddress]
+
+                    self.vf.write (tmstr + ";" + tmp_addr + ";" + command + ";" + line + ";" + negrsp[line[6:8]] + "\n")
                     self.vf.flush ()
 
         return cmdrsp
@@ -1786,8 +1795,15 @@ class ELM:
         self.l1_cache = {}
         self.clear_cache()
 
-        TXa = dnat[addr]
-        RXa = snat[addr]
+        if addr in dnat.keys():
+            TXa = dnat[addr]
+        else:
+            TXa = 'undefined'
+
+        if addr in snat.keys():
+            RXa = snat[addr]
+        else:
+            RXa = 'undefined'
         
         self.check_answer (self.cmd ("at sh " + TXa))
         self.check_answer (self.cmd ("at cra " + RXa))

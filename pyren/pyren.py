@@ -2,6 +2,7 @@
 
 import sys, os
 import mod_globals
+import mod_utils
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -12,17 +13,6 @@ mod_globals.os = os.name
 if mod_globals.os == 'nt':
   import pip
   
-  #try:
-  #  import psutil
-  #except ImportError:
-  #  pip.main(['install','psutil'])  
-  #try:
-  #  import psutil
-  #  p = psutil.Process(os.getpid())
-  #  p.nice(psutil.HIGH_PRIORITY_CLASS)
-  #except ImportError:
-  #  pass
-
   try:
     import serial
   except ImportError:
@@ -75,7 +65,7 @@ def optParser():
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
-    version="pyRen Version 0.9.n",
+    version="pyRen Version 0.9.p",
     description = "pyRen - python program for diagnostic Renault cars"
   )
   
@@ -243,17 +233,9 @@ def main():
   '''Main function'''
 
   optParser()
-  
-  '''Check direcories'''
-  if not os.path.exists('./cache'):
-    os.makedirs('./cache')  
-  if not os.path.exists('./csv'):
-    os.makedirs('./csv')  
-  if not os.path.exists('./logs'):
-    os.makedirs('./logs')  
-  if not os.path.exists('./dumps'):
-    os.makedirs('./dumps')  
-  
+
+  mod_utils.chkDirTree()
+
   print 'Opening ELM'
   elm = ELM( mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log )
 

@@ -139,7 +139,7 @@ class ListDialog (tkSimpleDialog.Dialog):
 
 class DDTScreen (tk.Frame):
     tl = 0
-    updatePeriod = 25
+    updatePeriod = 50
     decu = None
     xmlName = ''
     Screens = {}
@@ -166,7 +166,7 @@ class DDTScreen (tk.Frame):
     
     scf = 1.0  # font scale factor
     
-    def __init__(self, ddtFileName, xdoc, decu):
+    def __init__(self, ddtFileName, xdoc, decu, top = False):
         
         self.xmlName = ddtFileName
         self.xdoc = xdoc
@@ -178,7 +178,11 @@ class DDTScreen (tk.Frame):
         self.decu.screen = self
         
         # init window
-        self.root = tk.Tk ()
+        if top:
+            self.root = tk.Toplevel()
+        else:
+            self.root = tk.Tk()
+
         self.root.option_add ('*Dialog.msg.font', 'Courier New 12')
         # self.root.overrideredirect(True)
         self.root.geometry ("1024x768")
@@ -930,8 +934,12 @@ class DDTScreen (tk.Frame):
             self.scf = 1.0  # scale font
         else:
             self.scf = 1.25  # scale font
-        
-        self.root.title (self.xmlName)
+
+        screenTitle = self.xmlName
+        if mod_globals.opt_demo:
+            screenTitle = 'OFF-LINE: ' + screenTitle
+
+        self.root.title (screenTitle)
         self.style = ttk.Style ()
         self.style.theme_use ('classic')
         
@@ -1341,7 +1349,7 @@ class DDTScreen (tk.Frame):
                     id = self.ddt.create_text (xrLeft, xrTop, text=xText, font=lFont, width=xrWidth, anchor=xAlignment,
                                                fill=self.ddtColor (xfColor))
                 else:
-                    gifname = xText.replace ('::pic:', '../graphics/') + '.gif'
+                    gifname = xText.replace ('::pic:', mod_globals.ddtroot+'/graphics/') + '.gif'
                     gifname = gifname.replace ('\\', '/')
                     if os.path.isfile (gifname):
                         self.images.append (tk.PhotoImage (file=gifname))

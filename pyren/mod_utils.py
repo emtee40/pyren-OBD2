@@ -295,10 +295,13 @@ def hex_VIN_plus_CRC( VIN ):
   b2 = CRC & 0xFF
   CRC = ((b2 << 8) | b1) & 0xFFFF
 
-  # result
-  return hexVIN+hex( CRC )[2:].upper()
+  sCRC = hex( CRC )[2:].upper()
+  sCRC = '0'*(4-len(sCRC))+sCRC
 
-# Test    
+  # result
+  return hexVIN+sCRC
+
+# Test
 if __name__ == "__main__":
     
     kb = KBHit()
@@ -363,6 +366,19 @@ def loadDumpToELM( ecuname, elm ):
       ecudump[req] = rsp
   
   elm.setDump( ecudump )
+
+def chkDirTree():
+    '''Check direcories'''
+    if not os.path.exists('./cache'):
+        os.makedirs('./cache')
+    if not os.path.exists('./csv'):
+        os.makedirs('./csv')
+    if not os.path.exists('./logs'):
+        os.makedirs('./logs')
+    if not os.path.exists('./dumps'):
+        os.makedirs('./dumps')
+    if not os.path.exists('./macro'):
+        os.makedirs('./macro')
 
 
 def getVIN( de, elm ):

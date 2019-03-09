@@ -6,7 +6,7 @@
 ##################################
 #                                #
 #                                #
-#    Version: 2.0 (02-Feb-2019)  #
+#    Version: 2.1 (09-Mar-2019)  #
 #    Author: Shr-Lnm             #
 #                                #
 #                                #
@@ -25,6 +25,14 @@ except:
     import pickle
 
 osname = os.name
+
+currenPath = os.path.dirname(os.path.abspath(__file__))
+
+for f in listdir('.'):
+	if isdir('./' + f) and f.lower().startswith('pyren') and isdir('./' + f + '/serial'):
+		sys.path.append(os.path.join(currenPath,f))
+		sys.path.append(os.path.join(currenPath,f,"serial"))
+
 
 if osname == 'nt':
     import pip
