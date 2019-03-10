@@ -40,6 +40,9 @@ This mode allows you:
 * **CLIP database** required for CLIP mode, not included (not included, you must own it)
 * **DDT2000 database** required for DDT mode, not included (not included, you must own it)
 
+Getting started video
+https://www.youtube.com/watch?v=DazsvlnLCoA
+
 ## Installation on Windows
 
 Check that you have CLIP database installed 
