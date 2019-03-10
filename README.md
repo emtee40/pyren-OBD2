@@ -23,6 +23,10 @@ This mode allows you:
 * Compare configurations
 * Rollback configuration
 
+Getting started video
+https://www.youtube.com/watch?v=DazsvlnLCoA
+
+
 ## Included tools
 * **doc_maker.py** - build diagnostic documentation for your car (require BVMEXTRACTION folder and extracted DocDB_xx.7ze)
 * **bus_monitor.py** - catch, parse and shows the content of system frames on your CAN bus.
@@ -39,9 +43,6 @@ This mode allows you:
     * **ELM327-BT** - not compatible with Android 7.0 and above, use ELM327-WiFi
 * **CLIP database** required for CLIP mode, not included (not included, you must own it)
 * **DDT2000 database** required for DDT mode, not included (not included, you must own it)
-
-Getting started video
-https://www.youtube.com/watch?v=DazsvlnLCoA
 
 ## Installation on Windows
 
