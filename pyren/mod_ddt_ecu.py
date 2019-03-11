@@ -294,10 +294,12 @@ class DDTECU():
     #  eculist = mod_ddt_utils.loadECUlist()                       #loading original data
     #  if eculist == None: return                                  #return if no eculist file
     #  pickle.dump( eculist, open( eculistcache, "wb" ) )          #and save cache
-    
+
+    mod_ddt_utils.searchddtroot()
+
     if len(mod_globals.opt_ddtxml)>0:
       fname = mod_globals.opt_ddtxml
-      self.ecufname = '../ecus/'+fname
+      self.ecufname = mod_globals.ddtroot+'/ecus/'+fname
     else:
       problist = ecuSearch(vehTypeCode, Address, DiagVersion, Supplier, Soft, Version, eculist)
 
@@ -312,7 +314,7 @@ class DDTECU():
         
         fname = fname.strip()
         if len(fname):
-          self.ecufname = '../ecus/'+fname
+          self.ecufname = mod_globals.ddtroot+'/ecus/'+fname
           if os.path.isfile(self.ecufname):
             break
           else:

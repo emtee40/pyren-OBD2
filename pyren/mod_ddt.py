@@ -136,6 +136,10 @@ class DDT():
             self.decu.saveDump()
 
         # Load XML
+        if not self.decu.ecufname.startswith(mod_globals.ddtroot):
+            tmp_f_name = self.decu.ecufname.split('/')[-1]
+            self.decu.ecufname = mod_globals.ddtroot+'/ecus/'+tmp_f_name
+            
         if not os.path.isfile(self.decu.ecufname):
             print "No such file: ", self.decu.ecufname
             return None
@@ -269,131 +273,6 @@ def optParser():
             mod_globals.opt_protocol = '500'
         else:
             mod_globals.opt_protocol = '500'
-
-
-def get_addr_from_xml(xmlfile):
-    if '/ecus/' not in xmlfile:
-        xmlfile = '../ecus/' + xmlfile
-
-    # Load XML
-    xdom = xml.dom.minidom.parse(xmlfile)
-    xdoc = xdom.documentElement
-    if not xdoc:
-        print "No such file:", xmlfile
-        return
-
-    faddr = ''
-    cans = xdoc.getElementsByTagName("CAN")
-    if cans:
-        for can in cans:
-            sendid = can.getElementsByTagName("SendId")
-            if sendid:
-                for sid in sendid:
-                    canid = sid.getElementsByTagName("CANId")
-                    if canid:
-                        for cid in canid:
-                            send_can_addr = cid.getAttribute("Value")
-                            if len(send_can_addr) > 0:
-                                sca = hex(int(send_can_addr))[2:].upper().zfill(3)
-                                for k in mod_elm.dnat.keys():
-                                    if sca == mod_elm.dnat[k]:
-                                        faddr = k
-
-    # if faddr=='':
-    #    faddr = raw_input('Please define functional address : ')
-
-    return faddr
-
-
-def main_old():
-    '''Main function'''
-
-    import mod_ecu
-
-    optParser()
-
-    print 'Opening ELM'
-    elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
-
-    # change serial port baud rate
-    if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
-        elm.port.soft_boudrate(mod_globals.opt_rate)
-
-    print "Loading language "
-    sys.stdout.flush()
-
-    # loading language data
-    lang = optfile("../Location/DiagOnCan_" + mod_globals.opt_lang + ".bqm", True)
-    mod_globals.language_dict = lang.dict
-    print "Done"
-
-    # check if address or xml defined
-
-    if mod_globals.opt_ecuAddr == '' and mod_globals.opt_ddtxml != '':
-        mod_globals.opt_ecuAddr = get_addr_from_xml(mod_globals.opt_ddtxml)
-
-    # if mod_globals.opt_ddtxml=='' and (mod_globals.opt_ecuAddr=='' or mod_globals.opt_ecuAddr not in mod_ecu.F2A.values()):
-    if mod_globals.opt_ecuAddr == '' or mod_globals.opt_ecuAddr not in mod_ecu.F2A.values():
-        # ask to choose famile
-        fmls = []
-        for f in sorted(mod_ecu.F2A.keys()):
-            f = str(int(f))
-            if mod_scan_ecus.families[f] in mod_globals.language_dict.keys():
-                x = f
-                if len(x) == 1: x = '0' + x
-                if x in mod_ecu.F2A.keys() and mod_ecu.F2A[x] in mod_elm.dnat.keys():
-                    fmls.append(f + ":" + mod_globals.language_dict[mod_scan_ecus.families[f]])
-        ch = ChoiceLong(fmls, "Choose ECU type :")
-        family = ch[0].split(':')[0]
-        if len(family) == 1: family = '0' + family
-        if family in mod_ecu.F2A.keys():
-            mod_globals.opt_ecuAddr = mod_ecu.F2A[family]
-        else:
-            print "ERROR : Unknown family!!!!"
-            sys.exit()
-
-    addr = mod_globals.opt_ecuAddr
-    # if addr=='' and mod_globals.opt_ddtxml!='':
-    #  addr = get_addr_from_xml( mod_globals.opt_ddtxml )
-
-    if 'S' in mod_globals.opt_protocol:
-        # SlowInit KWP
-        ecudata = {'pin': 'iso', 'slowInit': addr, 'fastInit': addr, 'ecuname': 'ddt_unknown', 'idTx': '', 'idRx': '',
-                   'ModelId': addr, 'protocol': 'KWP_Slow'}
-        mod_globals.opt_si = True
-        elm.init_iso()
-        elm.set_iso_addr(addr, ecudata)
-    elif 'F' in mod_globals.opt_protocol:
-        # FastInitKWP
-        ecudata = {'pin': 'iso', 'slowInit': addr, 'fastInit': addr, 'ecuname': 'ddt_unknown', 'idTx': '', 'idRx': '',
-                   'ModelId': addr, 'protocol': 'KWP_Fast'}
-        mod_globals.opt_si = False
-        elm.init_iso()
-        elm.set_iso_addr(addr, ecudata)
-    elif '250' in mod_globals.opt_protocol:
-        # CAN 250
-        ecudata = {'pin': 'can', 'slowInit': '', 'fastInit': '', 'brp': '1', 'ecuname': 'ddt_unknown', 'idTx': '',
-                   'idRx': '', 'ModelId': addr, 'protocol': 'CAN_250'}
-        elm.init_can()
-        elm.set_can_addr(addr, ecudata)
-    elif '500' in mod_globals.opt_protocol:
-        # CAN 500
-        ecudata = {'pin': 'can', 'slowInit': '', 'fastInit': '', 'brp': '0', 'ecuname': 'ddt_unknown', 'idTx': '',
-                   'idRx': '', 'ModelId': addr, 'protocol': 'CAN_500'}
-        elm.init_can()
-        elm.set_can_addr(addr, ecudata)
-    else:
-        print "ERROR : Unknown protocol!!!!"
-        sys.exit()
-
-    ecudata['dst'] = addr
-
-    elm.start_session('10C0')
-
-    ddt = DDT(elm, ecudata)
-
-    print "Done"
-
 
 class DDTLauncher():
     def __init__(self):

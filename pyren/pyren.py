@@ -3,6 +3,7 @@
 import sys, os
 import mod_globals
 import mod_utils
+import mod_ddt_utils
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -290,9 +291,11 @@ def main():
     verfile = open( "./cache/version09k.txt", "wb" )
     verfile.write("Do not remove me if you have v0.9.k or above.\n")
     verfile.close()
-    
+
+  mod_ddt_utils.searchddtroot()
+
   #check if DDT present
-  if os.path.exists('../ecus') and mod_globals.os != 'android':
+  if os.path.exists(mod_globals.ddtroot+'/ecus') and mod_globals.os != 'android':
     mod_globals.opt_ddt = True  
 
   while( 1 ):

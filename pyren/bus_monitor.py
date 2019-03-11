@@ -7,6 +7,7 @@ import pickle
 import codecs
 import string
 import threading
+import mod_ddt_utils
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -88,6 +89,8 @@ class DDT_MON():
     
     clearScreen()
     print "Starting DDT process"
+
+    mod_ddt_utils.searchddtroot()
     
     #make or load ddt ecu 
     decucashfile = "./cache/ddt_"+xmlfile+".p"
@@ -97,7 +100,7 @@ class DDT_MON():
     else:                                                   #else
       self.decu = DDTECU( None )                               #init class
       self.decu.setELM(self.elm)                               #define ELM for it
-      self.decu.loadXml( '../ecus/'+xmlfile )                  #loading original data for chosen ECU
+      self.decu.loadXml( mod_globals.ddtroot+'/ecus/'+xmlfile )#loading original data for chosen ECU
       self.decu.setELM( None )                                 #clear elm before serialization
       if len(self.decu.ecufname)>0:
         pickle.dump( self.decu, open( decucashfile, "wb" ) )   #and save cache
