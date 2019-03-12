@@ -2,15 +2,13 @@
 
 import sys, os
 import mod_globals
-import mod_utils
-import mod_ddt_utils
+
+mod_globals.os = os.name
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 import pickle
 
-mod_globals.os = os.name
- 
 if mod_globals.os == 'nt':
   import pip
   
@@ -52,6 +50,9 @@ if mod_globals.os != 'android':
     #print "\t\t>sudo easy_install ply"
     sys.exit()
     
+import mod_utils
+import mod_ddt_utils
+
 from mod_elm       import ELM
 from mod_scan_ecus import ScanEcus
 from mod_ecu       import ECU

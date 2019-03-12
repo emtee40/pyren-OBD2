@@ -139,7 +139,7 @@ class DDT():
         if not self.decu.ecufname.startswith(mod_globals.ddtroot):
             tmp_f_name = self.decu.ecufname.split('/')[-1]
             self.decu.ecufname = mod_globals.ddtroot+'/ecus/'+tmp_f_name
-            
+
         if not os.path.isfile(self.decu.ecufname):
             print "No such file: ", self.decu.ecufname
             return None
@@ -166,12 +166,13 @@ class DDT():
 
 def optParser():
     '''Parsing of command line parameters. User should define at least com port name'''
+    '''Not used in current version'''
 
     import argparse
 
     parser = argparse.ArgumentParser(
         # usage = "%prog -p <port> [options]",
-        version="mod_ddt Version 0.9.n",
+        version="mod_ddt Version 0.9.p",
         description="mod_ddt - python program for diagnostic Renault cars"
     )
 

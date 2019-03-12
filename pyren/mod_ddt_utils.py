@@ -3,16 +3,16 @@
 import os
 import xml.etree.ElementTree as et
 import mod_globals
-import serial
 from operator import itemgetter
 from copy import deepcopy
+
+if mod_globals.os != 'android':
+    import serial
 
 try:
     import cPickle as pickle
 except:
     import pickle
-
-
 
 def searchddtroot():
     if not os.path.exists('../DDT2000data/ecus'):
