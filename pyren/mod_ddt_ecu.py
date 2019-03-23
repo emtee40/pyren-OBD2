@@ -421,13 +421,11 @@ class DDTECU():
 
   def saveDump( self ):
     ''' save responces from all 21xx, 22xxxx commands '''
-    
-    xmlname = self.ecufname
+
+    xmlname = self.ecufname.split('/')[-1]
     if xmlname.upper().endswith('.XML'):
       xmlname = xmlname[:-4]
-    if xmlname.upper().startswith('../ECUS/'):
-      xmlname = xmlname[8:]
-    
+
     dumpname = './dumps/'+str(int(time.time()))+'_'+xmlname+'.txt'    
     df = open(dumpname,'wt')
 
@@ -546,8 +544,8 @@ class DDTECU():
         return hv+':'+d.List[listIndex]
       else:
         return hv
-    
-    # scaled   
+
+    # scaled
     if d.Scaled:
       # conver to int
       p = int(hv,16)
@@ -555,7 +553,7 @@ class DDTECU():
       if d.signed and p>(2**(d.BitsCount-1)-1):
         p = p-2**d.BitsCount
       # calculate the formula
-      res = p*float(d.Step)/float(d.DivideBy)+float(d.Offset)
+      res = (p*float(d.Step)+float(d.Offset))/float(d.DivideBy)
       # format the result
       if len(d.Format) and '.' in d.Format:
         acc = len(d.Format.split('.')[1])
@@ -725,9 +723,9 @@ class DDTECU():
         if value.upper().startswith('0X'):
           value = value[2:]
         else:  #calculate reverse formula
-          if not all((c in string.digits or c=='.' or c==',' or c=='-') for c in value):
+          if not all((c in string.digits or c=='.' or c==',' or c=='-' or c=='e' or c=='E') for c in value):
             return 'ERROR: Wrong value in parametr:%s (it should have %d bytes), be decimal or starts with 0x for hex' % (d.Name, d.BytesCount)
-          flv = (float( value ) - float(d.Offset))*float(d.DivideBy)/float(d.Step)
+          flv = (float( value )*float(d.DivideBy) - float(d.Offset))/float(d.Step)
           value = hex(int(flv))
         
       # ascii 
@@ -801,7 +799,7 @@ class DDTECU():
 
     if rcmd == '':
       #debug
-      print res, d, self.req4data.keys ()
+      #print res, d, self.req4data.keys ()
       return 'ERROR'
 
     if self.datas[d].BytesASCII:
@@ -1006,14 +1004,16 @@ class DDTECU():
     if l_Scaled:
       if l_Step!=1:
         equ = equ+'*'+str(l_Step)
-      if l_DivideBy!=1:
-        equ = equ+'/'+str(l_DivideBy)
       if l_Offset != 0:
         if l_Offset>0:
           equ = equ+'+'+str(l_Offset)
         else:
           equ = equ+str(l_Offset)
-    
+        if l_DivideBy!=1:
+          equ = '('+equ+')'
+      if l_DivideBy!=1:
+        equ = equ+'/'+str(l_DivideBy)
+
     return equ
 
 def minDist(a, b):

@@ -1802,11 +1802,11 @@ class DDTScreen (tk.Frame):
         # clear elm cache
         self.decu.clearELMcache ()
 
-        self.sReq_lst.append (rq)
-        self.startScreen ()
-
         # request to update dInputs
         self.update_dInputs ()
+
+        self.sReq_lst.append (rq)
+        self.startScreen ()
 
 
 def main():

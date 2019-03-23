@@ -6,7 +6,7 @@
 ##################################
 #                                #
 #                                #
-#    Version: 2.1 (09-Mar-2019)  #
+#    Version: 2.2 (23-Mar-2019)  #
 #    Author: Shr-Lnm             #
 #                                #
 #                                #
@@ -29,9 +29,9 @@ osname = os.name
 currenPath = os.path.dirname(os.path.abspath(__file__))
 
 for f in listdir('.'):
-	if isdir('./' + f) and f.lower().startswith('pyren') and isdir('./' + f + '/serial'):
-		sys.path.append(os.path.join(currenPath,f))
-		sys.path.append(os.path.join(currenPath,f,"serial"))
+    if isdir('./' + f) and f.lower().startswith('pyren') and isdir('./' + f + '/serial'):
+        sys.path.append(os.path.join(currenPath,f))
+        sys.path.append(os.path.join(currenPath,f,"serial"))
 
 
 if osname == 'nt':
@@ -639,7 +639,7 @@ if osname != 'android':
             self.Options.configure(textvariable=self.var_otherOptions)
 
             self.btnStart = tk.Button(self.root)
-            self.btnStart.place(relx=0.01, rely=0.88, height=22, width=100)
+            self.btnStart.place(relx=0.01, rely=0.84, height=22, width=100)
             self.btnStart.configure(activebackground="#d9d9d9")
             self.btnStart.configure(activeforeground="#000000")
             self.btnStart.configure(background="#d9d9d9")
@@ -650,17 +650,17 @@ if osname != 'android':
             self.btnStart.configure(text='''Start pyren''')
             self.btnStart.configure(width=70)
 
-            #self.btnDDT = tk.Button(self.root)
-            #self.btnDDT.place(relx=0.01, rely=0.91, height=22, width=100)
-            #self.btnDDT.configure(activebackground="#d9d9d9")
-            #self.btnDDT.configure(activeforeground="#000000")
-            #self.btnDDT.configure(background="#d9d9d9")
-            #self.btnDDT.configure(command=self.cmd_DDT)
-            #self.btnDDT.configure(foreground="#000000")
-            #self.btnDDT.configure(highlightbackground="#d9d9d9")
-            #self.btnDDT.configure(highlightcolor="black")
-            #self.btnDDT.configure(text='''Start DDT''')
-            #self.btnDDT.configure(width=70)
+            self.btnDDT = tk.Button(self.root)
+            self.btnDDT.place(relx=0.01, rely=0.91, height=22, width=100)
+            self.btnDDT.configure(activebackground="#d9d9d9")
+            self.btnDDT.configure(activeforeground="#000000")
+            self.btnDDT.configure(background="#d9d9d9")
+            self.btnDDT.configure(command=self.cmd_DDT)
+            self.btnDDT.configure(foreground="#000000")
+            self.btnDDT.configure(highlightbackground="#d9d9d9")
+            self.btnDDT.configure(highlightcolor="black")
+            self.btnDDT.configure(text='''Start DDT''')
+            self.btnDDT.configure(width=70)
 
             self.btnScan = tk.Button(self.root)
             self.btnScan.place(relx=0.21, rely=0.88, height=22, width=100)
@@ -791,6 +791,13 @@ else:
             self.saveSettings()
             self.droid.fullDismiss()
             run(self.save, 'pyren')
+
+        def cmd_term(self):
+            self.saveSettings()
+            self.droid.fullDismiss()
+            run(self.save, 'term')
+
+
 
         def saveSettings(self):
             self.save.path = self.pl[int(self.droid.fullQueryDetail("sp_version").result['selectedItemPosition'])]
@@ -1093,6 +1100,13 @@ else:
                 android:layout_below="@id/bt_start"
                 android:layout_toLeftOf="@id/bt_check"
                 android:text="Monitor" />
+            <Button
+                android:id="@+id/bt_term"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/bt_start"
+                android:layout_toLeftOf="@+id/bt_mon"
+                android:text="Macro" />
         </RelativeLayout>
     
     </ScrollView>
