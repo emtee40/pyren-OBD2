@@ -1741,6 +1741,8 @@ class DDTScreen (tk.Frame):
             if xText not in self.dValue.keys():
                 self.dValue[xText] = tk.StringVar()
                 self.dValue[xText].set(mod_globals.none_val)
+                if xText in self.decu.req4data.keys() and self.decu.req4data[xText] in self.decu.requests.keys():
+                    self.dReq[self.decu.req4data[xText]] = self.decu.requests[self.decu.req4data[xText]].ManuelSend
 
             obj = tk.Label(frame, text=self.dValue[xText], relief=tk.GROOVE, borderwidth=1, font=lFont,
                            textvariable=self.dValue[xText])
