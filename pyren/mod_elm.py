@@ -1097,7 +1097,7 @@ class ELM:
         for line in cmdrsp.split ('\n'):
             line = line.strip ().upper ()
             if line.startswith ("7F") and len (line) == 8 and line[6:8] in negrsp.keys () and self.currentprotocol != "can":
-                if not mod_globals.state_scan: print line, negrsp[line[6:8]]
+                # if not mod_globals.state_scan: print line, negrsp[line[6:8]]
                 if self.lf != 0:
                     # tm = str (time.time ())
                     self.lf.write ("#[" + str (tc - tb) + "] rsp:" + line + ":" + negrsp[line[6:8]] + "\n")

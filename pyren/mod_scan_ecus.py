@@ -868,6 +868,16 @@ def readECUIds( elm ):
         res = elm.request(req='1003', positive='50', cache=False)
         if res.startswith('50'):
             StartSession = '1003'
+        else:
+          res = elm.request(req='10A0', positive='50', cache=False)
+          if res.startswith('50'):
+            StartSession = '10A0'
+          else:
+            res = elm.request(req='10B0', positive='50', cache=False)
+            if res.startswith('50'):
+              StartSession = '10B0'
+
+
   else:
       StartSession = elm.startSession
       res = elm.request(req=elm.startSession, positive='50', cache=False)
