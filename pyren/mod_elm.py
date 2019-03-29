@@ -1869,7 +1869,10 @@ class ELM:
             self.lf.write ('#' * 60 + "\n#connect to: " + ecu['ecuname'] + " Addr:" + addr + " Protocol:" + ecu[
                 'protocol'] + "\n" + '#' * 60 + "\n")
             self.lf.flush ()
-        
+
+        if self.currentprotocol == "iso":
+            self.check_answer(self.cmd("82"))  # close previous session
+
         self.currentprotocol = "iso"
         self.currentsubprotocol = ecu['protocol']
         self.currentaddress = addr
@@ -1905,7 +1908,9 @@ class ELM:
             # self.lastinitrsp = self.cmd("81")         #init bus
         
         self.check_answer (self.cmd ("at at 1"))  # enable adaptive timing
-        
+
+        self.check_answer(self.cmd("81"))  # start session
+
         self.check_adapter ()
     
     def reset_elm(self):
