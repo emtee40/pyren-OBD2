@@ -154,7 +154,9 @@ def main():
     elm.cmd("at sp 6")
     elm.cmd("at al")
     elm.portTimeout = 1
-    
+
+    elm.cmd("at cf 5C5")
+    elm.cmd("at cm 7FF")
     elm.cmd("at cra 5C5")
     resp = elm.cmd("atma")
     elm.cmd("at")
@@ -165,6 +167,8 @@ def main():
         tot = tot + str(int(kmt,16)); tot += '\n'
         break
         
+    elm.cmd("at cf 715")
+    elm.cmd("at cm 7FF")
     elm.cmd("at cra 715")
     elm.portTimeout = 5
     resp = elm.cmd("atma")
@@ -176,7 +180,9 @@ def main():
         tot += "%-10s : " % "Frame 715" 
         tot = tot + str(int(kmt,16)); tot += '\n'
         break
-  
+
+    elm.cmd("at cf 5FD")
+    elm.cmd("at cm 7FF")
     elm.cmd("at cra 5FD")
     elm.portTimeout = 5
     resp = elm.cmd("atma")
