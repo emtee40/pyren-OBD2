@@ -4,6 +4,7 @@ import sys, os, re
 import time
 import mod_globals
 import mod_elm
+import mod_utils
 
 try:
     import readline
@@ -298,34 +299,151 @@ def optParser():
     mod_globals.opt_n1c       = options.n1c
     auto_dia                  = options.dia
 
-def file_chooser():
-    if mod_globals.os != 'android':
+
+class FileChooser():
+    lay = '''<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <RelativeLayout
+            android:id="@+id/launcher"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tx_folder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="20dp"
+                android:text="Folder"/>
+            <Spinner
+                android:id="@+id/sp_folder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/tx_folder"/>
+
+            <TextView
+                android:id="@+id/tx_macro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="20dp"
+                android:layout_below="@+id/sp_folder"
+                android:text="Macro" />
+            <Spinner
+                android:id="@+id/sp_macro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tx_macro"/>
+
+            <Button
+                android:id="@+id/bt_exit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="50dp"
+                android:layout_below="@id/sp_macro"
+                android:text="Exit" />
+
+            <Button
+                android:id="@+id/bt_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_marginLeft="100dp"
+                android:layout_below="@id/sp_macro"
+                android:layout_toRightOf="@id/bt_exit"
+                android:text="Start" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</RelativeLayout>'''
+    droid  = None
+    folderList = []
+    macroList = []
+
+    def newFolderSelected(self):
+        self.macroList = []
+        fo = self.folder
+        self.macroList = [f for f in os.listdir(fo) if os.path.isfile(fo + f) and f.lower().endswith('.cmd')]
+        self.droid.fullSetList("sp_macro", self.macroList)
+
+    def eventloop(self):
+        while True:
+            sf = self.folderList[int(self.droid.fullQueryDetail("sp_folder").result['selectedItemPosition'])]
+            if sf != self.folder:
+                self.folder = sf
+                self.newFolderSelected()
+            event = self.droid.eventWait(50).result
+            if event == None: continue
+            if event["name"] == "click":
+                id = event["data"]["id"]
+                if id == "bt_start":
+                    ma = self.macroList[int(self.droid.fullQueryDetail("sp_macro").result['selectedItemPosition'])]
+                    return sf + ma
+                if id == "bt_exit":
+                    sys.exit()
+
+    def __init__(self):
+        fo = './macro/'
+        self.folderList = [fo + f + '/' for f in os.listdir(fo) if os.path.isdir(fo + f)]
+        self.folder = fo
+
+    def choose(self):
         try:
-            # Python2
-            import Tkinter as tk
-            import ttk
-            import tkFileDialog as filedialog
-        except ImportError:
-            # Python3
-            import tkinter as tk
-            import tkinter.ttk as ttk
-            import tkFileDialog as filedialog
+            import androidhelper as android
+            mod_globals.os = 'android'
+        except:
+            try:
+                import android
+                mod_globals.os = 'android'
+            except:
+                pass
 
-        root = tk.Tk()
-        root.withdraw()
+        if mod_globals.os != 'android':
+            try:
+                # Python2
+                import Tkinter as tk
+                import ttk
+                import tkFileDialog as filedialog
+            except ImportError:
+                # Python3
+                import tkinter as tk
+                import tkinter.ttk as ttk
+                import tkFileDialog as filedialog
 
-        my_filetypes = [('command files', '.cmd')]
+            root = tk.Tk()
+            root.withdraw()
 
-        fname = filedialog.askopenfilename(parent=root,
-                                        initialdir="./macro",
-                                        title="Please select a file:",
-                                        filetypes=my_filetypes)
-        #root.destroy()
+            my_filetypes = [('command files', '.cmd')]
 
-        return fname
+            fname = filedialog.askopenfilename(parent=root,
+                                            initialdir="./macro",
+                                            title="Please select a file:",
+                                            filetypes=my_filetypes)
 
-    else:
-        pass
+            return fname
+
+        else:
+            try:
+                self.droid = android.Android()
+                self.droid.fullShow(self.lay)
+                self.folderList.insert(0,'./macro/')
+                self.droid.fullSetList("sp_folder", self.folderList)
+                return self.eventloop()
+            finally:
+                self.droid.fullDismiss()
+
 
 def main():
 
@@ -333,13 +451,18 @@ def main():
     global auto_dia
     global macro
     global var
-    
+
+    mod_utils.chkDirTree()
+
     init_macro()
     init_var()
     load_macro()
     
     optParser()
-    
+
+    #debug
+    #mod_globals.opt_demo = True
+
     # disable CAN auto-formatting
     mod_globals.opt_cfc0 = True
     
@@ -352,7 +475,7 @@ def main():
     cmd_ref = 0
 
     if auto_dia:
-        fname = file_chooser()
+        fname = FileChooser().choose()
         if len(fname)>0:
             f = open(fname, 'rt')
             cmd_lines = f.readlines()

@@ -6,7 +6,7 @@
 ##################################
 #                                #
 #                                #
-#    Version: 2.2 (23-Mar-2019)  #
+#    Version: 2.3 (30-Mar-2019)  #
 #    Author: Shr-Lnm             #
 #                                #
 #                                #
@@ -14,6 +14,8 @@
 
 
 import os
+import zipfile
+import shutil
 from os import listdir
 from os.path import isdir
 from os.path import isfile
@@ -78,6 +80,64 @@ if osname == 'android':
             print "Error while using jnius"
             sys.exit()
 
+
+def update_from_gitlab():
+    try:
+        import os
+        import zipfile
+        import urllib2
+        import ssl
+
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            # Legacy Python that doesn't verify HTTPS certificates by default
+            pass
+        else:
+            # Handle target environment that doesn't support HTTPS verification
+            ssl._create_default_https_context = _create_unverified_https_context
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        filedata = urllib2.urlopen('http://gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip', context=ctx, timeout = 10)
+        datatowrite = filedata.read()
+
+        with open('./pyren_master.zip', 'wb') as f:
+            f.write(datatowrite)
+    except:
+        return 1
+
+    try:
+        if os.path.isfile('./pyren_master.zip'):
+            with zipfile.ZipFile('./pyren_master.zip') as zip_file:
+                for src in zip_file.namelist():
+                    if src.endswith('exe'):
+                        continue
+                    arcname = src.replace('/', os.path.sep)
+                    if os.path.altsep:
+                        arcname = arcname.replace(os.path.altsep, os.path.sep)
+                    arcname = os.path.splitdrive(arcname)[1].split(os.path.sep)[0]
+                    rootDirLen = len(arcname)+1
+                    dst = src[rootDirLen:]
+                    filename = os.path.basename(src)
+                    if not filename:
+                        if dst and not os.path.exists(dst):
+                            os.makedirs(dst)
+                        continue
+                    
+                    source = zip_file.open(src)
+                    target = file(dst, "wb")
+                    with source, target:
+                        shutil.copyfileobj(source, target)
+    except:
+        os.remove('./pyren_master.zip')
+        return 2
+
+    os.remove('./pyren_master.zip')
+
+    return 0
 
 def getPathList():
     return ['./' + f for f in listdir('.') if isdir('./' + f) \
@@ -266,10 +326,19 @@ if osname != 'android':
             self.guiDestroy()
             run(self.save, 'ddt')
 
-        def cmd_term(self):
+        def cmd_Term(self):
             self.saveSettings()
             self.guiDestroy()
             run(self.save, 'term')
+
+        def cmd_Update(self):
+            res = update_from_gitlab()
+            if res == 0:
+                tkMessageBox.showinfo("Information", "Done")
+            elif res == 1:
+                tkMessageBox.showerror("Error", "No connection with gitlab.com")
+            elif res == 2:
+                tkMessageBox.showerror("Error", "UnZip error")
 
         def saveSettings(self):
             if len(self.var_entryPath.get()) > 0:
@@ -663,7 +732,7 @@ if osname != 'android':
             self.btnDDT.configure(width=70)
 
             self.btnScan = tk.Button(self.root)
-            self.btnScan.place(relx=0.21, rely=0.88, height=22, width=100)
+            self.btnScan.place(relx=0.21, rely=0.84, height=22, width=100)
             self.btnScan.configure(activebackground="#d9d9d9")
             self.btnScan.configure(activeforeground="#000000")
             self.btnScan.configure(background="#d9d9d9")
@@ -675,7 +744,7 @@ if osname != 'android':
             self.btnScan.configure(width=70)
 
             self.btnDemo = tk.Button(self.root)
-            self.btnDemo.place(relx=0.41, rely=0.88, height=22, width=100)
+            self.btnDemo.place(relx=0.41, rely=0.84, height=22, width=100)
             self.btnDemo.configure(activebackground="#d9d9d9")
             self.btnDemo.configure(activeforeground="#000000")
             self.btnDemo.configure(background="#d9d9d9")
@@ -687,7 +756,7 @@ if osname != 'android':
             self.btnDemo.configure(width=82)
 
             self.btnCheck = tk.Button(self.root)
-            self.btnCheck.place(relx=0.61, rely=0.88, height=22, width=100)
+            self.btnCheck.place(relx=0.61, rely=0.84, height=22, width=100)
             self.btnCheck.configure(activebackground="#d9d9d9")
             self.btnCheck.configure(activeforeground="#000000")
             self.btnCheck.configure(background="#d9d9d9")
@@ -713,11 +782,22 @@ if osname != 'android':
             self.btnMac.configure(activebackground="#d9d9d9")
             self.btnMac.configure(activeforeground="#000000")
             self.btnMac.configure(background="#d9d9d9")
-            self.btnMac.configure(command=self.cmd_term)
+            self.btnMac.configure(command=self.cmd_Term)
             self.btnMac.configure(foreground="#000000")
             self.btnMac.configure(highlightbackground="#d9d9d9")
             self.btnMac.configure(highlightcolor="black")
             self.btnMac.configure(text='''Macro''')
+
+            self.btnUpg = tk.Button(self.root)
+            self.btnUpg.place(relx=0.41, rely=0.91, height=22, width=100)
+            self.btnUpg.configure(activebackground="#d9d9d9")
+            self.btnUpg.configure(activeforeground="#000000")
+            self.btnUpg.configure(background="#d9d9d9")
+            self.btnUpg.configure(command=self.cmd_Update)
+            self.btnUpg.configure(foreground="#000000")
+            self.btnUpg.configure(highlightbackground="#d9d9d9")
+            self.btnUpg.configure(highlightcolor="black")
+            self.btnUpg.configure(text='''Update''')
 
             self.pathList = ttk.Combobox(self.root)
             self.pathList.place(relx=0.04, rely=0.05, relheight=0.06, relwidth=0.41)
@@ -792,12 +872,19 @@ else:
             self.droid.fullDismiss()
             run(self.save, 'pyren')
 
-        def cmd_term(self):
+        def cmd_Term(self):
             self.saveSettings()
             self.droid.fullDismiss()
             run(self.save, 'term')
 
-
+        def cmd_Update(self):
+            res = update_from_gitlab()
+            if res == 0:
+                self.droid.makeToast("Done")
+            elif res == 1:
+                self.droid.makeToast("No connection with gitlab.com")
+            elif res == 2:
+                self.droid.makeToast("UnZip error")
 
         def saveSettings(self):
             self.save.path = self.pl[int(self.droid.fullQueryDetail("sp_version").result['selectedItemPosition'])]
@@ -1107,6 +1194,13 @@ else:
                 android:layout_below="@id/bt_start"
                 android:layout_toLeftOf="@+id/bt_mon"
                 android:text="Macro" />
+            <Button
+                android:id="@+id/bt_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/in_options"
+                android:text="Update" />
         </RelativeLayout>
     
     </ScrollView>
@@ -1129,6 +1223,10 @@ else:
                         self.cmd_Check()
                     elif id == "bt_mon":
                         self.cmd_Mon()
+                    elif id == "bt_term":
+                        self.cmd_Term()
+                    elif id == "bt_update":
+                        self.cmd_Update()
 
         def __init__(self):
             self.save = settings()
