@@ -30,6 +30,10 @@ cmdb = '''
 #v1.0 ;AC  ; ATIB 96               ; IB 96              ; set the ISO Baud rate to 9600      
 #v1.0 ;AC  ; ATL1                  ; L0, L1             ; Linefeeds off, or on
 #v1.0 ;AC  ; ATM0                  ; M0, M1             ; Memory off, or on
+#v1.0 ;AC  ; ATCM 00000000         ; CM hhhhhhhh        ; set the ID Mask to hhhhhhhh
+#v1.0 ;AC  ; ATCF 00000000         ; CF hhhhhhhh        ; set the ID Filter to hhhhhhhh
+#v1.0 ;AC  ; ATCM 000              ; CM hhh             ; set the ID Mask to hhh
+#v1.0 ;AC  ; ATCF 000              ; CF hhh             ; set the ID Filter to hhh
 #v1.0 ; C  ; ATMA                  ; MA                 ; Monitor All
 #v1.0 ; C  ; ATMR 01               ; MR hh              ; Monitor for Receiver = hh
 #v1.0 ; C  ; ATMT 01               ; MT hh              ; Monitor for Transmitter = hh
@@ -43,10 +47,6 @@ cmdb = '''
 #v1.0 ;AC P; ATSH 012              ; SH xyz             ; Set Header to xyz
 #v1.0 ;AC  ; ATSP A6               ; SP Ah              ; Set Protocol to Auto, h and save it
 #v1.0 ;AC  ; ATSP 6                ; SP h               ; Set Protocol to h and save it
-#v1.0 ;AC  ; ATCM 123              ; CM hhh             ; set the ID Mask to hhh
-#v1.0 ;AC  ; ATCM 12345678         ; CM hhhhhhhh        ; set the ID Mask to hhhhhhhh
-#v1.0 ;AC  ; ATCF 123              ; CF hhh             ; set the ID Filter to hhh
-#v1.0 ;AC  ; ATCF 12345678         ; CF hhhhhhhh        ; set the ID Filter to hhhhhhhh
 #v1.0 ;AC P; ATST FF               ; ST hh              ; Set Timeout to hh x 4 msec
 #v1.0 ;AC P; ATSW 96               ; SW 00              ; Stop sending Wakeup messages
 #v1.0 ;AC P; ATSW 34               ; SW hh              ; Set Wakeup interval to hh x 20 msec
