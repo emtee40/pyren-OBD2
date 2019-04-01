@@ -146,6 +146,8 @@ def getPathList():
 
 
 def getLangList():
+    if not os.path.exists('./Location'):
+        return []
     return [f[10:-4] for f in listdir('./Location') if f.lower().startswith('diagoncan_')]
 
 
