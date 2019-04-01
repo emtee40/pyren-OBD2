@@ -804,8 +804,10 @@ class ScanEcus:
       if (row['dst']+row['startDiagReq']+row['stdType']+row['ids'][0]+row['protocol'])==r[0]:
         rrsp = r[1]
         rerr = r[2]
+
     if rrsp=='':
       rrsp,rerr = self.request_iso( row )
+
       if not rrsp: rrsp = ''
       if not rerr: rerr = ''
       
@@ -822,6 +824,9 @@ class ScanEcus:
       
       if rrsp!='':
         self.reqres.append([row['dst']+row['startDiagReq']+row['stdType']+row['ids'][0]+row['protocol'],rrsp,rerr]) #populate cache for not to ask again
+
+    #debug
+    #print self.reqres
 
     compres = False
     if 'ERROR' not in rrsp:
