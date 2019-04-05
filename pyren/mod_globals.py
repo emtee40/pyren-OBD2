@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+opt_debug     = False
+debug_file    = None
+
 opt_port      = ""
 opt_ecuid     = ""
 opt_ecuAddr   = ""

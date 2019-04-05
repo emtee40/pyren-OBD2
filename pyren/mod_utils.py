@@ -435,3 +435,8 @@ def getVIN( de, elm ):
   choice = Choice(l_vin, "Choose VIN : ")
   
   return choice[0]
+
+def DBG( tag, s ):
+    if mod_globals.opt_debug and mod_globals.debug_file!=None:
+        mod_globals.debug_file.write( '### ' + tag + '\n')
+        mod_globals.debug_file.write( '"' + s + '"\n')

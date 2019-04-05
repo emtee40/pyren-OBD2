@@ -555,7 +555,10 @@ class ELM:
         if len(mod_globals.opt_log)>0: # and mod_globals.opt_demo==False:
             self.lf = open ("./logs/elm_" + mod_globals.opt_log, "at")
             self.vf = open ("./logs/ecu_" + mod_globals.opt_log, "at")
-        
+
+        if mod_globals.opt_debug and mod_globals.debug_file==None:
+            mod_globals.debug_file = open ("./logs/debug.txt", "at")
+
         self.lastCMDtime = 0
         self.ATCFC0 = mod_globals.opt_cfc0
     

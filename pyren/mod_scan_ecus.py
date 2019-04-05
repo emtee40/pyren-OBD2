@@ -30,6 +30,7 @@ import pickle
 from mod_utils   import Choice
 from mod_utils   import ChoiceLong
 from mod_utils   import pyren_encode
+from mod_utils   import DBG
 from mod_elm     import ELM
 import mod_elm   as m_elm
 import mod_globals
@@ -755,10 +756,13 @@ class ScanEcus:
       if (row['dst']+row['startDiagReq']+row['stdType']+row['ids'][0]+row['protocol'])==r[0]:
         rrsp = r[1]
         rerr = r[2]
-        
+
+    #debug
+    print rrsp
+
     if rrsp=='':
       rrsp,rerr = self.request_can( row )
-      
+
       if not rrsp: rrsp = ''
       if not rerr: rerr = ''
       
@@ -808,6 +812,9 @@ class ScanEcus:
     if rrsp=='':
       rrsp,rerr = self.request_iso( row )
 
+      #debug
+      DBG('rrsp', rrsp)
+
       if not rrsp: rrsp = ''
       if not rerr: rerr = ''
       
@@ -826,12 +833,15 @@ class ScanEcus:
         self.reqres.append([row['dst']+row['startDiagReq']+row['stdType']+row['ids'][0]+row['protocol'],rrsp,rerr]) #populate cache for not to ask again
 
     #debug
-    #print self.reqres
+    DBG( 'reqres', str( self.reqres ) )
 
     compres = False
     if 'ERROR' not in rrsp:
       rrsp = rrsp[3:]
       compres = self.compare_ecu( row['ids'], rrsp, row['ids'][0] )
+
+    #debug
+    DBG( 'compres', str( str(compres) + ' ' + row['ecuname']) )
 
     if not rerr: rerr = ''
 
