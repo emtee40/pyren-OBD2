@@ -1128,6 +1128,7 @@ class ELM:
         
         if "AT" in command.upper () or self.currentprotocol != "can":
             return self.send_raw (command)
+
         if self.ATCFC0:
             return self.send_can_cfc0 (command)
         else:

@@ -730,8 +730,15 @@ class ScanEcus:
     
     res = ""
     for s in rrsp.split('\n'):
-      if s.replace(' ','').startswith(row['ids'][1]):
+      dss = s.replace(' ','')
+      if len(dss)==0:
+        continue
+      if dss.startswith(row['ids'][1]):
         res = s
+      elif len(row['ids'][1])==(len(row['ids'][0])+2) and str(row['dst'] + dss).startswith(row['ids'][1]):
+        #sometimes ids contains addr
+        res = s
+
     rrsp = res
 
     res = ""
