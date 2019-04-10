@@ -765,7 +765,7 @@ class ScanEcus:
         rerr = r[2]
 
     #debug
-    print rrsp
+    #print rrsp
 
     if rrsp=='':
       rrsp,rerr = self.request_can( row )

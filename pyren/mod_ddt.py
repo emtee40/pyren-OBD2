@@ -743,7 +743,23 @@ class DDTLauncher():
             tkMessageBox.showinfo("ERROR", "ELM is not connected. You may work only offline.")
             return
 
-        ce = self.getSelectedECU()
+        try:
+            item = self.ecutree.selection()[0]
+            e = self.ecutree.item(item)['values'][8]
+        except:
+            pass
+
+        ce = None
+        for ce in self.carecus:
+            if str(ce)==e:
+                break
+
+        self.currentEcu = self.carecus.index(ce)
+
+        if ce==None:
+            return
+
+        #ce = self.getSelectedECU()
 
         # init protocol
         if 'CAN' in ce['prot'] and ce['xid']!='' and ce['rid']!='':
@@ -761,6 +777,10 @@ class DDTLauncher():
 
         # get ID
         (StartSession, DiagVersion, Supplier, Version, Soft, Std, VIN) = mod_scan_ecus.readECUIds(self.elm)
+
+        if DiagVersion=='' and Supplier=='' and Version=='' and Soft=='':
+            tkMessageBox.showinfo("INFO", "no response from this ECU")
+            return
 
         candlist = mod_ddt_ecu.ecuSearch(self.v_proj.get(), ce['addr'],
                                          DiagVersion, Supplier, Soft, Version,

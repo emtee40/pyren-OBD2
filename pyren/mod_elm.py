@@ -158,6 +158,7 @@ class Port:
             self.portType = 1
             self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
             self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            self.hdr.settimeout(3)
             self.hdr.connect ((self.ipaddr, self.tcpprt))
             self.hdr.setblocking (True)
         elif mod_globals.os == 'android' and portName == 'bt':
