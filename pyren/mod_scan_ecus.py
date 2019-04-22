@@ -420,7 +420,7 @@ class ScanEcus:
           self.allecus[name]["stdType"] = EcuData.getAttribute("stdType")
           
           if EcuData.getElementsByTagName("ModelId").item(0).firstChild:
-            self.allecus[name]["ModelId"] = EcuData.getElementsByTagName("ModelId").item(0).firstChild.nodeValue
+            self.allecus[name]["ModelId"] = EcuData.getElementsByTagName("ModelId").item(0).firstChild.nodeValue.strip()
           else:
             self.allecus[name]["ModelId"] = name
             
