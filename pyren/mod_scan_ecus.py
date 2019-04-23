@@ -425,7 +425,7 @@ class ScanEcus:
             self.allecus[name]["ModelId"] = name
             
           if EcuData.getElementsByTagName("OptimizerId").item(0).firstChild:
-            self.allecus[name]["OptimizerId"] = EcuData.getElementsByTagName("OptimizerId").item(0).firstChild.nodeValue
+            self.allecus[name]["OptimizerId"] = EcuData.getElementsByTagName("OptimizerId").item(0).firstChild.nodeValue.strip()
           else:
             self.allecus[name]["OptimizerId"] = ''
             

@@ -94,7 +94,7 @@ class ECU:
 
     print "ECU type: ", cecu['stdType']
  
-    mdom = xml.dom.minidom.parse(self.path+self.ecudata['ModelId'])
+    mdom = xml.dom.minidom.parse(self.path+self.ecudata['ModelId'].strip())
     mdoc = mdom.documentElement
   
     print "Loading screens "
@@ -103,7 +103,7 @@ class ECU:
 
     print "Loading optimyzer"
     self.defaults = []
-    opt_file = optfile(self.path+self.ecudata['OptimizerId'])
+    opt_file = optfile(self.path+self.ecudata['OptimizerId'].strip())
        
     print "Loading defaults"
     df_class = ecu_defaults       ( self.Defaults,        mdoc, opt_file.dict, tran )
