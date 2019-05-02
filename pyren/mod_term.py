@@ -468,14 +468,20 @@ def bit_cmd( l, elm, fnc='set_bits' ):
 
     if len(rsp) != lng * 2:
         print '\nERROR: Length is unexpected\n'
+        if fnc.startswith('exit'):
+            sys.exit()
         return
 
     if not all(c in string.hexdigits for c in rsp):
+        if fnc.startswith('exit'):
+            sys.exit()
         print '\nERROR: Wrong simbol in response\n'
         return
 
     pos_rsp = ('6'+rcmd[1:]).upper()
     if not rsp.startswith(pos_rsp):
+        if fnc.startswith('exit'):
+            sys.exit()
         print '\nERROR: Not positive response\n'
         return
 
@@ -639,6 +645,9 @@ def main():
 
     cmd_lines = []
     cmd_ref = 0
+
+    #debug
+    #auto_dia = True
 
     if auto_dia:
         fname = FileChooser().choose()
