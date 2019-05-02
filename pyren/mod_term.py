@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, os, re
+import string
 import time
 import mod_globals
 import mod_elm
@@ -15,6 +16,7 @@ os.chdir (os.path.dirname (os.path.realpath (sys.argv[0])))
 
 macro = {}
 var = {}
+cmd_delay = 0
 stack = []
 
 auto_macro = ""
@@ -62,7 +64,6 @@ if mod_globals.os != 'android':
         print "\n\n\n\tPleas install additional modules"
         print "\t\t>sudo easy_install pyserial"
         sys.exit()
-
 
 def init_macro():
     global macro
@@ -147,50 +148,6 @@ def load_macro( mf='' ):
     else:
         pars_macro(mf) 
         
-def play_macro( mname, elm ):
-    global macro
-    global var
-    global stack
-    
-    if mname in stack:
-      print 'Error: recursion prohibited:', mname
-      return
-    else:
-      stack.append(mname)
-      
-    for l in macro[mname]:
-      #find veriable definition
-      m = re.search('\$\S+\s*=\s*\S+', l)
-      if m: 
-        r = m.group(0).replace(' ', '').replace('\t', '')
-        rl = r.split('=')
-        var[rl[0]]=rl[1]
-        if rl[0]=='$addr':
-          if var['$addr'].upper() in mod_elm.dnat.keys():
-            var['$txa'] = mod_elm.dnat[var['$addr'].upper()]
-            var['$rxa'] = mod_elm.snat[var['$addr'].upper()]
-            elm.currentaddress = var['$addr'].upper()
-        continue
-    
-      #find veriable usage
-      m = re.search('\$\S+', l)
-      while m:
-        vu = m.group(0)
-        if vu in var.keys():
-          l = re.sub("\\"+vu,var[vu], l)
-        else:
-          print 'Error: unknown variable',vu,'in',mname
-          return
-        m = re.search('\$\S+', l)
-      
-      if l in macro.keys():
-        play_macro( l, elm )
-        continue
-        
-      print elm.cmd(l)
-    
-    stack.remove(mname)
-
 def print_help():
     """
     [h]elp                 - this help
@@ -210,7 +167,6 @@ def print_help():
     for m in macro.keys():
       print '  '+m
     print
-    
 
 def optParser():
   '''Parsing of command line parameters. User should define at least com port name'''
@@ -298,7 +254,6 @@ def optParser():
     mod_globals.opt_cfc0      = options.cfc
     mod_globals.opt_n1c       = options.n1c
     auto_dia                  = options.dia
-
 
 class FileChooser():
     lay = '''<?xml version="1.0" encoding="utf-8"?>
@@ -444,6 +399,217 @@ class FileChooser():
             finally:
                 self.droid.fullDismiss()
 
+def play_macro(mname, elm):
+    global macro
+    global var
+    global stack
+
+    if mname in stack:
+        print 'Error: recursion prohibited:', mname
+        return
+    else:
+        stack.append(mname)
+
+    for l in macro[mname]:
+
+        if l in macro.keys():
+            play_macro(l, elm)
+            continue
+
+        proc_line( l, elm )
+
+    stack.remove(mname)
+
+def bit_cmd( l, elm, fnc='set_bits' ):
+
+    error_msg = '''ERROR: command should have 5 parameters: <lid> <rsp_len> <offset> <hex mask> <hex value>"
+        <lid> - ECUs local identifier. Length should be 2 simbols for KWP or 4 for CAN
+        <rsp_len> - lengt of command response including positive response bytes, equals MinBytes from ddt db
+        <offset> - offeset in bytes to first changed byte (starts from 1 not 0) 
+        <hex mask> - bit mask for changed bits, 1 - changable, 0 - untachable
+        <hex value> - bit value
+    <hex mask> and <hex value> should have equal length
+    
+    '''
+
+    if fnc not in ['set_bits','xor_bits','exit_if','exit_if_not']:
+        print "\nERROR: Unknown function\n"
+        return
+
+    par = l.strip().split(' ')
+    if len(par)!=5:
+        print error_msg
+        return
+
+
+    try:
+        lid = par[0].strip()
+        lng = int(par[1].strip())
+        off = int(par[2].strip())-1
+        mask = par[3].strip()
+        val = par[4].strip()
+    except:
+        print error_msg
+        return
+
+    if len(lid) not in [2,4] or (len(mask)!=len(val)) or off<0 or off>lng:
+        print error_msg
+        return
+
+    if len(lid)==2: #KWP
+        rcmd = '21'+lid
+    else: #CAN
+        rcmd = '22' + lid
+
+    rsp = elm.cmd(rcmd)
+    rsp = rsp.replace(' ','')[:lng*2].upper()
+
+    print "read  value:",rsp
+
+    if len(rsp) != lng * 2:
+        print '\nERROR: Length is unexpected\n'
+        return
+
+    if not all(c in string.hexdigits for c in rsp):
+        print '\nERROR: Wrong simbol in response\n'
+        return
+
+    pos_rsp = ('6'+rcmd[1:]).upper()
+    if not rsp.startswith(pos_rsp):
+        print '\nERROR: Not positive response\n'
+        return
+
+    diff = 0
+    i = 0
+    while i<len(mask)/2:
+        c_by = int(rsp[(off+i)*2:(off+i)*2+2],16)
+        c_ma = int(mask[i*2:i*2+2],16)
+        c_va = int(val[i*2:i*2+2],16)
+
+        if fnc == 'xor_bits':
+            n_by = c_by ^ (c_va & c_ma)
+        elif fnc == 'set_bits':
+            n_by = (c_by & ~c_ma) | c_va
+        else:
+            if (c_by & c_ma) != (c_va & c_ma):
+                diff += 1
+            i += 1
+            continue
+
+        str_n_by = hex(n_by & 0xFF).upper()[2:].zfill(2)
+
+        n_rsp = rsp[0:(off+i)*2] + str_n_by + rsp[(off+i+1)*2:]
+        rsp = n_rsp
+        i += 1
+
+    if fnc == 'exit_if':
+        if diff==0:
+            print "\n Match. Exit \n"
+            sys.exit()
+        else:
+            print "\n Not match. Continue \n"
+            return
+
+    if fnc == 'exit_if_not':
+        if diff!=0:
+            print "\n Not match. Exit \n"
+            sys.exit()
+        else:
+            print "\n Match. Continue \n"
+            return
+
+    if rsp[:2]=='61':
+        wcmd = '3B'+rsp[2:]
+    elif rsp[:2]=='62':
+        wcmd = '2E'+rsp[2:]
+
+    print "write value:", wcmd
+    print elm.cmd(wcmd)
+
+def proc_line( l, elm ):
+    global macro
+    global var
+    global cmd_delay
+
+
+    if '#' in l:
+        l = l.split('#')[0]
+
+    l = l.strip()
+
+    if len(l) == 0:
+        print
+        return
+
+    if l in ['q', 'quit', 'e', 'exit', 'end']:
+        sys.exit()
+
+    if l in ['h', 'help', '?']:
+        print_help()
+        return
+
+    if l in macro.keys():
+        play_macro(l, elm)
+        return
+
+    m = re.search('\$\S+\s*=\s*\S+', l)
+    if m:
+        # find variable definition
+        r = m.group(0).replace(' ', '').replace('\t', '')
+        rl = r.split('=')
+        var[rl[0]] = rl[1]
+        if rl[0] == '$addr':
+            if var['$addr'].upper() in mod_elm.dnat.keys():
+                var['$txa'] = mod_elm.dnat[var['$addr'].upper()]
+                var['$rxa'] = mod_elm.snat[var['$addr'].upper()]
+                elm.currentaddress = var['$addr'].upper()
+        return
+
+    # find veriable usage
+    m = re.search('\$\S+', l)
+    while m:
+        vu = m.group(0)
+        if vu in var.keys():
+            l = re.sub("\\" + vu, var[vu], l)
+        else:
+            print 'Error: unknown variable', vu, 'in', mname
+            return
+        m = re.search('\$\S+', l)
+
+    l_parts = l.split()
+    if len(l_parts) > 0 and l_parts[0] in ['wait', 'sleep']:
+        try:
+            time.sleep(int(l_parts[1]))
+            return
+        except:
+            pass
+
+    if len(l_parts) > 0 and l_parts[0] in ['delay']:
+        cmd_delay = int(l_parts[1])
+        return
+
+    if l.lower().startswith('set_bits'):
+        bit_cmd( l.lower()[8:], elm, fnc='set_bits' )
+        return
+
+    if l.lower().startswith('xor_bits'):
+        bit_cmd( l.lower()[8:], elm, fnc='xor_bits' )
+        return
+
+    if l.lower().startswith('exit_if_not'):
+        bit_cmd( l.lower()[11:], elm, fnc='exit_if_not' )
+        return
+
+    if l.lower().startswith('exit_if'):
+        bit_cmd( l.lower()[7:], elm, fnc='exit_if' )
+        return
+
+    print elm.cmd(l)
+
+    if cmd_delay>0:
+        print '# delay:', cmd_delay
+        time.sleep(cmd_delay)
+
 
 def main():
 
@@ -463,7 +629,7 @@ def main():
     #debug
     #mod_globals.opt_demo = True
 
-    # disable CAN auto-formatting
+    # disable auto flow control
     mod_globals.opt_cfc0 = True
     
     print 'Opening ELM'
@@ -476,6 +642,8 @@ def main():
 
     if auto_dia:
         fname = FileChooser().choose()
+        #debug
+        #fname = './macro/test/test.cmd'
         if len(fname)>0:
             f = open(fname, 'rt')
             cmd_lines = f.readlines()
@@ -497,53 +665,14 @@ def main():
                 l = cmd_lines[cmd_ref].strip()
                 cmd_ref += 1
             else:
-                l = "exit"
+                cmd_lines = []
+                l = "# end of command file"
             print l
 
-        if '#' in l:
-            l = l.split('#')[0]
-
-        l = l.strip()
-
-        if len(l)==0:
-            continue
-
-        if l in ['q', 'quit', 'e', 'exit', 'end']:
-            break
-
-        if l in ['h', 'help', '?']:
-            print_help ()
-            continue
-
-        l_parts = l.split()
-        if len(l_parts)>0 and l_parts[0] in ['wait','sleep']:
-            try:
-                time.sleep(int(l_parts[1]))
-                continue
-            except:
-                pass
-
-        if l in macro.keys():
-            play_macro( l, elm )
-            continue
-
-        m = re.search('\$\S+\s*=\s*\S+', l)
-        if m:
-          # variable definition
-          r = m.group(0).replace(' ', '').replace('\t', '')
-          rl = r.split('=')
-          var[rl[0]]=rl[1]
-          if rl[0]=='$addr':
-            if var['$addr'].upper() in mod_elm.dnat.keys():
-              var['$txa'] = mod_elm.dnat[var['$addr'].upper()]
-              var['$rxa'] = mod_elm.snat[var['$addr'].upper()]
-              elm.currentaddress = var['$addr'].upper()
-          continue
-
-        print elm.cmd(l)
+        proc_line( l, elm )
 
 if __name__ == '__main__':
-  main()
+    main()
 
 
 

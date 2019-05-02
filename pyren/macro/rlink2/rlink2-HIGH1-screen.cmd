@@ -5,9 +5,14 @@ can500  # init can macro
 
 1003
 
+# check if it is rlink2
+exit_if_not F18A 6 4 FFFFFF 434150
+
 # HIGH 1 768x1024
 2E2303032802131303003C000004500014001E001E040011C5002C006967
 
 wait 2
 # reload rlink2
 1101
+
+exit

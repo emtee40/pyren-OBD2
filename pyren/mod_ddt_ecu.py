@@ -685,7 +685,146 @@ class DDTECU():
     
     return hexval
 
-  def packValues( self, requestName, iValues ): 
+  def getParamExtr(self, parName, iValues, dValues ):
+
+    result = '\nTerminal command hint\n\n'
+
+    # get DataItem instance
+    if parName not in self.datas.keys():
+      return 'Error finding datas'
+
+    # get data
+    d = self.datas[parName]
+
+    # finding read request
+    rr = None
+    for r in self.requests.values():
+      if parName in r.ReceivedDI.keys() and r.SentBytes[:2] in ['21','22']:
+        rr = r
+        break
+
+    rcm = rr.SentBytes[:2]
+    lid = r.SentBytes[2:].upper()
+
+    if rcm == '21':
+      wcm = '3B' + lid
+    else:
+      wcm = '2E' + lid
+
+    # finding write request
+    wr = None
+    for r in self.requests.values():
+      if parName in r.SentDI.keys() and r.SentBytes.upper().startswith(wcm):
+        wr = r
+        break
+
+    if  rr==None:
+      return "Didn't find command for DataRead"
+
+    if  wr==None:
+      result += "Didn't find command for DataWrite\n\n"
+
+    rdi = rr.ReceivedDI[parName]
+    if wr!=None:
+      sdi = wr.SentDI[parName]
+
+      if rr.MinBytes != len(wr.SentBytes) / 2:
+        result += "Commands for DataRead and DataWrite have different length"
+
+      if rdi.FirstByte!=sdi.FirstByte or rdi.BitOffset!=sdi.BitOffset or rdi.Endian!=sdi.Endian:
+        result += "Data not in the same place in DataRead and DataWrite"
+
+    # get value
+    if d.Name in iValues.keys():
+      value = iValues[d.Name].get().strip()
+    elif d.Name in dValues.keys():
+      value = dValues[d.Name].get().strip()
+    else:
+      value = 0
+    value = self.getValueFromInput(d, value)
+
+    # prepare parameters for extraction
+    littleEndian = True if rdi.Endian == "Little" else False
+    sb = rdi.FirstByte - 1
+    bits = d.BitsCount
+    sbit = rdi.BitOffset
+    bytes = (bits + sbit - 1) / 8 + 1
+    if littleEndian:
+      lshift = sbit
+    else:
+      lshift = ((bytes + 1) * 8 - (bits + sbit)) % 8
+
+    # shift value on bit offset
+    try:
+      val = int(value, 16)
+    except:
+      return 'ERROR: Wrong HEX value in parametr (%s) : "%s"' % (d.Name, value)
+    val = (val & (2 ** bits - 1)) << lshift
+    value = hex(val)[2:]
+    # remove 'L'
+    if value[-1:].upper() == 'L':
+      value = value[:-1]
+    # add left zero if need
+    if len(value) % 2:
+      value = '0' + value
+
+    # check hex
+    if value.upper().startswith('0X'): value = value[2:]
+    value = value.zfill(bytes * 2).upper()
+    if not all(c in string.hexdigits for c in value) and len(value) == bytes * 2:
+      return 'ERROR: Wrong value in parametr:%s (it should have %d bytes)' % (d.Name, d.BytesCount)
+
+    mask = (2 ** bits - 1) << lshift
+    # remove '0x'
+    hmask = hex(mask)[2:].upper()
+    # remove 'L'
+    if hmask[-1:].upper() == 'L':
+      hmask = hmask[:-1]
+    hmask = hmask[-bytes * 2:].zfill(bytes * 2)
+
+    func_params = ' ' + lid + ' ' + str(rr.MinBytes) + ' ' + str(rdi.FirstByte) + ' ' + hmask + ' ' + value + '\n'
+
+    for f in ['exit_if','exit_if_not']:
+      result += (f + func_params)
+    if wr!=None:
+      for f in ['set_bits', 'xor_bits']:
+        result += (f + func_params)
+
+    return result
+
+  def getValueFromInput(self, d, value ):
+
+    # list
+    if len(d.List.keys()) and ':' in value:
+      value = value.split(':')[0]
+
+    # scaled
+    if d.Scaled:
+      # if there is units then remove them
+      if ' ' in value:
+        value = value.split(' ')[0]
+      # check 0x
+      if value.upper().startswith('0X'):
+        value = value[2:]
+      else:  # calculate reverse formula
+        if not all((c in string.digits or c == '.' or c == ',' or c == '-' or c == 'e' or c == 'E') for c in value):
+          return 'ERROR: Wrong value in parametr:%s (it should have %d bytes), be decimal or starts with 0x for hex' % (
+          d.Name, d.BytesCount)
+        flv = (float(value) * float(d.DivideBy) - float(d.Offset)) / float(d.Step)
+        value = hex(int(flv))
+
+    # ascii
+    if d.BytesASCII:
+      hst = ''
+      if len(value)<(d.BitsCount/8):
+        value += ' '*(d.BitsCount/8 - len(value))
+      for c in value:
+        hst = hst + hex(ord(c))[2:].zfill(2)
+      value = hst
+
+    return value
+
+  def packValues( self, requestName, iValues ):
     ''' pack values from iValues to command                            '''
     ''' return string                                                  '''
     ''' if cathe the error then return string begining with ERROR: word'''
@@ -709,31 +848,32 @@ class DDTECU():
       
       #get value  
       value = iValues[d.Name].get().strip()
+      value = self.getValueFromInput( d, value )
       
-      # list
-      if len(d.List.keys()) and ':' in value:
-        value = value.split(':')[0]
-        
-      # scaled
-      if d.Scaled:
-        #if there is units then remove them
-        if ' ' in value:
-          value = value.split(' ')[0]
-        #check 0x
-        if value.upper().startswith('0X'):
-          value = value[2:]
-        else:  #calculate reverse formula
-          if not all((c in string.digits or c=='.' or c==',' or c=='-' or c=='e' or c=='E') for c in value):
-            return 'ERROR: Wrong value in parametr:%s (it should have %d bytes), be decimal or starts with 0x for hex' % (d.Name, d.BytesCount)
-          flv = (float( value )*float(d.DivideBy) - float(d.Offset))/float(d.Step)
-          value = hex(int(flv))
-        
-      # ascii 
-      if d.BytesASCII:
-        hst = ''
-        for c in value:
-          hst = hst + hex(ord(c))[2:].zfill(2)
-        value = hst
+      ## list
+      #if len(d.List.keys()) and ':' in value:
+      #  value = value.split(':')[0]
+      #
+      ## scaled
+      #if d.Scaled:
+      #  #if there is units then remove them
+      #  if ' ' in value:
+      #    value = value.split(' ')[0]
+      #  #check 0x
+      #  if value.upper().startswith('0X'):
+      #    value = value[2:]
+      #  else:  #calculate reverse formula
+      #    if not all((c in string.digits or c=='.' or c==',' or c=='-' or c=='e' or c=='E') for c in value):
+      #      return 'ERROR: Wrong value in parametr:%s (it should have %d bytes), be decimal or starts with 0x for hex' % (d.Name, d.BytesCount)
+      #    flv = (float( value )*float(d.DivideBy) - float(d.Offset))/float(d.Step)
+      #    value = hex(int(flv))
+      #
+      ## ascii
+      #if d.BytesASCII:
+      #  hst = ''
+      #  for c in value:
+      #    hst = hst + hex(ord(c))[2:].zfill(2)
+      #  value = hst
 
       #prepare parameters for extraction
       littleEndian = True if sdi.Endian=="Little" else False

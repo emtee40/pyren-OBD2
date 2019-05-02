@@ -854,14 +854,17 @@ class DDTScreen (tk.Frame):
             closest = tag
         else:
             closest = self.tObj[self.ddt.find_closest (event.x, event.y)[0]]
+
+        p = self.decu.getParamExtr(closest, self.iValue, self.dValue )
         
         d = str (self.decu.datas[closest])
         r = ''
         if closest in self.decu.req4data.keys () and \
                         self.decu.req4data[closest] in self.decu.requests.keys ():
             r = str (self.decu.requests[self.decu.req4data[closest]])
+
         
-        xText = d + '\n' + '*' * 50 + '\n' + r
+        xText = d + '\n' + '*' * 50 + '\n' + r + '\n' + '*' * 50 + '\n' + p
         dialog = InfoDialog (self.root, xText)
         self.root.wait_window (dialog.top)
     
