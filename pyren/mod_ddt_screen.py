@@ -188,7 +188,7 @@ class DDTScreen (tk.Frame):
         self.root.geometry ("1024x768")
         tk.Frame.__init__ (self, self.root)
         self.root.bind ('<plus>', self.fontUp)
-        self.root.bind ('<=>', self.fontUp)
+        self.root.bind ('<equal>', self.fontUp)
         self.root.bind ('<minus>', self.fontDown)
         
         # self.root.wm_attributes('-fullscreen', 1)

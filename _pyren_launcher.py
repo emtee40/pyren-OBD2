@@ -401,7 +401,7 @@ if osname != 'android':
         def __init__(self):
             self.save = settings()
             self.root = tk.Tk()
-            self.root.option_add('*Dialog.msg.font', 'Courier New 12')
+            self.root.option_add('*Dialog.msg.font', 'Courier\ New 12')
             self.root.geometry("500x500")
             tk.Frame.__init__(self, self.root)
 
