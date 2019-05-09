@@ -142,7 +142,7 @@ class Port:
     kaLock = False
     rwLock = False
     lastReadTime = 0
-    ka_timer = None
+    #ka_timer = None
     
     atKeepAlive = 2  # period of sending AT during inactivity
     
@@ -153,14 +153,18 @@ class Port:
         portName = portName.strip ()
         
         if re.match (r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$", portName):
-            self.ipaddr, self.tcpprt = portName.split (':')
-            self.tcpprt = int (self.tcpprt)
-            self.portType = 1
-            self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-            self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            self.hdr.settimeout(3)
-            self.hdr.connect ((self.ipaddr, self.tcpprt))
-            self.hdr.setblocking (True)
+            try:
+                self.ipaddr, self.tcpprt = portName.split (':')
+                self.tcpprt = int (self.tcpprt)
+                self.portType = 1
+                self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+                self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                self.hdr.settimeout(3)
+                self.hdr.connect ((self.ipaddr, self.tcpprt))
+                self.hdr.setblocking (True)
+            except:
+                print " \n\nERROR: Can not connect to WiFi ELM\n\n"
+                pass
         elif mod_globals.os == 'android' and portName == 'bt':
             self.portType = 2
             self.droid = android.Android ()
@@ -195,8 +199,9 @@ class Port:
         #self.elm_at_KeepAlive ()
     
     def __del__(self):
-        if self.ka_timer:
-            self.ka_timer.cancel ()
+        pass
+        #if self.ka_timer:
+        #    self.ka_timer.cancel ()
 
     def reinit(self):
         '''
@@ -376,8 +381,8 @@ class Port:
         # stop any read/write
         self.rwLock = False
         self.kaLock = False
-        if self.ka_timer:
-            self.ka_timer.cancel ()
+        #if self.ka_timer:
+        #    self.ka_timer.cancel ()
         
         print "Changing baud rate to:", boudrate,
         
@@ -567,8 +572,8 @@ class ELM:
         if not mod_globals.opt_demo:
             print '*' * 40
             print '*       RESETTING ELM'
-            if self.port.ka_timer:
-                self.port.ka_timer.cancel ()
+            #if self.port.ka_timer:
+            #    self.port.ka_timer.cancel ()
             self.port.write ("atz\r")
             self.port.atKeepAlive = 0
             if self.run_allow_event:
