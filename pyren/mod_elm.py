@@ -164,7 +164,8 @@ class Port:
                 self.hdr.setblocking (True)
             except:
                 print " \n\nERROR: Can not connect to WiFi ELM\n\n"
-                pass
+                mod_globals.opt_demo = True
+                sys.exit()
         elif mod_globals.os == 'android' and portName == 'bt':
             self.portType = 2
             self.droid = android.Android ()
@@ -511,7 +512,7 @@ class ELM:
     error_can = 0
     
     response_time = 0
-    
+
     buff = ""
     currentprotocol = ""
     currentsubprotocol = ""
@@ -1499,7 +1500,13 @@ class ELM:
         Fn = len (raw_command)  # Number of frames
 
         if Fn > 1 or len(raw_command[0])>15: # set elm timeout to 300ms for first response
-          self.send_raw('ATST4B')
+            # corrected timeout  RT * 1000ms / 4ms / 2 (on a half of RT)
+            corr_tout = int( 75 - (self.response_time * 125) )
+            if corr_tout > 0x20:
+                cmdTxt = 'ATST' + hex(corr_tout)[-2:].zfill(2)
+                self.send_raw(cmdTxt)
+            else: # it seems too long roundtrip
+                self.send_raw('ATST20')
 
         while Fc < Fn:
 
@@ -1723,13 +1730,15 @@ class ELM:
             self.error_rx += 1
         if "CAN ERROR" in self.buff:
             self.error_can += 1
-        
-        self.response_time = ((self.response_time * 9) + (tc - tb)) / 10
-        
+
+        roundtrip = tc - tb
+
+        self.response_time = ((self.response_time * 9) + roundtrip) / 10
+
         # save responce to log
         if self.lf != 0:
             # tm = str(time.time())
-            self.lf.write ("<[" + str (round (tc - tb, 3)) + "]" + self.buff + "\n")
+            self.lf.write ("<[" + str (round (roundtrip, 3)) + "]" + self.buff + "\n")
             self.lf.flush ()
         
         return self.buff

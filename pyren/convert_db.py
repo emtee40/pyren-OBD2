@@ -15,7 +15,10 @@ if __name__ == "__main__":
     if len (sys.argv) < 2:
         print "Usage : convert_db.py [path/to/GenAppli]"
         exit ()
-    
+
+    if not os.path.exists('./cache'):
+        os.makedirs('./cache')
+
     inputpath = sys.argv[1]
     ecudir = os.path.join (inputpath, "EcuRenault")
     vehicledir = os.path.join (inputpath, "Vehicles")

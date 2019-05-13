@@ -183,7 +183,7 @@ class DDTScreen (tk.Frame):
         else:
             self.root = tk.Tk()
 
-        self.root.option_add ('*Dialog.msg.font', 'Courier New 12')
+        self.root.option_add ('*Dialog.msg.font', 'Courier\ New 12')
         # self.root.overrideredirect(True)
         self.root.geometry ("1024x768")
         tk.Frame.__init__ (self, self.root)

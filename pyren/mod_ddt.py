@@ -929,7 +929,7 @@ class DDTLauncher():
         ''' save responces from all 21xx, 22xxxx commands '''
 
         self.pdlg = tk.Toplevel()
-        self.pdlg.option_add ('*Dialog.msg.font', 'Courier New 12')
+        self.pdlg.option_add ('*Dialog.msg.font', 'Courier\ New 12')
         self.pdlg.geometry("256x100")
         self.pdlg.title("Saving dump")
         self.pdlg.configure(background="#d9d9d9")
@@ -1135,7 +1135,7 @@ class DDTLauncher():
             return
 
         self.ecudlg = tk.Toplevel()
-        self.ecudlg.option_add ('*Dialog.msg.font', 'Courier New 12')
+        self.ecudlg.option_add ('*Dialog.msg.font', 'Courier\ New 12')
         #ecudlg.geometry("256x256")
         self.ecudlg.title("Ecu settings")
         self.ecudlg.configure(background="#d9d9d9")
