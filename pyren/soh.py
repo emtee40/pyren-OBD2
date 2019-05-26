@@ -325,7 +325,7 @@ class tl:
         self.v_volt.set("00.00V")
         self.l_volt = tk.Label(self.FR1, textvariable=self.v_volt, bg = "#d9d9d9", fg='black')
         self.l_volt.place(relx=0.55, rely=0.0, height=55, width=130)
-        self.l_volt.config(font=("Courier 34" ))
+        self.l_volt.config(font=("Courier 28" ))
 
         self.Label2 = tk.Label(self.FR1)
         self.Label2.place(relx=0.23, rely=0.583, height=14, width=55)
