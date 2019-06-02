@@ -407,8 +407,14 @@ def getVIN( de, elm ):
     else:
       rsp = elm.request( req = '2181', positive = '61', cache = False )[6:56]
       
-    vin = rsp.replace(' ','').decode('HEX')
+    try:
+        vin = rsp.replace(' ','').decode('HEX')
+    except:
+        continue
     
+    #debug
+    print e['dst'],' : ', vin
+
     if len(vin)==17:
       m_vin[vin] = ''
       

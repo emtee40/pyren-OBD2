@@ -207,8 +207,6 @@ class Port:
     def reinit(self):
         '''
         Need for wifi adapters with short connection timeout
-
-        :return:
         '''
         if self.portType != 1: return
 
@@ -217,6 +215,9 @@ class Port:
         self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.hdr.connect ((self.ipaddr, self.tcpprt))
         self.hdr.setblocking (True)
+
+        self.write("AT\r")
+        self.expect(">",1)
 
     '''
     def elm_at_KeepAlive(self):
@@ -296,7 +297,12 @@ class Port:
         
         try:
             if self.portType == 1:
-                return self.hdr.sendall (data)
+                try:
+                    rcv_bytes = self.hdr.sendall(data)
+                except:
+                    self.reinit()
+                    rcv_bytes = self.hdr.sendall(data)
+                return rcv_bytes
             elif self.portType == 2:
                 # return self.droid.bluetoothWrite(data , self.btcid)
                 return self.droid.bluetoothWrite (data)
@@ -1033,8 +1039,8 @@ class ELM:
                 self.lf.flush ()
                 
             # send keepalive
-            if not mod_globals.opt_demo:
-              self.port.reinit() #experimental
+            #if not mod_globals.opt_demo:
+            #  self.port.reinit() #experimental
             self.send_cmd (self.startSession)
             self.lastCMDtime = time.time ()  # for not to get into infinite loop
         
@@ -1045,21 +1051,9 @@ class ELM:
             rep_count = rep_count - 1
             no_negative_wait_response = True
             
-            # debug
-            # print 'serviceDelay:', serviceDelay
-            # servDelay = int (serviceDelay)
-            # if servDelay >= 200:
-            #     ST = servDelay / 4
-            #     if ST > 255: ST = 255
-            #     self.send_raw ('at at 0')
-            #     self.send_raw ('at st ' + hex (ST)[2:])
-            #     cmdrsp = self.send_cmd (command)
-            #     self.send_raw ('at at 1')
-            # else:
-            #     cmdrsp = self.send_cmd (command)
-            cmdrsp = self.send_cmd (command)
             self.lastCMDtime = tc = time.time ()
-            
+            cmdrsp = self.send_cmd (command)
+
             # if command[0:2] not in AllowedList:
             #  break
 
@@ -1078,8 +1072,8 @@ class ELM:
                 elif nr in ['78']:
                     self.send_raw ('at at 0')
                     self.send_raw ('at st ff')
-                    cmdrsp = self.send_cmd (command)
                     self.lastCMDtime = tc = time.time ()
+                    cmdrsp = self.send_cmd (command)
                     self.send_raw ('at at 1')
                     break
             
