@@ -1067,7 +1067,7 @@ def main():
     c_max = Parameters[i].max
     c_unit = Parameters[i].unit
     
-    line = '"[PR]%s","%s","%s","%s","%s","%s","%s","%s"\n'%(c_name,c_short,c_pid,c_equ,c_min,c_max,c_unit,ddd)
+    line = '"PR_%s","%s","%s","%s","%s","%s","%s","%s"\n'%(c_name,c_short,c_pid,c_equ,c_min,c_max,c_unit,ddd)
     cf.write( line.encode('utf-8') )
 
   memIt = []
@@ -1102,7 +1102,7 @@ def main():
     c_max = '0'
     c_unit = ''
     
-    line = '"[ST]%s","%s","%s","%s","%s","%s","%s","%s"\n'%(c_name,c_short,c_pid,c_equ,c_min,c_max,c_unit,ddd)
+    line = '"ST_%s","%s","%s","%s","%s","%s","%s","%s"\n'%(c_name,c_short,c_pid,c_equ,c_min,c_max,c_unit,ddd)
     cf.write( line.encode('utf-8') )
 
   cf.close()

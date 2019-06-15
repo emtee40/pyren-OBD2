@@ -4,6 +4,7 @@
 import sys, os
 import operator
 import ast
+import gc
 
 import mod_ddt_utils
 import mod_utils
@@ -535,8 +536,13 @@ class DDTLauncher():
 
         # print self.elm
         if self.elm != None:
-            del(self.elm)
-            self.elm = None
+            try:
+                self.elm.port.hdr.close()
+                del(self.elm)
+                self.elm = None
+                gc.collect()
+            except:
+                pass
 
         self.applySettings()
 

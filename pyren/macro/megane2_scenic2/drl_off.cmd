@@ -5,3 +5,6 @@ can500  # init can macro
 
 10C0
 3BA01800
+
+exit
+
