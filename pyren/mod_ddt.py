@@ -1317,9 +1317,12 @@ class DDTLauncher():
 
     def getXmlListByProj(self):
         self.v_xmlList = []
-        for t in self.eculist[self.dv_addr.get()]['targets']:
-            if self.v_proj.get().upper() in self.eculist[self.dv_addr.get()]['targets'][t]['Projects']:
-                self.v_xmlList.append(t)
+        try:
+            for t in self.eculist[self.dv_addr.get()]['targets']:
+                if self.v_proj.get().upper() in self.eculist[self.dv_addr.get()]['targets'][t]['Projects']:
+                    self.v_xmlList.append(t)
+        except:
+            pass
 
     def getDumpListByXml(self, xmlname=None):
 
