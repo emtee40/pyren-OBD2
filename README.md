@@ -75,8 +75,10 @@ You have to get the next directory tree
 |- EcuRenault               #(for CLIP mode)
 |- Location                 #(for CLIP mode)
 |- Vehicles                 #(for CLIP mode)
-|- ecus                     #(for DDT mode)
-|- graphics                 #(for DDT mode optional)
+|- DDT2000data              #(for DDT mode)
+|   |-ecus
+|   |-graphics
+|   |-vehicles
 |- pyren                    #(pyren)
 |   |- pyren.py
 ...    ...
