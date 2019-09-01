@@ -7,6 +7,7 @@ import sys
 import os.path
 import shutil
 from subprocess import call
+import zipfile
 
 '''Check files'''
 if not os.path.exists('./i12comp.exe') or not os.path.exists('./data2.cab') or not os.path.exists('./data1.hdr'):
@@ -34,6 +35,7 @@ call('i12comp.exe x -o -d -f data2.cab DiagOnCa*'.split(' '))
 call('i12comp.exe x -o -d -f data2.cab *.xml'.split(' '))  
 call('i12comp.exe x -o -d -f data2.cab *.bqm'.split(' '))  
 call('i12comp.exe x -o -d -f data2.cab *.dat'.split(' '))  
+call('i12comp.exe x -o -d -f data2.cab *.zip'.split(' '))  
 
 
 for root, dirs, files in os.walk("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]\CLIP\Data\GenAppli"):
@@ -43,6 +45,15 @@ for root, dirs, files in os.walk("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETD
 
   if len(targ)>0 and not os.path.exists(targ):
     os.makedirs(targ)  
+
+  for fil in files:
+    src = root+'\\'+fil
+    dst = targ+'\\'+fil[:-4]+fil[-4:].lower()
+    shutil.copyfile(src,dst)
+    print dst
+
+for root, dirs, files in os.walk("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1"):
+  targ = root.replace("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1",".")
 
   for fil in files:
     src = root+'\\'+fil
@@ -65,6 +76,11 @@ for root, dirs, files in os.walk("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]"):
     shutil.copyfile(src,dst)
     print dst
 
+print "Extracting BVM"
+zipfile.ZipFile(".\BvmConfig.zip").extractall('.\\')
+shutil.move(".\BVM_CONFIG", ".\BVMEXTRACTION")
+
+
 print "Deliting unused files"
 os.system('rmdir "./[Applicatif BORNEO_CLIP_RSM]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
 os.system('rmdir "./[Applicatif BORNEO_CLIP_X91]NS_NSR_PL_2___[WINDIR]__1" /S /Q') 
@@ -75,5 +91,9 @@ os.system('rmdir "./[DocDiag_CLIP_X91]NS_NSR_PL_1___[TARGETDIR]__1" /S /Q')
 os.system('rmdir "./[Update Agent]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
 os.system('rmdir "./[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
 os.system('rmdir "./[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]" /S /Q')
+os.system('rmdir "./[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1" /S /Q')
+os.system('rmdir "./BL" /S /Q')
+os.system('del "./BvmConfig.zip"')
 
 print "Done" 
+
