@@ -226,6 +226,12 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--verbose",
+      help="show verbose output (unused)",
+      dest="verb",
+      default=False,
+      action="store_true")
+
   parser.add_argument("--dialog",
       help="show dialog for selecting macro",
       dest="dia",
@@ -610,7 +616,11 @@ def proc_line( l, elm ):
         bit_cmd( l.lower()[7:], elm, fnc='exit_if' )
         return
 
-    print elm.cmd(l)
+
+    if l.lower().startswith('_'):
+        print elm.send_raw(l[1:])
+    else:
+        print elm.cmd(l)
 
     if cmd_delay>0:
         print '# delay:', cmd_delay

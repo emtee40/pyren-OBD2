@@ -727,7 +727,7 @@ class ScanEcus:
         
       if len(row['stopDiagReq'])>0:
         self.elm.cmd(row['stopDiagReq'])	#close session
-    
+
     res = ""
     for s in rrsp.split('\n'):
       dss = s.replace(' ','')
