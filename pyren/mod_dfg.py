@@ -65,7 +65,7 @@ class class_dfg:
           vehTypeCode = vh.getAttribute("vehTypeCode")
           if vehTypeCode.upper()==platform.upper():
             self.tcom = TCOM
-            break;
+            break
       self.dfgFile = '../Vehicles/DFG/DFG_'+self.tcom+'.Xml'
     else:
       vhcls = []
@@ -95,8 +95,9 @@ class class_dfg:
     try:
       DOMTree = xml.dom.minidom.parse(self.dfgFile)
     except:
-      if 'DFG_135' in self.dfgFile:
-        self.dfgFile = self.dfgFile.replace('DFG_135', 'DFG_147')
+      print "ERROR loading dfg-file"
+      #if 'DFG_135' in self.dfgFile:
+      #  self.dfgFile = self.dfgFile.replace('DFG_135', 'DFG_147')
 
     fs = DOMTree.documentElement #functionsStructure
     

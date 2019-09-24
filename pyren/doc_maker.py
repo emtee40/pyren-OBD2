@@ -703,7 +703,7 @@ def main():
   '''Main function
   
 1) if ../BVMEXTRACTION doesn't exist then  mod_globals.opt_demo=True which means that we would not guide with MTC 
-   and woudl show all aptions
+   and will show all options
 2) if not demo mode and savedVIN.txt exists and not scan then check savedVIN.txt 
    else getVIN 
 3) if len(vin)==0 then demo mode  
@@ -829,17 +829,26 @@ def main():
   #choose and load DFG
   dfg = class_dfg( platform )
 
-  if os.path.isfile(dfg.cacheFile):                   #if cache exists
-    dfg = pickle.load( open( dfg.cacheFile, "rb" ) )    #load it
-  else:                                               #else
-    dfg.loadDFG()                                       #load file
-    #pickle.dump( dfg, open( dfg.cacheFile, "wb" ) )     #and save cache
+  if dfg.tcom == '146':
+    dfg.tcom = '159'
+    dfg.dfgFile = dfg.dfgFile.replace('DFG_146', 'DFG_159')
+  elif dfg.tcom == '135':
+    dfg.tcom = '147'
+    dfg.dfgFile = dfg.dfgFile.replace('DFG_135', 'DFG_147')
+
+  dfg.loadDFG()
+
+  #if os.path.isfile(dfg.cacheFile):                   #if cache exists
+  #  dfg = pickle.load( open( dfg.cacheFile, "rb" ) )    #load it
+  #else:                                               #else
+  #  dfg.loadDFG()                                       #load file
+  #  pickle.dump( dfg, open( dfg.cacheFile, "wb" ) )     #and save cache
     
   dfg_ds = dfg.dataSet  
     
   #dfg.showMenu(zipf) 
   #try:
-  if dfg.tcom == '135' : dfg.tcom = '147'
+  #if dfg.tcom == '135' : dfg.tcom = '147'
   generateHTML( "../DocDB_"+mod_globals.opt_lang+"/DocDb"+dfg.tcom+"/SIE/", mtcdata.split(';'), VIN, dfg, date_madc)
   #except:
   #  pass
