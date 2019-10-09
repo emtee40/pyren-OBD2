@@ -445,7 +445,11 @@ def getVIN( de, elm, getFirst = False ):
     exit()
   
   if len(l_vin)<2:
-    return next(iter(l_vin))
+    try:
+        ret = next(iter(l_vin))
+    except:
+        ret = ''
+    return ret
   
   print "\nFound ",len(l_vin), " VINs\n"
     

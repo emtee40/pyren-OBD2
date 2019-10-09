@@ -497,7 +497,6 @@ def f_functions( dfg_dom, ff, of, pref, domname, path ):
         of.remove( l )   
         cop = et.SubElement(dom_dtc_o, 'p')
         et.SubElement(cop, 'a', href='#'+lid).text = title
-        print lid,';',title
         dom_t.append(nel)
   
   cop = et.SubElement(dom_o, 'p')
