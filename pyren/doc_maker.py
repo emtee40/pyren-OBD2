@@ -388,9 +388,16 @@ def processXML( path, l, ff ):
   #ma = acf_MTC_compare_doc( sieconfigid, mtc )
   #if ma:  #document complines to MTC filter
 
-  title = root.find('title').text.strip()
-  if title=='': #check id documents refers to another
-    root,title = getTitleAndRef( path, ff, root, title, l )
+  try:
+    title = root.find('title').text.strip()
+  except:
+    title = ''
+
+  try:
+    if title=='': #check id documents refers to another
+      root,title = getTitleAndRef( path, ff, root, title, l )
+  except:
+    pass
   
   lid = l[:-4]
   
@@ -400,13 +407,23 @@ def processXML( path, l, ff ):
 
   if fns[4]!='000000':
     title = 'DTC'+fns[4]+' '+title
-  
+
+  dtcId = ''
+  if fns[4]!='000000' and fns[5]=='104':
+    dtcId = fns[4]
+
   #add line to bookmark
   #cop = et.SubElement(h_o, 'p')
   #coa = et.SubElement(cop, 'a', href='#'+l[:-4]).text = title
+
   nel = et.Element('div')
   et.SubElement(nel, 'hr', attrib={'id':lid})
-  et.SubElement(nel, 'a', attrib={'href':'#home'}).text = "Up"
+
+  if dtcId!='':
+    et.SubElement(nel, 'a', attrib={'href':'#home','id':dtcId}).text = "Up"
+  else:
+    et.SubElement(nel, 'a', attrib={'href':'#home'}).text = "Up"
+
   convertXML( root, nel, fns, ff, lid )
 
   return nel, lid, title
@@ -480,6 +497,7 @@ def f_functions( dfg_dom, ff, of, pref, domname, path ):
         of.remove( l )   
         cop = et.SubElement(dom_dtc_o, 'p')
         et.SubElement(cop, 'a', href='#'+lid).text = title
+        print lid,';',title
         dom_t.append(nel)
   
   cop = et.SubElement(dom_o, 'p')
@@ -604,7 +622,7 @@ def generateHTML(path, mtc, vin, dfg, date_madc ):
   h_o.append(oth_o)
 
   tree = et.ElementTree(doc)
-  tree.write('./'+vin+'.htm', encoding='UTF-8', xml_declaration=True, default_namespace=None, method='html')
+  tree.write('./doc/'+vin+'.htm', encoding='UTF-8', xml_declaration=True, default_namespace=None, method='html')
   print '\r\tDone:100%'
 
 vin_opt = ''

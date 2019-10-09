@@ -23,6 +23,7 @@ import mod_globals
 
 from xml.dom.minidom        import parse
 from datetime               import datetime
+from mod_utils              import show_doc
 import xml.dom.minidom
 import xml.etree.ElementTree as et
 import struct
@@ -375,13 +376,22 @@ class ECU:
         #if mod_globals.os == 'android':
         #  csv_filename = csv_filename.encode("ascii","ignore")
         csvf = open("./csv/"+pyren_encode(csv_filename), "wt")
-                
+
+    DTCpos = path.find('DTC')
+    if DTCpos > 0:
+      IDstr = '#' + path[DTCpos+3:DTCpos + 9]
+    else:
+      IDstr = ''
+
+    #debug
+    #show_doc(self.ecudata['dst'], IDstr)
+
     kb = KBHit()
 
     tb = time.time()   #time of begining 
 
     if len(datarefs)==0 and 'DE' not in path: return
-    
+
     page = 0
     
     while(True):
@@ -455,9 +465,9 @@ class ECU:
           newScreen = newScreen + pyren_encode( l ) + '  \n'
          
         if pages>0:
-          newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] Press page number to switch or any other to exit"
+          newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] N for page number H for help or any other to exit"
         else:
-          newScreen = newScreen+'\n'+"Press any key to exit"
+          newScreen = newScreen+'\n'+"Press H for help or any key to exit"
           
         print newScreen,
         sys.stdout.flush ()
@@ -478,6 +488,9 @@ class ECU:
         if (not mod_globals.opt_csv_only) and n>0 and n<=(pages+1):
           page = n-1
           clearScreen()
+          continue
+        if c in ['h','H']:
+          show_doc(self.ecudata['dst'], IDstr)
           continue
         if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
           csvline += ";" + c
@@ -579,7 +592,7 @@ class ECU:
       
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
       
-      self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path) 
+      self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path)
     
   def show_defaults_std_b(self):
     while(1):

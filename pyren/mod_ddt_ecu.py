@@ -284,17 +284,6 @@ class DDTECU():
 
     eculist = mod_ddt_utils.loadECUlist()
 
-    ##make or load eculist
-    #print "Loading eculist"
-    #eculistcache = "./cache/ddt_eculist.p"
-    #
-    #if os.path.isfile(eculistcache):                              #if cache exists
-    #  eculist = pickle.load( open( eculistcache, "rb" ) )         #load it
-    #else:                                                         #else
-    #  eculist = mod_ddt_utils.loadECUlist()                       #loading original data
-    #  if eculist == None: return                                  #return if no eculist file
-    #  pickle.dump( eculist, open( eculistcache, "wb" ) )          #and save cache
-
     mod_ddt_utils.searchddtroot()
 
     if len(mod_globals.opt_ddtxml)>0:
@@ -362,62 +351,6 @@ class DDTECU():
       for di in r.SentDI.values():
         if di.Name not in self.cmd4data.keys():
           self.cmd4data[di.Name] = r.Name
-
-  '''    
-  def loadECUlist(self):
-  
-    global eculist
-    
-    #open xml
-    if not os.path.isfile('../ecus/eculist.xml'):
-      print "No such file: ../ecus/eculist.xml"
-      return None
-
-    ns = {'ns0': 'http://www-diag.renault.com/2002/ECU',
-          'ns1': 'http://www-diag.renault.com/2002/screens'}
-
-    tree = et.parse ('../ecus/eculist.xml')
-    root = tree.getroot ()
-
-    eculist = {}
-    #print et.dump(root)
-    functions = root.findall("Function")
-    if len(functions):
-      for function in functions:
-        Address = hex(int(function.attrib["Address"])).replace("0x","").zfill(2).upper()
-        eculist[Address] = {}
-        FuncName = function.attrib["Name"]
-        targets = function.findall("Target")
-        eculist[Address]["FuncName"] = FuncName
-        eculist[Address]["targets"] = {}
-        if len(targets):
-          for target in targets:
-            href = target.attrib["href"]
-            eculist[Address]["targets"][href] = {}
-            pjc = target.findall("Projects")
-            if len(pjc)>0:
-              pjcl = [elem.tag.upper() for elem in pjc[0].iter()][1:]
-            else:
-              pjcl = []
-            eculist[Address]["targets"][href]['Projects'] = pjcl
-            ail = []
-            ais = target.findall("AutoIdents")
-            if len(ais):
-              for ai in ais:
-                AutoIdents = ai.findall("AutoIdent")
-                if len(AutoIdents):
-                  for AutoIdent in AutoIdents:
-                    air = {}
-                    air['DiagVersion'] = AutoIdent.attrib["DiagVersion"].strip()
-                    air['Supplier']    = AutoIdent.attrib["Supplier"].strip()
-                    air['Soft']        = AutoIdent.attrib["Soft"].strip()
-                    air['Version']     = AutoIdent.attrib["Version"].strip()
-                    #if len(DiagVersion)==1 : DiagVersion = '0'+DiagVersion
-                    #hash = Address+DiagVersion+Supplier+Soft+Version
-                    #eculist[hash] = href
-                    ail.append(air)
-            eculist[Address]["targets"][href]['AutoIdents'] = ail
-  '''
 
   def saveDump( self ):
     ''' save responces from all 21xx, 22xxxx commands '''

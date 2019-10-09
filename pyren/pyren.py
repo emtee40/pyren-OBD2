@@ -247,8 +247,8 @@ def main():
      
   print 'Loading ECUs list'
   se  = ScanEcus(elm)                    #Prepare list of all ecus
- 
-  SEFname = "savedEcus.p" 
+
+  SEFname = "savedEcus.p"
   if mod_globals.opt_can2:
     SEFname = "savedEcus2.p" 
 
@@ -272,7 +272,8 @@ def main():
     # Do this check every time
     se.scanAllEcus()                       #First scan of all ecus
  
-    
+  mod_globals.vin = getVIN(se.detectedEcus, elm, getFirst=True)
+
   print "Loading language "
   sys.stdout.flush()
                                          #loading language data

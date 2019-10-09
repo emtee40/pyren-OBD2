@@ -14,7 +14,14 @@ GNU General Public License for more details.
 
 import sys
 import os
+import signal
+import atexit
+import subprocess
 import mod_globals
+try:
+    import webbrowser
+except:
+    pass
 
 # Snippet from http://home.wlu.edu/~levys/software/kbhit.py
 
@@ -25,9 +32,9 @@ if os.name == 'nt':
 # Posix (Linux, OS X)
 else:
     import termios
-    import atexit
+    #import atexit
     from select import select
-    from decimal import *
+    #from decimal import *
 
 class KBHit:
     
@@ -379,14 +386,16 @@ def chkDirTree():
         os.makedirs('./dumps')
     if not os.path.exists('./macro'):
         os.makedirs('./macro')
+    if not os.path.exists('./doc'):
+        os.makedirs('./doc')
 
 
-def getVIN( de, elm ):
+def getVIN( de, elm, getFirst = False ):
   ''' getting VINs from every ECU     '''
   '''    de  - list of detected ECUs  '''
   '''    elm - reference to ELM class '''
   
-  m_vin = {}
+  m_vin = set([])
   for e in de:
   
     # init elm
@@ -406,19 +415,21 @@ def getVIN( de, elm ):
       rsp = elm.request( req = '22F190', positive = '62', cache = False )[9:59]
     else:
       rsp = elm.request( req = '2181', positive = '61', cache = False )[6:56]
-      
+
     try:
         vin = rsp.replace(' ','').decode('HEX')
     except:
         continue
     
     #debug
-    print e['dst'],' : ', vin
+    #print e['dst'],' : ', vin
 
     if len(vin)==17:
-      m_vin[vin] = ''
+      m_vin.add(vin)
+      if getFirst:
+        return vin
       
-  l_vin = m_vin.keys()
+  l_vin = m_vin
   
   if os.path.exists('savedVIN.txt'):
     with open('savedVIN.txt') as vinfile:
@@ -427,14 +438,14 @@ def getVIN( de, elm ):
         l = l.strip()
         if '#' in l: continue
         if len(l)==17:
-          l_vin.append(l.upper())
+          l_vin.add(l.upper())
 
-  if len(l_vin)==0:
+  if len(l_vin)==0 and not getFirst:
     print "ERROR!!! Can't find any VIN. Check connection"
     exit()
   
   if len(l_vin)<2:
-    return l_vin[0]
+    return next(iter(l_vin))
   
   print "\nFound ",len(l_vin), " VINs\n"
     
@@ -446,3 +457,24 @@ def DBG( tag, s ):
     if mod_globals.opt_debug and mod_globals.debug_file!=None:
         mod_globals.debug_file.write( '### ' + tag + '\n')
         mod_globals.debug_file.write( '"' + s + '"\n')
+
+def kill_server():
+    if mod_globals.doc_server_proc is None:
+        pass
+    else:
+        os.kill(mod_globals.doc_server_proc.pid, signal.SIGTERM)
+
+def show_doc( addr, id ):
+    if mod_globals.vin == '':
+        return
+
+    if mod_globals.doc_server_proc == None:
+        mod_globals.doc_server_proc = subprocess.Popen(["python", "-m", "SimpleHTTPServer", "59152"])
+        atexit.register(kill_server)
+
+    url = 'http://localhost:59152/doc/'+mod_globals.vin+'.htm'+id
+    webbrowser.open(url, new=0)
+
+
+
+

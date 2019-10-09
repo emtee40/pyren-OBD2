@@ -29,6 +29,7 @@ if __name__ == "__main__":
     fbsessionfiles += glob.glob (os.path.join (ecudir, "Sessions", "FG*.xml"))
     fgsessionfiles = glob.glob (os.path.join (ecudir, "Sessions", "SG*.xml"))
     vehiclesfiles = glob.glob (os.path.join (vehicledir, "*.xml"))
+    dfgfiles = glob.glob (os.path.join (vehicledir, "DFG", "*.xml"))
     locationsfiles = glob.glob (os.path.join (locationdir, "*.bqm"))
     scnerariosfiles = glob.glob (os.path.join (ecudir, "Scenarios", "*.xml"))
     
@@ -44,7 +45,13 @@ if __name__ == "__main__":
             f = open (vf, "r")
             data = f.read ()
             zf.writestr (os.path.join ("Vehicles", os.path.basename (vf)), str (data))
-        
+
+        for vf in dfgfiles:
+            print "Processing file ", vf
+            f = open(vf, "r")
+            data = f.read()
+            zf.writestr(os.path.join("Vehicles", "DFG", os.path.basename(vf)), str(data))
+
         for vf in ecufiles:
             print "Processing file ", vf
             f = open (vf, "r")

@@ -39,13 +39,16 @@ currentDDTscreen = None
 
 ext_cur_DTC = "000000"
 
-none_val = 'None'
+none_val = "None"
 
-mtcdir = '../MTCSAVE/VIN'
+mtcdir = "../MTCSAVE/VIN"
 
-ddtroot = '..'  # parent folder for backward compatibility. for 9n and up use ../DDT2000data
+ddtroot = ".."  # parent folder for backward compatibility. for 9n and up use ../DDT2000data
 
 os = ""
 
 language_dict = {}
 
+vin = ""
+
+doc_server_proc = None

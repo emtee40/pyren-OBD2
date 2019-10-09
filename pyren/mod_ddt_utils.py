@@ -86,7 +86,7 @@ def loadECUlist():
     eculistcache = "./cache/ddt_eculist.p"
 
     if os.path.isfile(eculistcache):  # if cache exists
-        eculist = pickle.load(open(eculistcache, "rb"))  # load it
+        eculist = pickle.load(open(eculistcache, "rb"))  # load it #dbaccess
     else:
 
         # open xml
@@ -135,7 +135,7 @@ def loadECUlist():
                                         air['Version'] = AutoIdent.attrib["Version"].strip()
                                         ail.append(air)
                         eculist[Address]["targets"][href]['AutoIdents'] = ail
-        pickle.dump(eculist, open(eculistcache, "wb"))  # and save cache
+        pickle.dump(eculist, open(eculistcache, "wb"))  # and save cache #dbaccess
 
     return eculist
 
