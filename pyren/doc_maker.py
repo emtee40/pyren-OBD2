@@ -2,6 +2,8 @@
 
 import sys, os, glob, copy
 import mod_globals
+import mod_utils
+import mod_db_manager
 from mod_optfile   import *
 from mod_scan_ecus import families as families
 from mod_dfg       import class_dfg
@@ -378,7 +380,21 @@ def convertXML(root, h_t, fns, ff, lid):
       else:
         ni = et.SubElement(h_t, 'td', attrib={'class':'row_d'})      
       convertXML( e, ni, fns, ff, lid )
-  
+
+def saveToSeparateFile(nel, dtc ):
+
+    t_doc = et.Element('html')
+    t_h_h = et.SubElement(t_doc, 'head')
+    t_h_b = et.SubElement(t_doc, 'body')
+
+    et.SubElement(t_h_h, 'meta', charset="utf-8")
+    et.SubElement(t_h_h, 'style').text = style
+
+    t_h_b.append(nel)
+
+    tree = et.ElementTree(t_doc)
+    tree.write('./doc/' + dtc + '.htm', encoding='UTF-8', xml_declaration=True, default_namespace=None, method='html')
+
 def processXML( path, l, ff ):
 
   tree = et.parse(path+l)
@@ -412,6 +428,10 @@ def processXML( path, l, ff ):
   if fns[4]!='000000' and fns[5]=='104':
     dtcId = fns[4]
 
+  dtcId_106 = ''
+  if fns[4]!='000000' and fns[5]=='106':
+    dtcId_106 = fns[4]
+
   #add line to bookmark
   #cop = et.SubElement(h_o, 'p')
   #coa = et.SubElement(cop, 'a', href='#'+l[:-4]).text = title
@@ -425,6 +445,9 @@ def processXML( path, l, ff ):
     et.SubElement(nel, 'a', attrib={'href':'#home'}).text = "Up"
 
   convertXML( root, nel, fns, ff, lid )
+
+  if dtcId_106 != '' and mod_globals.opt_sd:
+      saveToSeparateFile(nel, dtcId_106)
 
   return nel, lid, title
   
@@ -665,6 +688,11 @@ def optParser():
       dest="lang",
       default="RU")
 
+  parser.add_argument("--sd",
+      help="separate doc files",
+      dest="sd",
+      default=False)
+
   parser.add_argument("--cfc",
       help="turn off automatic FC and do it by script",
       dest="cfc",
@@ -714,6 +742,7 @@ def optParser():
   mod_globals.opt_scan      = options.scan
   mod_globals.opt_si        = options.si
   mod_globals.opt_cfc0      = options.cfc
+  mod_globals.opt_sd        = options.sd
   vin_opt                   = options.vinnum
     
 def main():
@@ -731,11 +760,8 @@ def main():
   
   optParser()
   
-  '''Check direcories'''
-  if not os.path.exists('./cache'):
-    os.makedirs('./cache')  
-  if not os.path.exists('../MTCSAVE'):
-    os.makedirs('../MTCSAVE')  
+  mod_utils.chkDirTree()
+  mod_db_manager.find_DBs()
 
   '''If MTC database does not exists then demo mode'''
   if  not os.path.exists('../BVMEXTRACTION'):

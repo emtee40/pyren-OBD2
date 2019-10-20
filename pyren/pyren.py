@@ -2,6 +2,7 @@
 
 import sys, os
 import mod_globals
+import mod_db_manager
 
 mod_globals.os = os.name
 
@@ -67,7 +68,7 @@ def optParser():
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
-    version="pyRen Version 0.9.p",
+    version="pyRen Version 0.9.q",
     description = "pyRen - python program for diagnostic Renault cars"
   )
   
@@ -90,6 +91,11 @@ def optParser():
       help="language option {RU[default],GB,FR,IT,...}",
       dest="lang",
       default="RU")
+
+  parser.add_argument("--sd",
+      help="separate doc files",
+      dest="sd",
+      default=False)
 
   parser.add_argument("-m",
       help="number of car model",
@@ -223,6 +229,7 @@ def optParser():
     mod_globals.opt_exp       = options.exp
     mod_globals.opt_dump      = options.dump
     mod_globals.opt_can2      = options.can2
+    mod_globals.opt_sd        = options.sd
     if options.dev=='' or len(options.dev)!=4 or options.dev[0:2]!='10':
       mod_globals.opt_dev       = False
       mod_globals.opt_devses    = '1086'   
@@ -237,6 +244,7 @@ def main():
   optParser()
 
   mod_utils.chkDirTree()
+  mod_db_manager.find_DBs()
 
   print 'Opening ELM'
   elm = ELM( mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log )
@@ -276,28 +284,15 @@ def main():
 
   print "Loading language "
   sys.stdout.flush()
-                                         #loading language data
-  lang = optfile("../Location/DiagOnCan_"+mod_globals.opt_lang+".bqm",True)
+  # loading language data
+  lang = optfile("Location/DiagOnCAN_" + mod_globals.opt_lang + ".bqm", True)
   mod_globals.language_dict = lang.dict
   print "Done"
-  
-  #check cache version
-  if not os.path.isfile("./cache/version09k.txt"):
-    #if the cache has old version then we should clear it
-    for root, dirs, files in os.walk("./cache"):
-      for sfile in files:
-        if sfile.startswith("ver") or sfile.startswith("FG") or sfile.startswith("ddt"):
-          full_path = os.path.join("./cache", sfile)
-          os.remove(full_path)
-    #create new version file
-    verfile = open( "./cache/version09k.txt", "wb" )
-    verfile.write("Do not remove me if you have v0.9.k or above.\n")
-    verfile.close()
 
   mod_ddt_utils.searchddtroot()
 
   #check if DDT present
-  if os.path.exists(mod_globals.ddtroot+'/ecus') and mod_globals.os != 'android':
+  if os.path.exists(os.path.join(mod_globals.ddtroot, '/ecus')) and mod_globals.os != 'android':
     mod_globals.opt_ddt = True  
 
   while( 1 ):

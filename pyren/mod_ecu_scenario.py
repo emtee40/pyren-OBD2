@@ -4,6 +4,7 @@ import os
 import re
 
 import mod_globals
+import mod_db_manager
 import mod_utils
 import mod_ecu
 
@@ -13,8 +14,10 @@ def playScenario(command, ecu, elm):
   
   services = ecu.Services
   
-  path = "../EcuRenault/Scenarios/"
+  path = "EcuRenault/Scenarios/"
   scenarioName,scenarioData = command.scenario.split('#')
+
+  scenarioData = scenarioData.upper()[:-4]+'.xml'
 
   showable = False
   if scenarioName.lower().startswith('scm'):
@@ -23,7 +26,7 @@ def playScenario(command, ecu, elm):
     
   if os.path.isfile('./'+scenarioName+'.py'):
     scen = __import__( scenarioName )
-    scen.run( elm, ecu, command, path+scenarioData )
+    scen.run( elm, ecu, command, '../'+path+scenarioData )
     return
     
   print "\nThere is scenarium. I do not support them!!!\n"
@@ -35,10 +38,10 @@ def playScenario(command, ecu, elm):
   if 'show' not in ch.lower():
     return
     
-  if not os.path.isfile(path+scenarioData):
+  if not mod_db_manager.file_in_clip(os.path.join(path,scenarioData)):
     return
     
-  lines = [line.rstrip('\n') for line in open(path+scenarioData)]
+  lines = [line.rstrip('\n') for line in mod_db_manager.get_file_from_clip(os.path.join(path,scenarioData))]
   
   for l in lines:
     pa = re.compile(r'name=\"(\w+)\"\s+value=\"(\w+)\"')

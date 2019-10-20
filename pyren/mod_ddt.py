@@ -5,9 +5,12 @@ import sys, os
 import operator
 import ast
 import gc
+import time
 
 import mod_ddt_utils
 import mod_utils
+import mod_db_manager
+
 from shutil import copyfile
 
 
@@ -141,14 +144,14 @@ class DDT():
             tmp_f_name = self.decu.ecufname.split('/')[-1]
             self.decu.ecufname = mod_globals.ddtroot+'/ecus/'+tmp_f_name
 
-        if not os.path.isfile(self.decu.ecufname):
+        if not mod_db_manager.file_in_ddt(self.decu.ecufname):
             print "No such file: ", self.decu.ecufname
             return None
 
         ns = {'ns0': 'http://www-diag.renault.com/2002/ECU',
               'ns1': 'http://www-diag.renault.com/2002/screens'}
 
-        tree = et.parse(self.decu.ecufname)
+        tree = et.parse(mod_db_manager.get_file_from_ddt(self.decu.ecufname))
         xdoc = tree.getroot()
 
         # Show screen
@@ -173,7 +176,7 @@ def optParser():
 
     parser = argparse.ArgumentParser(
         # usage = "%prog -p <port> [options]",
-        version="mod_ddt Version 0.9.p",
+        version="mod_ddt Version 0.9.q",
         description="mod_ddt - python program for diagnostic Renault cars"
     )
 
@@ -290,6 +293,7 @@ class DDTLauncher():
         self.var_dump = tk.BooleanVar()
         self.var_log = tk.BooleanVar()
         self.var_cfc = tk.BooleanVar()
+        self.var_can2 = tk.BooleanVar()
 
         self.var_portList = []
         self.var_speedList = []
@@ -462,6 +466,12 @@ class DDTLauncher():
 
         self.dumpChk = tk.Checkbutton(self.set_fr, variable=self.var_dump, background="#d9d9d9")
         self.dumpChk.grid(row=2, column=1, **optsGrid_w)
+
+        self.can2_lbl = tk.Label(self.set_fr, text='CAN2:', background="#d9d9d9")
+        self.can2_lbl.grid(row=2, column=1, **optsGrid_e)
+
+        self.can2Chk = tk.Checkbutton(self.set_fr, variable=self.var_can2, background="#d9d9d9")
+        self.can2Chk.grid(row=2, column=2, **optsGrid_w)
         ####################################################################################
 
         self.btn_connect = tk.Button(self.mf, text="Connect selected ECU (ON-line)", command=self.ConnectBtnClick, **btn_style)
@@ -873,7 +883,7 @@ class DDTLauncher():
             decu = pickle.load(open(decucashfile, "rb"))  # load it
         else:  # else
             decu = DDTECU(None)  # init class
-            decu.loadXml(mod_globals.ddtroot+'/ecus/'+ce['xml'])
+            decu.loadXml('ecus/'+ce['xml'])
             if len(decu.ecufname) > 0:
                 pickle.dump(decu, open(decucashfile, "wb"))  # and save cache
 
@@ -914,14 +924,14 @@ class DDTLauncher():
             self.SaveBtnClick()
 
         # Load XML
-        if not os.path.isfile(decu.ecufname):
+        if not mod_db_manager.file_in_ddt(decu.ecufname):
             print "No such file: ", decu.ecufname
             return None
 
         ns = {'ns0': 'http://www-diag.renault.com/2002/ECU',
               'ns1': 'http://www-diag.renault.com/2002/screens'}
 
-        tree = et.parse(decu.ecufname)
+        tree = et.parse(mod_db_manager.get_file_from_ddt(decu.ecufname))
         xdoc = tree.getroot()
 
         # Show screen
@@ -1219,7 +1229,7 @@ class DDTLauncher():
         c_pro.grid(row=7, column=1, **optsGrid)
 
         self.getXmlListByProj()
-        l_xml = tk.Label(self.ecudlg, text='XML:', background="#d9d9d9")
+        l_xml = tk.Label(self.ecudlg, text='Recommended XML:', background="#d9d9d9")
         l_xml.grid(row=8, column=0, **optsGrid_e)
         self.dv_xml = tk.StringVar()
         self.dv_xml.set(ecu['xml'])
@@ -1228,27 +1238,39 @@ class DDTLauncher():
         c_xml.configure(textvariable=self.dv_xml)
         c_xml.configure(takefocus="")
         c_xml.grid(row=8, column=1, **optsGrid_w)
-        b_xml = tk.Button(self.ecudlg, text="XML file", command=self.xmlBtnClick, **btn_style)
-        b_xml.grid(row=8, column=2, **optsGrid)
+        #b_xml = tk.Button(self.ecudlg, text="XML file", command=self.xmlBtnClick, **btn_style)
+        #b_xml.grid(row=8, column=2, **optsGrid)
+
+        allxmllist = []
+        for l in sorted(mod_db_manager.get_file_list_from_ddt('^ecus/*')):
+            allxmllist.append( l[5:] )
+        l2_xml = tk.Label(self.ecudlg, text='ALL XML:', background="#d9d9d9")
+        l2_xml.grid(row=9, column=0, **optsGrid_e)
+        a_xml = ttk.Combobox(self.ecudlg, width=30)
+        a_xml.configure(values=allxmllist)
+        a_xml.configure(textvariable=self.dv_xml)
+        a_xml.configure(takefocus="")
+        a_xml.grid(row=9, column=1, **optsGrid_w)
+
 
         self.getDumpListByXml()
         l_dump = tk.Label(self.ecudlg, text='Dump:', background="#d9d9d9")
-        l_dump.grid(row=9, column=0, **optsGrid_e)
+        l_dump.grid(row=10, column=0, **optsGrid_e)
         self.dv_dump = tk.StringVar()
         self.dv_dump.set(ecu['dump'])
         c_dump = ttk.Combobox(self.ecudlg, width=30)
         c_dump.configure(values=self.v_dumpList)
         c_dump.configure(textvariable=self.dv_dump)
         c_dump.configure(takefocus="")
-        c_dump.grid(row=9, column=1, **optsGrid_w)
+        c_dump.grid(row=10, column=1, **optsGrid_w)
         b_dump = tk.Button(self.ecudlg, text="Dump file", command=self.dumpBtnClick, **btn_style)
-        b_dump.grid(row=9, column=2, **optsGrid)
+        b_dump.grid(row=10, column=2, **optsGrid)
 
         b_save = tk.Button(self.ecudlg, text="Save", command=self.ecuSaveBtnClick, **btn_style)
-        b_save.grid(row=10, column=1, **optsGrid)
+        b_save.grid(row=11, column=1, **optsGrid)
 
         b_canc = tk.Button(self.ecudlg, text="Cancel", command=self.ecuCancelBtnClick, **btn_style)
-        b_canc.grid(row=10, column=2, **optsGrid)
+        b_canc.grid(row=11, column=2, **optsGrid)
 
     def renewEcuList(self):
         self.ecutree.delete(*self.ecutree.get_children())
@@ -1264,6 +1286,7 @@ class DDTLauncher():
     def applySettings(self):
         mod_globals.opt_port = self.var_port.get().split(';')[0]
         mod_globals.opt_rate = int(self.var_speed.get())
+        mod_globals.opt_can2 = self.var_can2.get()
         if self.var_log.get():
             mod_globals.opt_log = self.var_logName.get()
         else:
@@ -1374,8 +1397,8 @@ class DDTLauncher():
 def main():
     '''Main function'''
 
-    mod_ddt_utils.searchddtroot()
     mod_utils.chkDirTree()
+    mod_db_manager.find_DBs()
 
     lau = DDTLauncher()
 

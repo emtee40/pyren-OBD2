@@ -31,7 +31,8 @@ from mod_utils   import Choice
 from mod_utils   import ChoiceLong
 from mod_utils   import pyren_encode
 from mod_utils   import DBG
-from mod_elm     import ELM
+#from mod_elm     import ELM
+import mod_db_manager
 import mod_elm   as m_elm
 import mod_globals
 import sys
@@ -72,13 +73,15 @@ class ScanEcus:
     
     ####### Get list car models from vehicles directory #######
     self.vhcls  = []
-    for file in glob.glob("../Vehicles/TCOM_*.[Xx]ml"):
+
+    file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+    for file in file_list:
       try: 
-        model_n = int(file[17:20])
+        model_n = int(file[-7:-4])
         if model_n<86: continue
       except ValueError:
         pass
-      DOMTree = xml.dom.minidom.parse(file)
+      DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
       vh = DOMTree.documentElement
       if vh.hasAttribute("defaultText"):
         vehiclename = vh.getAttribute("defaultText").strip()
@@ -328,7 +331,7 @@ class ScanEcus:
     
     ecuname = ''
 
-    DOMTree = xml.dom.minidom.parse(file)
+    DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
     vh = DOMTree.documentElement
 
     if vh.hasAttribute ("vehTypeCode"):
@@ -404,8 +407,7 @@ class ScanEcus:
   def read_Uces_file( self, all = False ):
 
     # Finding them in Uces.xml and loading 
-    #print 'Reading Uces file'
-    DOMTree = xml.dom.minidom.parse("../EcuRenault/Uces.Xml")
+    DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip("EcuRenault/Uces.xml"))
     Ecus = DOMTree.documentElement
     EcuDatas = Ecus.getElementsByTagName("EcuData")
     if EcuDatas:
@@ -618,7 +620,8 @@ class ScanEcus:
       self.elm.lf.write("#load: "+model+' '+tcomfilename+"\n")
       self.elm.lf.flush()    
 
-    self.load_model_ECUs( "../Vehicles/"+tcomfilename )
+    #self.load_model_ECUs( "../Vehicles/"+tcomfilename )
+    self.load_model_ECUs( tcomfilename )
     print "  - "+str(len(self.allecus))+" ecus loaded"
     
   def compare_ecu( self, row, rrsp, req ):
@@ -973,9 +976,10 @@ def findTCOM( addr, cmd, rsp ):
   ecuvhc = {}
   vehicle = ''
   print 'Read models'
-  for file in glob.glob("../Vehicles/TCOM_*.xml"):
+  file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+  for file in file_list:
     vehicle = ''
-    DOMTree = xml.dom.minidom.parse(file)
+    DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
     vh = DOMTree.documentElement
     if vh.hasAttribute("defaultText"):
       vehiclename = vh.getAttribute("defaultText")
@@ -1044,6 +1048,8 @@ def generateSavedEcus( eculist, fileName ):
   
   
 if __name__ == "__main__":
+
+  mod_db_manager.find_DBs()
 
   # 10016,10074 savedEcus.p_gen  
   if len(sys.argv)==3: generateSavedEcus( sys.argv[1], sys.argv[2] )

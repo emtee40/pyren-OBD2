@@ -20,13 +20,14 @@ if mod_globals.os != 'android':
   from mod_ddt                import DDT
 
 import mod_globals
+import mod_db_manager
 
 from xml.dom.minidom        import parse
 from datetime               import datetime
 from mod_utils              import show_doc
 import xml.dom.minidom
-import xml.etree.ElementTree as et
-import struct
+#import xml.etree.ElementTree as et
+#import struct
 import sys
 import os
 import time
@@ -53,7 +54,7 @@ class ECU:
   '''Contains data for one specific ECU
      implement menu for ecu'''
   
-  path = "../EcuRenault/Sessions/"
+  path = "EcuRenault/Sessions/"
  
   getDTCmnemo     = ""
   resetDTCcommand = ""
@@ -95,7 +96,7 @@ class ECU:
 
     print "ECU type: ", cecu['stdType']
  
-    mdom = xml.dom.minidom.parse(self.path+self.ecudata['ModelId'].strip())
+    mdom = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(self.path+self.ecudata['ModelId'].strip()[:-3]+'xml'))
     mdoc = mdom.documentElement
   
     print "Loading screens "
@@ -104,7 +105,7 @@ class ECU:
 
     print "Loading optimyzer"
     self.defaults = []
-    opt_file = optfile(self.path+self.ecudata['OptimizerId'].strip())
+    opt_file = optfile(self.path+self.ecudata['OptimizerId'].strip()[:-3]+'xml')
        
     print "Loading defaults"
     df_class = ecu_defaults       ( self.Defaults,        mdoc, opt_file.dict, tran )
@@ -127,7 +128,7 @@ class ECU:
       xmlstr = opt_file.dict["DataIds"]
       ddom = xml.dom.minidom.parseString( xmlstr.encode( "utf-8" ) )
       ddoc = ddom.documentElement
-      di_class = ecu_dataids      ( self.DataIds,         ddoc, opt_file.dict, tran )
+      di_class = ecu_dataids( self.DataIds, ddoc, opt_file.dict, tran )
       
   def initELM(self, elm):
 
@@ -465,7 +466,7 @@ class ECU:
           newScreen = newScreen + pyren_encode( l ) + '  \n'
          
         if pages>0:
-          newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] N for page number H for help or any other to exit"
+          newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] <N> for page number H for help or any other to exit"
         else:
           newScreen = newScreen+'\n'+"Press H for help or any key to exit"
           
@@ -865,7 +866,7 @@ def find_real_ecuid( eid ):
   candst   = ''
   startDiagReq = '10C0'
 
-  DOMTree = xml.dom.minidom.parse("../EcuRenault/Uces.Xml")
+  DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip("EcuRenault/Uces.xml"))
   Ecus = DOMTree.documentElement
   EcuDatas = Ecus.getElementsByTagName("EcuData")
 
@@ -942,7 +943,9 @@ def main():
   
   ecuid = sys.argv[1]
   lanid = sys.argv[2]
-  
+
+  mod_db_manager.find_DBs()
+
   if len(ecuid)==5:
     ecuid, fastinit, slowinit, protocol, candst, startDiagReq = find_real_ecuid(ecuid)
     sys.argv[1] = ecuid
@@ -957,19 +960,19 @@ def main():
   
   print "Loading language "
   sys.stdout.flush()                                         
-  lang = optfile("../Location/DiagOnCan_"+lanid+".bqm",True)
+  lang = optfile("Location/DiagOnCAN_"+lanid+".bqm",True)
   print "Done"
   sys.stdout.flush()                                         
   
-  fgfile = "../EcuRenault/Sessions/FG"+ecuid+".xml"
-  sgfile = "../EcuRenault/Sessions/SG"+ecuid+".xml"
+  fgfile = "EcuRenault/Sessions/FG"+ecuid+".xml"
+  sgfile = "EcuRenault/Sessions/SG"+ecuid+".xml"
 
-  mdom = xml.dom.minidom.parse(fgfile)
+  mdom = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(fgfile))
   mdoc = mdom.documentElement
   
   print "Loading optimyzer"
   sys.stdout.flush()                                         
-  opt_file = optfile(sgfile)
+  opt_file = optfile(mod_db_manager.get_file_from_clip(sgfile))
   
   print "Loading defaults"
   df_class = ecu_defaults       ( Defaults,        mdoc, opt_file.dict, lang.dict )

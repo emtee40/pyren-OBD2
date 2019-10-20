@@ -3,6 +3,8 @@
 import os
 import xml.etree.ElementTree as et
 import mod_globals
+import mod_db_manager
+
 from operator import itemgetter
 from copy import deepcopy
 
@@ -83,22 +85,23 @@ def loadECUlist():
 
     # make or load eculist
     print "Loading eculist"
-    eculistcache = "./cache/ddt_eculist.p"
+    eculistcache = os.path.join(mod_globals.cache_dir, "ddt_eculist.p")
 
     if os.path.isfile(eculistcache):  # if cache exists
         eculist = pickle.load(open(eculistcache, "rb"))  # load it #dbaccess
     else:
 
         # open xml
-        eculistfilename = mod_globals.ddtroot+'/ecus/eculist.xml'
-        if not os.path.isfile(eculistfilename):
+        eculistfilename = 'ecus/eculist.xml'
+        #if not os.path.isfile(eculistfilename):
+        if not mod_db_manager.file_in_ddt(eculistfilename):
             print "No such file: "+eculistfilename
             return None
 
         ns = {'ns0': 'http://www-diag.renault.com/2002/ECU',
               'ns1': 'http://www-diag.renault.com/2002/screens'}
 
-        tree = et.parse(eculistfilename)
+        tree = et.parse(mod_db_manager.get_file_from_ddt(eculistfilename))
         root = tree.getroot()
 
         eculist = {}
@@ -142,14 +145,14 @@ def loadECUlist():
 
 class ddtProjects():
     def __init__(self):
-        self.proj_path = mod_globals.ddtroot + '/vehicles/projects.xml'
+        self.proj_path = 'vehicles/projects.xml'
 
         self.plist = []
 
-        if not os.path.exists(self.proj_path):
+        if not mod_db_manager.file_in_ddt(self.proj_path):
             return
 
-        tree = et.parse(self.proj_path)
+        tree = et.parse(mod_db_manager.get_file_from_ddt(self.proj_path))
         root = tree.getroot()
 
         DefaultAddressing = root.findall('DefaultAddressing')
@@ -201,14 +204,14 @@ class ddtProjects():
 
 class ddtAddressing():
     def __init__(self, filename ):
-        self.addr_path = mod_globals.ddtroot + '/vehicles/' + filename
+        self.addr_path = 'vehicles/' + filename
 
         self.alist = []
 
-        if not os.path.exists(self.addr_path):
+        if not mod_db_manager.file_in_ddt(self.addr_path):
             return
 
-        tree = et.parse(self.addr_path)
+        tree = et.parse(mod_db_manager.get_file_from_ddt(self.addr_path))
         root = tree.getroot()
 
         ns = {'ns0': 'DiagnosticAddressingSchema.xml',

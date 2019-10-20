@@ -14,7 +14,6 @@
 
 
 import os
-import zipfile
 import shutil
 from os import listdir
 from os.path import isdir
@@ -79,7 +78,6 @@ if osname == 'android':
         except:
             print "Error while using jnius"
             sys.exit()
-
 
 def update_from_gitlab():
     try:
@@ -146,10 +144,10 @@ def getPathList():
 
 
 def getLangList():
-    if not os.path.exists('./Location'):
-        return []
-    return [f[10:-4] for f in listdir('./Location') if f.lower().startswith('diagoncan_')]
-
+    #if not os.path.exists('./Location'):
+    #    return []
+    #return [f[10:-4] for f in listdir('./Location') if f.lower().startswith('diagoncan_')]
+    return ['AL','CNT','CO','CR','CZ','DK','EL','FI','FR','GB','HG','IT','JP','NG','NL','PL','PO','RO','RU','SD','SL','SP','TR']
 
 def getPortList():
     ret = []

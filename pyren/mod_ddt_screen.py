@@ -7,6 +7,7 @@ import copy
 import time
 
 from mod_utils import *
+import mod_db_manager
 
 # import traceback
 
@@ -1317,7 +1318,7 @@ class DDTScreen (tk.Frame):
                     xfItalic = xFont.attrib["Italic"]
                     xfColor = xFont.attrib["Color"]
                 
-                if '::pic:' not in xText or not os.path.exists ('../graphics/'):
+                if '::pic:' not in xText or not mod_db_manager.path_in_ddt('graphics'):
                     self.ddt.create_rectangle (xrLeft, xrTop, xrLeft + xrWidth, xrTop + xrHeight,
                                                fill=self.ddtColor (xColor), outline=self.ddtColor (xColor))
                 
@@ -1352,9 +1353,10 @@ class DDTScreen (tk.Frame):
                     id = self.ddt.create_text (xrLeft, xrTop, text=xText, font=lFont, width=xrWidth, anchor=xAlignment,
                                                fill=self.ddtColor (xfColor))
                 else:
-                    gifname = xText.replace ('::pic:', mod_globals.ddtroot+'/graphics/') + '.gif'
+                    gifname = xText.replace ('::pic:', 'graphics/') + '.gif'
                     gifname = gifname.replace ('\\', '/')
-                    if os.path.isfile (gifname):
+                    gifname = mod_db_manager.extract_from_ddt_to_cache(gifname)
+                    if gifname:
                         self.images.append (tk.PhotoImage (file=gifname))
                         x1 = self.images[-1].width ()
                         y1 = self.images[-1].height ()
@@ -1610,9 +1612,10 @@ class DDTScreen (tk.Frame):
                     obj = tk.Button (frame, text=xText, font=lFont, relief=tk.GROOVE,
                                      command=lambda key=str (slist), btn=xText: self.buttonPressed (btn, key))
                 else:
-                    gifname = '../graphics/' + xText.split ('|')[1] + '.gif'
+                    gifname = 'graphics/' + xText.split ('|')[1] + '.gif'
                     gifname = gifname.replace ('\\', '/')
-                    if os.path.isfile (gifname):
+                    gifname = mod_db_manager.extract_from_ddt_to_cache(gifname)
+                    if gifname:
                         self.images.append (tk.PhotoImage (file=gifname))
                         x1 = self.images[-1].width ()
                         y1 = self.images[-1].height ()

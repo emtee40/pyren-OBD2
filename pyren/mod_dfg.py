@@ -11,6 +11,7 @@ from mod_utils   import ChoiceFromDict
 from mod_utils   import pyren_encode
 from mod_utils   import clearScreen
 import mod_globals
+import mod_db_manager
 import sys
 import glob
 import os
@@ -51,14 +52,15 @@ class class_dfg:
   def __init__(self, platform):
 
     #find TCOM by platform
-    if platform!='':    
-      for file in glob.glob("../Vehicles/TCOM_*.[Xx]ml"):
+    if platform!='':
+      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+      for file in file_list:
         try: 
           model_n = int(file[17:20])
           if model_n<86: continue
         except ValueError:
           pass
-        DOMTree = xml.dom.minidom.parse(file)
+        DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
         vh = DOMTree.documentElement
         if vh.hasAttribute("defaultText"):
           TCOM = vh.getAttribute("TCOM")
@@ -66,11 +68,12 @@ class class_dfg:
           if vehTypeCode.upper()==platform.upper():
             self.tcom = TCOM
             break
-      self.dfgFile = '../Vehicles/DFG/DFG_'+self.tcom+'.Xml'
+      self.dfgFile = 'Vehicles/DFG/DFG_'+self.tcom+'.xml'
     else:
       vhcls = []
-      for file in glob.glob("../Vehicles/DFG/DFG_*.[Xx]ml"):
-        DOMTree = xml.dom.minidom.parse(file)
+      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/DFG/DFG_\d{3}.[Xx]ml')
+      for file in file_list:
+        DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
         vh = DOMTree.documentElement
         if vh.hasAttribute("defaultText"):
           TCOM = vh.getAttribute("TCOM")
@@ -93,7 +96,7 @@ class class_dfg:
 
   def loadDFG( self ):
     try:
-      DOMTree = xml.dom.minidom.parse(self.dfgFile)
+      DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(self.dfgFile))
     except:
       print "ERROR loading dfg-file"
       #if 'DFG_135' in self.dfgFile:

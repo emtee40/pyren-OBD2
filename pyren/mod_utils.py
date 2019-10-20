@@ -388,7 +388,8 @@ def chkDirTree():
         os.makedirs('./macro')
     if not os.path.exists('./doc'):
         os.makedirs('./doc')
-
+    if not os.path.exists('../MTCSAVE'):
+        os.makedirs('../MTCSAVE')
 
 def getVIN( de, elm, getFirst = False ):
   ''' getting VINs from every ECU     '''
@@ -476,9 +477,11 @@ def show_doc( addr, id ):
         mod_globals.doc_server_proc = subprocess.Popen(["python", "-m", "SimpleHTTPServer", "59152"])
         atexit.register(kill_server)
 
-    url = 'http://localhost:59152/doc/'+mod_globals.vin+'.htm'+id
+    if mod_globals.opt_sd:
+        url = 'http://localhost:59152/doc/' + id[1:] + '.htm'
+    else:
+        url = 'http://localhost:59152/doc/'+mod_globals.vin+'.htm'+id
     webbrowser.open(url, new=0)
-
 
 
 

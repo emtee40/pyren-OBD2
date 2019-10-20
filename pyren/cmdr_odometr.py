@@ -2,6 +2,8 @@
 
 import sys, os
 import time
+import mod_utils
+import mod_db_manager
     
 import mod_globals
 import mod_ecu
@@ -41,7 +43,10 @@ def prepareECUs():
   global lang
   
   pyren.optParser()
-  
+
+  mod_utils.chkDirTree()
+  mod_db_manager.find_DBs()
+
   if len(mod_globals.opt_log)==0:
     mod_globals.opt_log = 'commander_log.txt'
   
@@ -61,7 +66,7 @@ def prepareECUs():
   print "Loading language "
   sys.stdout.flush()
                                          #loading language data
-  lang = optfile("../Location/DiagOnCan_"+mod_globals.opt_lang+".bqm",True)
+  lang = optfile("Location/DiagOnCAN_"+mod_globals.opt_lang+".bqm",True)
   mod_globals.language_dict = lang.dict
   print "Done"
      

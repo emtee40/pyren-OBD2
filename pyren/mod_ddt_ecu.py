@@ -18,6 +18,7 @@ def trim( st ):
 
 import mod_globals
 import mod_ddt_utils
+import mod_db_manager
 from mod_ddt_request import *
 from mod_ddt_data    import *
 from mod_utils       import *
@@ -319,12 +320,12 @@ class DDTECU():
     if len(xmlfile):
       self.ecufname = xmlfile
     
-    if not os.path.isfile(self.ecufname):
+    if not mod_db_manager.file_in_ddt(self.ecufname):
       print "No such file:", self.ecufname
       return
 
     #Load XML
-    tree = et.parse (self.ecufname)
+    tree = et.parse(mod_db_manager.get_file_from_ddt(self.ecufname))
     root = tree.getroot ()
     
     ns = {'ns0':'http://www-diag.renault.com/2002/ECU',

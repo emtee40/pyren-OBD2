@@ -3,7 +3,9 @@
 import struct
 import sys
 import os
-import time
+import mod_globals
+import mod_db_manager
+
 try:
     import cPickle as pickle
 except:
@@ -21,16 +23,22 @@ class optfile:
     
     self.dict = {}
 
-    fn = filename
-    pn = './cache/'+os.path.basename(fn)+'.p' 
-    
-    if os.path.isfile(pn):
-      self.dict = pickle.load( open( pn, "rb" ) )        
-    elif os.path.isfile(fn):
-      lf = open( fn, "rb" )
+    # check in cache folder
+    cachename = mod_globals.cache_dir+os.path.basename(filename)[:-4]+'.p'
+    if os.path.isfile(cachename):
+      self.dict = pickle.load( open( cachename, "rb" ) )
+      return
+
+    if mod_globals.clip_arc!='' and mod_db_manager.file_in_clip(filename[:-4]+'.p'):
+      mod_db_manager.extract_from_clip_to_cache(filename[:-4]+'.p')
+      self.dict = pickle.load( open( cachename, "rb" ) )
+      return
+
+    lf = mod_db_manager.get_file_from_clip( filename )
+    if lf:
       self.get_dict( lf, progress )
       if cache:
-        pickle.dump( self.dict, open( pn, "wb" ) )
+        pickle.dump( self.dict, open( cachename, "wb" ) )
         
   def get_string(self,lf,len):
 

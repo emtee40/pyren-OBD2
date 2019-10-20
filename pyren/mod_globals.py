@@ -30,6 +30,8 @@ opt_exp       = False    #allow to use buttons in ddt
 opt_dump      = False    #dump responces from all 21xx and 22xxxx requests
 opt_can2      = False    #can connected to pins 13 and 12
 opt_ddtxml    = ""
+opt_stn       = False
+opt_sd        = False    #separate doc files
 
 dumpName = ""
 
@@ -42,8 +44,14 @@ ext_cur_DTC = "000000"
 none_val = "None"
 
 mtcdir = "../MTCSAVE/VIN"
-
+user_data_dir = "./"
+cache_dir = "./cache/"
+log_dir = "./logs/"
+dumps_dir = "./dumps/"
+ddt_arc = ""
 ddtroot = ".."  # parent folder for backward compatibility. for 9n and up use ../DDT2000data
+clip_arc = ""
+cliproot = ".."
 
 os = ""
 

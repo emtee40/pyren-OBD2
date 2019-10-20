@@ -1005,7 +1005,7 @@ class ELM:
         
         # Ensure time gap between commands
         # dl = self.busLoad + self.srvsDelay - tb + self.lastCMDtime
-        if ((tb - self.lastCMDtime) < (self.busLoad + self.srvsDelay)) and "AT" not in command.upper ():
+        if ((tb - self.lastCMDtime) < (self.busLoad + self.srvsDelay)) and command.upper()[:2] in ['AT','ST']:
             time.sleep (self.busLoad + self.srvsDelay - tb + self.lastCMDtime)
         
         tb = time.time ()  # renew start time
@@ -1127,7 +1127,7 @@ class ELM:
         if mod_globals.opt_rate < 50000 and len (command) == 6 and command[:4] == '1902':
             command = '1902AF'
         
-        if "AT" in command.upper () or self.currentprotocol != "can":
+        if command.upper()[:2] in ["AT","ST"] or self.currentprotocol != "can":
             return self.send_raw (command)
 
         if self.ATCFC0:
@@ -1780,7 +1780,19 @@ class ELM:
             tmstr = datetime.now ().strftime ("%x %H:%M:%S.%f")[:-3]
             self.lf.write('#' * 60 + "\n#[" + tmstr + "] Init CAN\n" + '#' * 60 + "\n")
             self.lf.flush()
-        self.check_answer(self.cmd("at ws"))
+
+        # reset ELM
+        elm_ver = self.cmd("at ws")
+        if 'v1.3a' in elm_ver:
+            mod_globals.opt_stn = True
+        self.check_answer(elm_ver)
+
+        # check STN
+        if mod_globals.opt_can2 and mod_globals.opt_stn:
+            tmp = self.cmd("STP 53")
+            if 'OK' not in tmp:
+                mod_globals.opt_stn = False
+
         self.check_answer(self.cmd("at e1"))
         self.check_answer(self.cmd("at s0"))
         self.check_answer(self.cmd("at h0"))
@@ -1792,13 +1804,25 @@ class ELM:
         else:
             self.check_answer(self.cmd("at cfc1"))
 
-            # else:
+        # else:
         # self.cmd("at st ff")
         #  self.cmd("at at 0")
         # self.cmd("at sp 6")
         # self.cmd("at at 1")
         self.lastCMDtime = 0
-    
+
+    def set_can_500(self):
+        if mod_globals.opt_can2 and mod_globals.opt_stn:
+            tmp = self.cmd("STPBR 500000")
+            if '?' not in tmp: return
+        self.cmd("at sp 6")
+
+    def set_can_250(self):
+        if mod_globals.opt_can2 and mod_globals.opt_stn:
+            tmp = self.cmd("STPBR 250000")
+            if '?' not in tmp: return
+        self.cmd("at sp 8")
+
     def set_can_addr(self, addr, ecu):
         
         self.notSupportedCommands = {}
@@ -1843,18 +1867,18 @@ class ELM:
             if self.lf != 0:
                 self.lf.write ('#' * 60 + "\n#    Double BRP, try CAN250 and then CAN500\n" + '#' * 60 + "\n")
                 self.lf.flush ()
-            self.cmd ("at sp 8")  # set 250
+            self.set_can_250()
             tmprsp = self.send_raw ("0210C0")  # send any command
             if 'CAN ERROR' in tmprsp:  # not 250!
                 ecu['brp'] = '0'  # brp = 0
-                self.cmd ("at sp 6")  # set 500
+                self.set_can_500()
             else:  # 250!
                 ecu['brp'] = '1'  # brp = 1
         else:  # not double brp
             if 'brp' in ecu.keys () and '1' in ecu['brp']:
-                self.cmd ("at sp 8")
+                self.set_can_250()
             else:
-                self.cmd ("at sp 6")
+                self.set_can_500()
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
         
