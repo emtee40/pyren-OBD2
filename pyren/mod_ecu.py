@@ -972,8 +972,9 @@ def main():
   
   print "Loading optimyzer"
   sys.stdout.flush()                                         
-  opt_file = optfile(mod_db_manager.get_file_from_clip(sgfile))
-  
+  #opt_file = optfile(mod_db_manager.get_file_from_clip(sgfile))
+  opt_file = optfile(sgfile)
+
   print "Loading defaults"
   df_class = ecu_defaults       ( Defaults,        mdoc, opt_file.dict, lang.dict )
   print "Loading parameters"

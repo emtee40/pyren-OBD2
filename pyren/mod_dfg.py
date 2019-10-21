@@ -53,7 +53,7 @@ class class_dfg:
 
     #find TCOM by platform
     if platform!='':
-      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_*.[Xx]ml')
       for file in file_list:
         try: 
           model_n = int(file[17:20])
@@ -71,7 +71,7 @@ class class_dfg:
       self.dfgFile = 'Vehicles/DFG/DFG_'+self.tcom+'.xml'
     else:
       vhcls = []
-      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/DFG/DFG_\d{3}.[Xx]ml')
+      file_list = mod_db_manager.get_file_list_from_clip('Vehicles/DFG/DFG_*.[Xx]ml')
       for file in file_list:
         DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
         vh = DOMTree.documentElement

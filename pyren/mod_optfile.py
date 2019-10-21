@@ -35,28 +35,29 @@ class optfile:
       return
 
     lf = mod_db_manager.get_file_from_clip( filename )
+
     if lf:
       self.get_dict( lf, progress )
       if cache:
         pickle.dump( self.dict, open( cachename, "wb" ) )
-        
-  def get_string(self,lf,len):
+
+  def get_string(self, lf, len):
 
     i = lf.tell()
-    bytes = lf.read(2*len)
-    
+    bytes = lf.read(2 * len)
+
     st = ''
     j = 0
-    len = len*2
-    while j<len:
-      x = struct.unpack('<H', bytes[j:j+2])[0]
-      if self.obf: x=x^(i&0xFFFF)^0x5555
+    len = len * 2
+    while j < len:
+      x = struct.unpack('<H', bytes[j:j + 2])[0]
+      if self.obf: x = x ^ (i & 0xFFFF) ^ 0x5555
       j += 2
       i += 2
       st += unichr(x)
-    
+
     return st
-    
+
   def get_2_bytes(self,lf):
 
     i = lf.tell()
@@ -101,9 +102,9 @@ class optfile:
       strl = self.get_4_bytes(lf)
       keyl = self.get_4_bytes(lf)
       n = n + 1
-      
+
       key = self.get_string(lf,keyl)
-      
+
       lf.seek(addr)
       line = self.get_string(lf,strl)
       line = line.strip()

@@ -87,22 +87,8 @@ td.row_d {
 mod_globals.os = os.name
  
 if mod_globals.os == 'nt':
-  import pip
-  
-  try:
-    import serial
-  except ImportError:
-    pip.main(['install','pyserial'])
-
-  try:
-    import colorama
-  except ImportError:
-    pip.main(['install','colorama'])
-    try:
-      import colorama
-    except ImportError:
-      print "\n\n\n\t\t\tGive me access to the Internet for download modules\n\n\n"
-      sys.exit()
+  import serial
+  import colorama
   colorama.init()
 else:
   # let's try android
@@ -771,7 +757,7 @@ def main():
   sys.stdout.flush()
   
   #loading language data
-  lang = optfile("../Location/DiagOnCan_"+mod_globals.opt_lang+".bqm",True)
+  lang = optfile("Location/DiagOnCan_"+mod_globals.opt_lang+".bqm",True)
   mod_globals.language_dict = lang.dict
   print "Done"
   

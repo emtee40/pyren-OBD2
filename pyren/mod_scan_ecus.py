@@ -74,7 +74,7 @@ class ScanEcus:
     ####### Get list car models from vehicles directory #######
     self.vhcls  = []
 
-    file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+    file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_*.[Xx]ml')
     for file in file_list:
       try: 
         model_n = int(file[-7:-4])
@@ -976,7 +976,7 @@ def findTCOM( addr, cmd, rsp ):
   ecuvhc = {}
   vehicle = ''
   print 'Read models'
-  file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_\d{3}.[Xx]ml')
+  file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_*.[Xx]ml')
   for file in file_list:
     vehicle = ''
     DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))

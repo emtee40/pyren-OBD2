@@ -122,15 +122,22 @@ def get_file_list_from_clip( pattern ):
     if mod_globals.clip_arc=='':
         return glob.glob(os.path.join(mod_globals.cliproot, pattern))
     else:
+        if '*' in pattern:
+            pattern = pattern.replace('*', '\d{3}')
         file_list = mod_globals.clip_arc.namelist()
         regex = re.compile(pattern)
         return list(filter(regex.search, file_list))
 
 def get_file_from_clip( filename ):
-    if mod_globals.clip_arc=='':
-        return open(os.path.join(mod_globals.cliproot, filename), 'r')
+    if filename.lower().endswith('bqm') or '/sg' in filename.lower():
+        mode = 'rb'
     else:
-        return mod_globals.clip_arc.open(filename, 'r')
+        mode = 'r'
+
+    if mod_globals.clip_arc=='':
+        return open(os.path.join(mod_globals.cliproot, filename), mode)
+    else:
+        return mod_globals.clip_arc.open(filename, mode)
 
 def file_in_clip( pattern ):
     if mod_globals.clip_arc=='':

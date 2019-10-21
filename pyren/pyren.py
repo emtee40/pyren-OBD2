@@ -12,7 +12,7 @@ import pickle
 
 if mod_globals.os == 'nt':
   import pip
-  
+
   try:
     import serial
   except ImportError:
