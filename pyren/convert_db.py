@@ -83,6 +83,8 @@ if __name__ == "__main__":
         for vf in fgsessionfiles:
             print "Processing file ", vf
             try:
+                while len(vf) and vf[0] in ['.', '/', '\\']:
+                    vf = vf[1:]
                 optf = optfile (vf)
             except:
                 print "Skipping file ", vf
