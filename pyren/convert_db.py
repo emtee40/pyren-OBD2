@@ -6,6 +6,9 @@ import pickle
 import sys
 import zipfile
 from StringIO import StringIO
+import mod_db_manager
+
+mod_db_manager.find_DBs()
 
 from  mod_optfile import *
 
