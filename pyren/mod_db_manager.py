@@ -120,16 +120,24 @@ def saveDBver(verfilename):
 
 def get_file_list_from_clip( pattern ):
     if mod_globals.clip_arc=='':
-        return glob.glob(os.path.join(mod_globals.cliproot, pattern))
+        fl =  glob.glob(os.path.join(mod_globals.cliproot, pattern))
     else:
         if '*' in pattern:
             pattern = pattern.replace('*', '\d{3}')
         file_list = mod_globals.clip_arc.namelist()
         regex = re.compile(pattern)
-        return list(filter(regex.search, file_list))
+        fl = list(filter(regex.search, file_list))
+    res = []
+    for i in fl:
+        while len(i) and i[0] in ['.','/','\\']:
+            i = i[1:]
+        res.append(i)
+    return res
 
 def get_file_from_clip( filename ):
-    if filename.lower().endswith('bqm') or '/sg' in filename.lower():
+    if (filename.lower().endswith('bqm') \
+            or '/sg' in filename.lower()) and \
+            mod_globals.os != 'android':
         mode = 'rb'
     else:
         mode = 'r'
