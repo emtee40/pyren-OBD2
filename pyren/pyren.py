@@ -291,10 +291,6 @@ def main():
 
   mod_ddt_utils.searchddtroot()
 
-  #check if DDT present
-  if os.path.exists(os.path.join(mod_globals.ddtroot, '/ecus')) and mod_globals.os != 'android':
-    mod_globals.opt_ddt = True  
-
   while( 1 ):
     clearScreen()
     choosen_ecu = se.chooseECU( mod_globals.opt_ecuid )   # choose ECU among detected

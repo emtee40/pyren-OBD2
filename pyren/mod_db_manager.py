@@ -42,7 +42,7 @@ def find_DBs():
             clip_found = True
             break
 
-    if os.name == 'android':
+    if mod_globals.os == 'android':
         if not clip_found:
             print "ERROR: CLIP DB not found"
             exit()
@@ -71,6 +71,8 @@ def find_DBs():
         print 'CLIP DB :',mod_globals.cliproot
     if ddt_found:
         print 'DDT  DB :',mod_globals.ddtroot
+        if mod_globals.os != 'android':
+            mod_globals.opt_ddt = True
 
     #check cache version
     verfilename = "./cache/version09q.txt"
