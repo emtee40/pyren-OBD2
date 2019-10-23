@@ -285,7 +285,7 @@ class DDTECU():
 
     eculist = mod_ddt_utils.loadECUlist()
 
-    mod_ddt_utils.searchddtroot()
+    #mod_ddt_utils.searchddtroot()
 
     if len(mod_globals.opt_ddtxml)>0:
       fname = mod_globals.opt_ddtxml
@@ -393,7 +393,7 @@ class DDTECU():
     if xmlname.upper().endswith('.XML'):
       xmlname = xmlname[:-4]
 
-    if len(dumpname)==0:
+    if len(dumpname)==0 or not os.path.exists(dumpname):
       flist = []
      
       for root, dirs, files in os.walk("./dumps"):

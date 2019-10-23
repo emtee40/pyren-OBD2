@@ -125,10 +125,10 @@ def loadECUlist():
                             pjcl = []
                         eculist[Address]["targets"][href]['Projects'] = pjcl
                         ail = []
-                        ais = target.findall("AutoIdents")
+                        ais = target.findall("ns0:AutoIdents", ns)
                         if len(ais):
                             for ai in ais:
-                                AutoIdents = ai.findall("AutoIdent")
+                                AutoIdents = ai.findall("ns0:AutoIdent", ns)
                                 if len(AutoIdents):
                                     for AutoIdent in AutoIdents:
                                         air = {}

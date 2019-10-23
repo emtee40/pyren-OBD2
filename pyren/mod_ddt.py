@@ -1242,8 +1242,8 @@ class DDTLauncher():
         #b_xml.grid(row=8, column=2, **optsGrid)
 
         allxmllist = []
-        for l in sorted(mod_db_manager.get_file_list_from_ddt('^ecus/*')):
-            allxmllist.append( l[5:] )
+        for l in sorted(mod_db_manager.get_file_list_from_ddt('ecus/*')):
+            allxmllist.append( os.path.basename(l) )
         l2_xml = tk.Label(self.ecudlg, text='ALL XML:', background="#d9d9d9")
         l2_xml.grid(row=9, column=0, **optsGrid_e)
         a_xml = ttk.Combobox(self.ecudlg, width=30)
