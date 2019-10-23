@@ -142,7 +142,7 @@ class DDT():
         # Load XML
         if not self.decu.ecufname.startswith(mod_globals.ddtroot):
             tmp_f_name = self.decu.ecufname.split('/')[-1]
-            self.decu.ecufname = mod_globals.ddtroot+'/ecus/'+tmp_f_name
+            self.decu.ecufname = 'ecus/'+tmp_f_name
 
         if not mod_db_manager.file_in_ddt(self.decu.ecufname):
             print "No such file: ", self.decu.ecufname

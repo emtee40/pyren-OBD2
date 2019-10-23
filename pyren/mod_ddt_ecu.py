@@ -304,8 +304,8 @@ class DDTECU():
         
         fname = fname.strip()
         if len(fname):
-          self.ecufname = mod_globals.ddtroot+'/ecus/'+fname
-          if os.path.isfile(self.ecufname):
+          self.ecufname = 'ecus/'+fname
+          if mod_db_manager.file_in_ddt(self.ecufname):
             break
           else:
             print "No such file :",self.ecufname

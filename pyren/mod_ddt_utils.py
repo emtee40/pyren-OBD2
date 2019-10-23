@@ -126,9 +126,13 @@ def loadECUlist():
                         eculist[Address]["targets"][href]['Projects'] = pjcl
                         ail = []
                         ais = target.findall("ns0:AutoIdents", ns)
+                        if len(ais)==0:
+                            ais = target.findall("AutoIdents")
                         if len(ais):
                             for ai in ais:
                                 AutoIdents = ai.findall("ns0:AutoIdent", ns)
+                                if len(AutoIdents)==0:
+                                    AutoIdents = ai.findall("AutoIdent")
                                 if len(AutoIdents):
                                     for AutoIdent in AutoIdents:
                                         air = {}
