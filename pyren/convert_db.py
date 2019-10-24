@@ -8,8 +8,6 @@ import zipfile
 from StringIO import StringIO
 import mod_db_manager
 
-mod_db_manager.find_DBs()
-
 from  mod_optfile import *
 
 if __name__ == "__main__":
@@ -21,6 +19,8 @@ if __name__ == "__main__":
 
     if not os.path.exists('./cache'):
         os.makedirs('./cache')
+
+    mod_db_manager.find_DBs()
 
     inputpath = sys.argv[1]
     ecudir = os.path.join (inputpath, "EcuRenault")

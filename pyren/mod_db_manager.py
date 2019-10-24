@@ -183,6 +183,10 @@ def file_in_ddt( pattern ):
         file_list = glob.glob(os.path.join(mod_globals.ddtroot, pattern))
     else:
         file_list = mod_globals.ddt_arc.namelist()
+        if '(' in pattern:
+            pattern = pattern.replace('(','\(')
+        if ')' in pattern:
+            pattern = pattern.replace(')', '\)')
     regex = re.compile(pattern)
     li = list(filter(regex.search, file_list))
     return len(li)
