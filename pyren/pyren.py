@@ -95,7 +95,8 @@ def optParser():
   parser.add_argument("--sd",
       help="separate doc files",
       dest="sd",
-      default=False)
+      default=False,
+      action="store_true")
 
   parser.add_argument("-m",
       help="number of car model",
