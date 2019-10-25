@@ -138,7 +138,8 @@ def get_file_list_from_clip( pattern ):
 
 def get_file_from_clip( filename ):
     if (filename.lower().endswith('bqm')
-            or '/sg' in filename.lower()):
+            or '/sg' in filename.lower() \
+            or '\\sg' in filename.lower()):
         mode = 'rb'
     else:
         mode = 'r'

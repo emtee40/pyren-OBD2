@@ -42,7 +42,7 @@ if __name__ == "__main__":
             f = open (vf, "r")
             data = f.read ()
             zf.writestr (os.path.join ("EcuRenault", "Scenarios", os.path.basename (vf)), str (data))
-        
+
         for vf in vehiclesfiles:
             print "Processing file ", vf
             f = open (vf, "r")
@@ -60,13 +60,13 @@ if __name__ == "__main__":
             f = open (vf, "r")
             data = f.read ()
             zf.writestr (os.path.join ("EcuRenault", os.path.basename (vf)), str (data))
-        
+
         for vf in fbsessionfiles:
             print "Processing file ", vf
             f = open (vf, "r")
             data = f.read ()
             zf.writestr (os.path.join ("EcuRenault", "Sessions", os.path.basename (vf)), str (data))
-        
+
         for vf in locationsfiles:
             print "Processing file ", vf
             try:
