@@ -188,7 +188,7 @@ def convertXML(root, h_t, fns, ff, lid):
       #debug
       #xfile = e.attrib['id']
       
-    elif e.tag == 'title':
+    elif e.tag == 'title' and e.text:
       if fns[4]!='000000':
         title = 'DTC'+fns[4]+' '+e.text
         fns[4] = '000000'
