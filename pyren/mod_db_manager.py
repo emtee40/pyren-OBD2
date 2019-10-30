@@ -50,14 +50,14 @@ def find_DBs():
             return
 
     for ddt_dir in db_dir_list:
-        if  os.path.exists(os.path.join(ddt_dir, 'ecus')):
-                mod_globals.ddt_arc = ""
-                mod_globals.ddtroot = ddt_dir
-                ddt_found = True
-                break
         if os.path.exists(os.path.join(ddt_dir, 'DDT2000data', 'ecus')):
                 mod_globals.ddt_arc = ""
                 mod_globals.ddtroot = os.path.join(ddt_dir, 'DDT2000data')
+                ddt_found = True
+                break
+        if  os.path.exists(os.path.join(ddt_dir, 'ecus')):
+                mod_globals.ddt_arc = ""
+                mod_globals.ddtroot = ddt_dir
                 ddt_found = True
                 break
         arh_list = sorted(glob.glob(os.path.join(ddt_dir, 'DDT2000data*.zip')), reverse=True)
