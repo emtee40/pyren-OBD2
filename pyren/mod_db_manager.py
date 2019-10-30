@@ -55,17 +55,17 @@ def find_DBs():
                 mod_globals.ddtroot = os.path.join(ddt_dir, 'DDT2000data')
                 ddt_found = True
                 break
-        if  os.path.exists(os.path.join(ddt_dir, 'ecus')):
-                mod_globals.ddt_arc = ""
-                mod_globals.ddtroot = ddt_dir
-                ddt_found = True
-                break
         arh_list = sorted(glob.glob(os.path.join(ddt_dir, 'DDT2000data*.zip')), reverse=True)
         if len(arh_list):
             mod_globals.ddt_arc = zipfile.ZipFile(arh_list[0])
             mod_globals.ddtroot = arh_list[0]
             ddt_found = True
             break
+        if  os.path.exists(os.path.join(ddt_dir, 'ecus')):
+                mod_globals.ddt_arc = ""
+                mod_globals.ddtroot = ddt_dir
+                ddt_found = True
+                break
 
     if clip_found:
         print 'CLIP DB :',mod_globals.cliproot
