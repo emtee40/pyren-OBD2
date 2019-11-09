@@ -16,6 +16,15 @@ class ecu_screen_dataref:
       return
     self.name = dr.getAttribute("name")
     self.type = dr.getAttribute("type")
+
+class ecu_own_screen:
+
+  datarefs = []
+  functions = []
+  name = ""
+
+  def __init__(self, n):
+    self.name = n
     
 class ecu_screen_subfunction:
   
