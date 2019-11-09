@@ -306,11 +306,7 @@ def main():
       ecu = ECU(choosen_ecu, lang.dict )                    #loading original data for chosen ECU
       pickle.dump( ecu, open( ecucashfile, "wb" ) )         #and save cache
 
-    if not os.path.isfile("./cache/favlist.txt"):
-      favlistfile = open( "./cache/favlist.txt", "wb" )
-      favlistfile.close()
-    
-    ecu.initELM( elm )                                      #init ELM for chosen ECU 
+    ecu.initELM( elm )                                      #init ELM for chosen ECU
     
     if mod_globals.opt_demo:
       print "Loading dump"

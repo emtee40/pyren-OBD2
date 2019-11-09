@@ -195,7 +195,7 @@ class ECU:
       if len(flist)==0: return
       flist.sort()
       dumpname = os.path.join("./dumps/", flist[-1])
-    
+
     print 'Loading dump:', dumpname
     
     df = open(dumpname,'rt')
@@ -491,8 +491,10 @@ class ECU:
         c = kb.getch()
         if len(c)!=1: continue
         if path[:3] == 'FAV':
-          if ord(c) == 13:
+          if ord(c) == 13 or ord(c) == 10:
+            kb.set_normal_term()
             self.add_favourite()
+            kb.set_getch_term()
           else:
             if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
               csvline += ";" + c
@@ -521,31 +523,40 @@ class ECU:
   def add_favourite(self):
     H = 25
     if len(favouriteScreen.datarefs) < H:
-      userData = raw_input("\nEnter parameter/state that you want to monitor: ").upper()
-      if userData[:2] == 'PR':
-        for pr in self.Parameters.keys():
-          if self.Parameters[pr].agcdRef == userData:
-            if not any(pr == dr.name for dr in favouriteScreen.datarefs):
-              favouriteScreen.datarefs.append(ecu_screen_dataref("",pr,"Parameter"))
-            else:
-              for dr in favouriteScreen.datarefs:
-                if pr == dr.name:
-                  favouriteScreen.datarefs.remove(dr)
-      elif userData[:2] == 'ET':
-        for st in self.States.keys():
-          if self.States[st].agcdRef == userData:
-            if not any(st == dr.name for dr in favouriteScreen.datarefs):
-              favouriteScreen.datarefs.append(ecu_screen_dataref("",st,"State"))
-            else:
-              for dr in favouriteScreen.datarefs:
-                if st == dr.name:
-                  favouriteScreen.datarefs.remove(dr)
+      userDataStr = raw_input("\nEnter parameter/state that you want to monitor: ").upper()
+      for userData in userDataStr.split(','):
+        userData = userData.strip()
+        if userData[:2] == 'PR':
+          for pr in self.Parameters.keys():
+            if self.Parameters[pr].agcdRef == userData:
+              if not any(pr == dr.name for dr in favouriteScreen.datarefs):
+                favouriteScreen.datarefs.append(ecu_screen_dataref("",pr,"Parameter"))
+              else:
+                for dr in favouriteScreen.datarefs:
+                  if pr == dr.name:
+                    favouriteScreen.datarefs.remove(dr)
+        elif userData[:2] == 'ET':
+          for st in self.States.keys():
+            if self.States[st].agcdRef == userData:
+              if not any(st == dr.name for dr in favouriteScreen.datarefs):
+                favouriteScreen.datarefs.append(ecu_screen_dataref("",st,"State"))
+              else:
+                for dr in favouriteScreen.datarefs:
+                  if st == dr.name:
+                    favouriteScreen.datarefs.remove(dr)
     clearScreen()
 
   def loadFavList(self):
-    fl = open("./cache/favlist.txt", "r").readlines()
+
+    fn = "./cache/favlist_"+self.ecudata['ecuname']+".txt"
+
+    if not os.path.isfile(fn):
+      favlistfile = open( fn, "wb" )
+      favlistfile.close()
+
+
+    fl = open(fn, "r").readlines()
     if len(fl) > 1:
-      if(fl[-1] != self.ecudata['ecuname']): return False
       for drname in fl:
         drname = drname.strip().replace('\n','')
         if drname[:1] == "P":
@@ -554,6 +565,7 @@ class ECU:
           favouriteScreen.datarefs.append(ecu_screen_dataref("", drname,"State"))
         else:
           return drname
+      return True
     else:
       return False        
 
@@ -763,10 +775,9 @@ class ECU:
       menu.append("<Up>")
       choice = Choice(menu, "Choose :")
       if choice[0]=="<Up>":
-        fl = open("./cache/favlist.txt", "w")
+        fl = open("./cache/favlist_"+self.ecudata['ecuname']+".txt", "w")
         for dr in favouriteScreen.datarefs:
           fl.write(dr.name + "\n")
-        fl.write(self.ecudata['ecuname'])
         fl.close()
         favouriteScreen.datarefs = []
         return
@@ -795,16 +806,20 @@ class ECU:
         gc.collect ()
         continue
 
+      fav_sc = self.screens[int(choice[1]) - 1]
       if choice[0][:3] == "FAV":
+        for sc in self.screens:
+            if sc.name.startswith('FAV'):
+                fav_sc = sc
         if not favouriteScreen.datarefs:
           if self.loadFavList():
-            self.show_screen(self.screens[int(choice[1])-1])
+            self.show_screen(fav_sc)
           else:
             self.add_favourite()
         else:
-          self.show_screen(self.screens[int(choice[1])-1])
+          self.show_screen(fav_sc)
       else:   
-        self.show_screen(self.screens[int(choice[1])-1])
+        self.show_screen(fav_sc)
       
   def getLanguageMap(self):
     

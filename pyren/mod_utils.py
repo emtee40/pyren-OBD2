@@ -39,6 +39,9 @@ else:
 class KBHit:
     
     def __init__(self):
+        self.set_getch_term()
+
+    def set_getch_term(self):
         '''Creates a KBHit object that you can call to do various keyboard things.
         '''
 
@@ -274,7 +277,7 @@ def clearScreen():
 def upScreen():
   sys.stdout.write(chr(27)+"[;H")
     
-def hex_VIN_plus_CRC( VIN ):
+def hex_VIN_plus_CRC( VIN, plusCRC=True):
   '''The VIN must be composed of 17 alphanumeric characters apart from "I" and "O"'''
   
   #VIN    ='VF1LM1B0H11111111'
@@ -306,7 +309,10 @@ def hex_VIN_plus_CRC( VIN ):
   sCRC = '0'*(4-len(sCRC))+sCRC
 
   # result
-  return hexVIN+sCRC
+  if plusCRC:
+    return hexVIN+sCRC
+  else:
+    return hexVIN
 
 # Test
 if __name__ == "__main__":

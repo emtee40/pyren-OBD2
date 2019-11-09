@@ -549,6 +549,10 @@ def proc_line( l, elm ):
 
     l = l.strip()
 
+    if l.startswith(':'):
+        print l
+        return
+
     if len(l) == 0:
         print
         return
@@ -616,6 +620,9 @@ def proc_line( l, elm ):
         bit_cmd( l.lower()[7:], elm, fnc='exit_if' )
         return
 
+    if len(l_parts) > 0 and l_parts[0] in ['go','goto']:
+        print l
+        return l_parts[1]
 
     if l.lower().startswith('_'):
         print elm.send_raw(l[1:])
@@ -672,7 +679,7 @@ def main():
       if auto_macro in macro.keys():
         play_macro( auto_macro, elm )
       else:
-        print 'Error: unknown macro mane:', auto_macro
+        print 'Error: unknown macro name:', auto_macro
 
 
     while True:
@@ -688,7 +695,16 @@ def main():
                 l = "# end of command file"
             print l
 
-        proc_line( l, elm )
+        goto = proc_line( l, elm )
+
+        if goto and len(cmd_lines):
+            c_str = 0
+            for c in cmd_lines:
+                if c.startswith(':'):
+                    if goto == c[1:].strip():
+                        cmd_ref = c_str
+                        break
+                c_str += 1
 
 if __name__ == '__main__':
     main()
