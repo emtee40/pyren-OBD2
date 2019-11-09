@@ -49,6 +49,7 @@ F2A = {"01":"7A", "02":"01", "03":"51", "04":"26", "05":"2C", "06":"00", "07":"2
        "97":"68", "98":"A8", "99":"C0"} 
 
 ecudump = {} # {'request':'response'}
+favouriteScreen = ecu_own_screen( "FAV" )
 
 class ECU:
   '''Contains data for one specific ECU
@@ -354,7 +355,8 @@ class ECU:
     if mod_globals.opt_csv:
       # prepare to csv save
       self.minimumrefreshrate = 0
-      csvline = u"Time"
+      csvline = "sep=\\t\n"
+      csvline += u"Time"
       nparams = 0
       for dr in datarefs:
         if dr.type=='State':
@@ -464,11 +466,14 @@ class ECU:
         pages = len(strlst)/H
         for l in strlst[page*H:(page+1)*H]:
           newScreen = newScreen + pyren_encode( l ) + '  \n'
-         
-        if pages>0:
-          newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] <N> for page number H for help or any other to exit"
+        if not path[:3] == 'FAV':
+          if pages>0:
+            newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] <N> for page number H for help or any other to exit"
+          else:
+            newScreen = newScreen+'\n'+"Press H for help or any key to exit"
         else:
-          newScreen = newScreen+'\n'+"Press H for help or any key to exit"
+          newScreen = newScreen+'\n'+"Press ENTER to add or delete parameter/state or any other key to exit" 
+
           
         print newScreen,
         sys.stdout.flush ()
@@ -485,21 +490,72 @@ class ECU:
       if kb.kbhit():
         c = kb.getch()
         if len(c)!=1: continue
-        n = ord(c)-ord('0')
-        if (not mod_globals.opt_csv_only) and n>0 and n<=(pages+1):
-          page = n-1
-          clearScreen()
-          continue
-        if c in ['h','H']:
-          show_doc(self.ecudata['dst'], IDstr)
-          continue
-        if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
-          csvline += ";" + c
-          continue
-        kb.set_normal_term()
-        if mod_globals.opt_csv and csvf!=0:
-          csvf.close()
-        return
+        if path[:3] == 'FAV':
+          if ord(c) == 13:
+            self.add_favourite()
+          else:
+            if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
+              csvline += ";" + c
+              continue
+            kb.set_normal_term()
+            if mod_globals.opt_csv and csvf!=0:
+              csvf.close()
+            return
+        else:
+          n = ord(c)-ord('0')
+          if (not mod_globals.opt_csv_only) and n>0 and n<=(pages+1):
+            page = n-1
+            clearScreen()
+            continue
+          if c in ['h','H']:
+            show_doc(self.ecudata['dst'], IDstr)
+            continue
+          if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
+            csvline += ";" + c
+            continue
+          kb.set_normal_term()
+          if mod_globals.opt_csv and csvf!=0:
+            csvf.close()
+          return
+
+  def add_favourite(self):
+    H = 25
+    if len(favouriteScreen.datarefs) < H:
+      userData = raw_input("\nEnter parameter/state that you want to monitor: ").upper()
+      if userData[:2] == 'PR':
+        for pr in self.Parameters.keys():
+          if self.Parameters[pr].agcdRef == userData:
+            if not any(pr == dr.name for dr in favouriteScreen.datarefs):
+              favouriteScreen.datarefs.append(ecu_screen_dataref("",pr,"Parameter"))
+            else:
+              for dr in favouriteScreen.datarefs:
+                if pr == dr.name:
+                  favouriteScreen.datarefs.remove(dr)
+      elif userData[:2] == 'ET':
+        for st in self.States.keys():
+          if self.States[st].agcdRef == userData:
+            if not any(st == dr.name for dr in favouriteScreen.datarefs):
+              favouriteScreen.datarefs.append(ecu_screen_dataref("",st,"State"))
+            else:
+              for dr in favouriteScreen.datarefs:
+                if st == dr.name:
+                  favouriteScreen.datarefs.remove(dr)
+    clearScreen()
+
+  def loadFavList(self):
+    fl = open("./cache/favlist.txt", "r").readlines()
+    if len(fl) > 1:
+      if(fl[-1] != self.ecudata['ecuname']): return False
+      for drname in fl:
+        drname = drname.strip().replace('\n','')
+        if drname[:1] == "P":
+          favouriteScreen.datarefs.append(ecu_screen_dataref("", drname,"Parameter"))
+        elif drname[:1] =="E":
+          favouriteScreen.datarefs.append(ecu_screen_dataref("", drname,"State"))
+        else:
+          return drname
+    else:
+      return False        
 
   def show_subfunction(self, subfunction, path):
     while(1): 
@@ -676,6 +732,7 @@ class ECU:
       self.show_datarefs(self.Defaults[dtchex].datarefs, path) 
     
   def show_screens(self):
+    self.screens.append(favouriteScreen)
     while(1):
       clearScreen()
       header = "ECU : "+self.ecudata['ecuname']+'  '+self.ecudata['doc']+'\n'
@@ -695,6 +752,7 @@ class ECU:
         if l.name=="SC": l.name = "SC : Configuration scenarios"
         if l.name=="SCS": l.name = "SCS : Security configuration scenarios"
         if l.name=="EZ": l.name = "EZ : EZSTEP"
+        if l.name=="FAV": l.name = "FAV : Favourite Parameters"
         if l.name=="ED":           
           self.ext_de = l.datarefs
           l.name = "ED : DE extra information"
@@ -704,7 +762,14 @@ class ECU:
       if mod_globals.opt_ddt : menu.append("DDT : DDT screens")
       menu.append("<Up>")
       choice = Choice(menu, "Choose :")
-      if choice[0]=="<Up>": return
+      if choice[0]=="<Up>":
+        fl = open("./cache/favlist.txt", "w")
+        for dr in favouriteScreen.datarefs:
+          fl.write(dr.name + "\n")
+        fl.write(self.ecudata['ecuname'])
+        fl.close()
+        favouriteScreen.datarefs = []
+        return
       
       if choice[0][:2]=="DE": 
         if self.ecudata['stdType']=='STD_A':
@@ -730,7 +795,16 @@ class ECU:
         gc.collect ()
         continue
 
-      self.show_screen(self.screens[int(choice[1])-1])
+      if choice[0][:3] == "FAV":
+        if not favouriteScreen.datarefs:
+          if self.loadFavList():
+            self.show_screen(self.screens[int(choice[1])-1])
+          else:
+            self.add_favourite()
+        else:
+          self.show_screen(self.screens[int(choice[1])-1])
+      else:   
+        self.show_screen(self.screens[int(choice[1])-1])
       
   def getLanguageMap(self):
     

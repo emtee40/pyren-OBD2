@@ -241,7 +241,6 @@ def optParser():
     
 def main():
   '''Main function'''
-
   optParser()
 
   mod_utils.chkDirTree()
@@ -306,6 +305,10 @@ def main():
     else:                                                   #else
       ecu = ECU(choosen_ecu, lang.dict )                    #loading original data for chosen ECU
       pickle.dump( ecu, open( ecucashfile, "wb" ) )         #and save cache
+
+    if not os.path.isfile("./cache/favlist.txt"):
+      favlistfile = open( "./cache/favlist.txt", "wb" )
+      favlistfile.close()
     
     ecu.initELM( elm )                                      #init ELM for chosen ECU 
     
