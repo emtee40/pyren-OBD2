@@ -526,24 +526,13 @@ class ECU:
       userDataStr = raw_input("\nEnter parameter/state that you want to monitor: ").upper()
       for userData in userDataStr.split(','):
         userData = userData.strip()
-        if userData[:2] == 'PR':
-          for pr in self.Parameters.keys():
-            if self.Parameters[pr].agcdRef == userData:
-              if not any(pr == dr.name for dr in favouriteScreen.datarefs):
-                favouriteScreen.datarefs.append(ecu_screen_dataref("",pr,"Parameter"))
-              else:
-                for dr in favouriteScreen.datarefs:
-                  if pr == dr.name:
-                    favouriteScreen.datarefs.remove(dr)
-        elif userData[:2] == 'ET':
-          for st in self.States.keys():
-            if self.States[st].agcdRef == userData:
-              if not any(st == dr.name for dr in favouriteScreen.datarefs):
-                favouriteScreen.datarefs.append(ecu_screen_dataref("",st,"State"))
-              else:
-                for dr in favouriteScreen.datarefs:
-                  if st == dr.name:
-                    favouriteScreen.datarefs.remove(dr)
+        if userData == "CLEAR":
+          del favouriteScreen.datarefs[:]
+        pr = self.add_elem(userData)
+        if pr:
+          for dr in favouriteScreen.datarefs:
+            if pr == dr.name:
+              favouriteScreen.datarefs.remove(dr)
     clearScreen()
 
   def loadFavList(self):
@@ -554,20 +543,37 @@ class ECU:
       favlistfile = open( fn, "wb" )
       favlistfile.close()
 
-
     fl = open(fn, "r").readlines()
-    if len(fl) > 1:
+    if len(fl):
       for drname in fl:
         drname = drname.strip().replace('\n','')
-        if drname[:1] == "P":
-          favouriteScreen.datarefs.append(ecu_screen_dataref("", drname,"Parameter"))
-        elif drname[:1] =="E":
-          favouriteScreen.datarefs.append(ecu_screen_dataref("", drname,"State"))
+        if not (drname.startswith("PR") or drname.startswith("ET")):
+          return False
         else:
-          return drname
+          self.add_elem(drname)
       return True
     else:
-      return False        
+      return False
+
+  def add_elem(self, elem):
+    if elem[:2] == "PR":
+      for pr in self.Parameters.keys():
+        if self.Parameters[pr].agcdRef == elem:
+          if not any(pr == dr.name for dr in favouriteScreen.datarefs):
+            favouriteScreen.datarefs.append(ecu_screen_dataref("",pr,"Parameter"))
+            return False
+          else:
+            return pr
+    elif elem[:2] =="ET":
+      for st in self.States.keys():
+        if self.States[st].agcdRef == elem:
+          if not any(st == dr.name for dr in favouriteScreen.datarefs):
+            favouriteScreen.datarefs.append(ecu_screen_dataref("",st,"State"))
+            return False
+          else:
+            return st
+    else:
+      return False   
 
   def show_subfunction(self, subfunction, path):
     while(1): 
@@ -777,7 +783,14 @@ class ECU:
       if choice[0]=="<Up>":
         fl = open("./cache/favlist_"+self.ecudata['ecuname']+".txt", "w")
         for dr in favouriteScreen.datarefs:
-          fl.write(dr.name + "\n")
+          if dr.name.startswith('P'):
+            for pr in self.Parameters.keys():
+              if dr.name == pr:
+                fl.write(self.Parameters[pr].agcdRef + "\n")
+          if dr.name.startswith('E'):
+            for st in self.States.keys():
+              if dr.name == st:
+                fl.write(self.States[st].agcdRef + "\n")
         fl.close()
         favouriteScreen.datarefs = []
         return
