@@ -116,6 +116,7 @@ from mod_elm       import ELM
 from mod_scan_ecus import ScanEcus
 from mod_utils     import *
 from mod_mtc       import acf_getMTC
+from mod_mtc       import acf_buildFull
 
 #global variables 
 
@@ -634,6 +635,7 @@ def generateHTML(path, mtc, vin, dfg, date_madc ):
   print '\r\tDone:100%'
 
 vin_opt = ''
+allvin = ''
   
 def optParser():
   '''Parsing of command line parameters. User should define at least com port name'''
@@ -641,6 +643,7 @@ def optParser():
   import argparse
   
   global vin_opt
+  global allvin
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
@@ -708,6 +711,11 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--allvin",
+      help="generate file with all VIN numbers for platform",
+      dest="allvin",
+      default="")
+
   options = parser.parse_args()
   
   #if not options.port and mod_globals.os != 'android':
@@ -731,6 +739,7 @@ def optParser():
   mod_globals.opt_cfc0      = options.cfc
   mod_globals.opt_sd        = options.sd
   vin_opt                   = options.vinnum
+  allvin                    = options.allvin
     
 def main():
   '''Main function
@@ -744,11 +753,16 @@ def main():
 
   global dfg_ds
   global vin_opt
+  global allvin
   
   optParser()
   
   mod_utils.chkDirTree()
   mod_db_manager.find_DBs()
+
+  if allvin!="":
+    acf_buildFull(allvin)
+    exit()
 
   '''If MTC database does not exists then demo mode'''
   if  not os.path.exists('../BVMEXTRACTION'):

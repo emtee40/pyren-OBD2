@@ -178,7 +178,7 @@ def optParser():
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
-    version="pyRen terminal Version 0.9.k",
+    version="pyRen terminal Version 0.9.q",
     description = "pyRen terminal"
   )
   

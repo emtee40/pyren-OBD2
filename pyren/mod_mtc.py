@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import csv
 import os
 import mod_globals
 import mod_elm
@@ -57,7 +57,67 @@ def acf_loadMTCfromFile( folder ):
   mtcdata = ';'.join(sorted(tmp.split('\n')))
   
   return vindata, mtcdata, refdata, platform 
-  
+
+def acf_buildFull( platf ):
+  '''compile all VINs in one file'''
+
+  plDIR = "../BVMEXTRACTION/"+platf.upper()
+
+  if not os.path.exists(plDIR):
+      print "ERROR: Can't find the BVMEXTRACTION db"
+      return
+
+  mtc = {}
+  mtcf = open(plDIR+'/MTC.dat', 'rb')
+  mtc_list = csv.reader(mtcf, delimiter=';')
+  for i in mtc_list:
+      mtc[int(i[0][:-4])] = i[1:]
+
+  ref = {}
+  reff = open(plDIR+'/REF.dat', 'rb')
+  ref_list = csv.reader(reff, delimiter=';')
+  for i in ref_list:
+      ref[int(i[0][:10])] = [i[0][11:]] + i[1:]
+
+  all_vin = open(plDIR+'/all_vin.csv', 'w')
+
+  for root, dirs, files in os.walk(plDIR):
+    for dir in dirs:
+      if len(dir)!=3:
+          continue
+      VIN1 = dir
+      cdir = os.path.join(plDIR, dir)
+      print cdir
+      for root, dirs, files in os.walk(cdir):
+        for file in files:
+          zfname = file.split('.')[0]
+          if len(zfname)==6:
+            if not file.lower().endswith('.dat'):
+              continue
+            zip=zipfile.ZipFile(os.path.join(root, file))
+            flist = zip.namelist()
+            for i in flist:
+              VIN2 = i.split('.')[0]
+              print '   '+VIN2
+              zf=zip.open(i)
+              vin3list=zf.read()
+              zf.close()
+              for l in vin3list.split('\n'):
+                  l = l.strip()
+                  if len(l)==0:
+                      continue
+                  vr = l.split(';')
+                  VIN = VIN1 + VIN2 + vr[0]
+                  try:
+                    d = vr[4].split(':')[1].split('.')
+                    data = d[2] + d[1] + d[0]
+                  except:
+                      pass
+                  outl = data+'#'+VIN+'#'+' '.join(vr[1:])+'#'+' '.join(mtc[int(vr[1])])+'#'+'_'.join(ref[int(vr[2])])
+                  all_vin.write(outl+'\n')
+  all_vin.close()
+  print "\n\n File: "+plDIR+"/all_vin.csv is build\n\n"
+
 def acf_getMTC( VIN, preferFile=False ):
   ''' getting MTC data from BVMEXTRACTION'''
   
