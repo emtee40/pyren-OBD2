@@ -256,7 +256,7 @@ After first connection to ECU with **--dump** option you will be able to run the
 
  ```
 $cd c:\CLIP\Data\GenAppli\pyren
-$python.exe pyren.py -pp --demo
+$python.exe pyren.py -p --demo
 ``` 
 
 (As so **-p** is a mandatory option you may define any value for demo)
