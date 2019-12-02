@@ -70,18 +70,21 @@ and extract next to directories EcuRenault, Location, Vehicles
 You have to get the next directory tree
 ```
 <any work directory>
+|- _pyren_launcher.py       #(universal launcher)
 |- BVMEXTRACTION            #(need for doc_maker)
 |- DocDB_xx                 #(need for doc_maker where xx=language) 
 |- EcuRenault               #(for CLIP mode)
 |- Location                 #(for CLIP mode)
 |- Vehicles                 #(for CLIP mode)
-|- ecus                     #(for DDT mode)
-|- graphics                 #(for DDT mode optional)
+|- DDT2000data              #(for DDT mode)
+|   |- ecus                 #(for DDT mode)
+|   |- graphics             #(for DDT mode)
+|   |- vehicles             #(for DDT mode)
+|
 |- pyren                    #(pyren)
 |   |- pyren.py
 ...    ...
 |   |- <other modules>
-|- _pyren_launcher.py       #(universal launcher)
 ```
 
 ## Installation on MacOS and Linux

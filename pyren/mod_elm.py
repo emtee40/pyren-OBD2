@@ -151,7 +151,7 @@ class Port:
         self.portTimeout = portTimeout
         
         portName = portName.strip ()
-        
+
         if re.match (r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$", portName):
             try:
                 self.ipaddr, self.tcpprt = portName.split (':')
@@ -174,10 +174,10 @@ class Port:
                 self.droid.bluetoothConnect ('00001101-0000-1000-8000-00805F9B34FB')
             except:
                 pass
-            
+
             if len (self.droid.bluetoothActiveConnections ().result) != 0:
                 self.btcid = list (self.droid.bluetoothActiveConnections ().result.keys ())[0]
-        
+
         else:
             self.portName = portName
             self.portType = 0

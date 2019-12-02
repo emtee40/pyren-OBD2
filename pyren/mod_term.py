@@ -226,7 +226,7 @@ def optParser():
       default=False,
       action="store_true")
 
-  parser.add_argument("--verbose",
+  parser.add_argument("-vv", "--verbose",
       help="show verbose output (unused)",
       dest="verb",
       default=False,

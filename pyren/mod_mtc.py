@@ -260,17 +260,56 @@ def acf_MTC_and( expr, mtc ):
     interm_res = acf_MTC_finde( ande, mtc )
     result = result and interm_res
 
-  #print "and:", expr, result
+  return result
 
-  return result    
 
-def acf_MTC_compare( expr, mtc ):
+def acf_MTC_or(expr, mtc):
+  ''' expr - expression with AND rules'''
+  ''' mtc - list of options           '''
+  ''' and-operand in MTC expression '''
+
+  result = False
+
+  or_list = expr.split(',')
+  or_list = map(lambda x: x.strip(), or_list)
+
+  for ore in or_list:
+    interm_res = acf_MTC_finde(ore, mtc)
+    result = result or interm_res
+
+    if result:
+      return result
+
+  return result
+
+
+def acf_MTC_compare(expr, mtc):
+  ''' expr - expression with rules'''
+  ''' mtc - list of options       '''
+  ''' this function match MTC-tag with MTC-expression'''
+
+  result = True
+
+  and_list = expr.split('/')
+  and_list = map(lambda x: x.strip(), and_list)
+
+  for ande in and_list:
+    if ',' in ande:
+      interm_res = acf_MTC_or(ande, mtc)
+    else:
+      interm_res = acf_MTC_finde(ande, mtc)
+    result = result and interm_res
+
+  return result
+
+
+def acf_MTC_compare_old( expr, mtc ):
   ''' expr - expression with rules'''
   ''' mtc - list of options       '''
   ''' this function match MTC-tag with MTC-expression'''
   
   result = False
-  
+
   or_list = expr.split(',')
   or_list = map(lambda x:x.strip(),or_list)
 
