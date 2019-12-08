@@ -196,19 +196,20 @@ class ECU:
       flist.sort()
       dumpname = os.path.join("./dumps/", flist[-1])
 
-    print 'Loading dump:', dumpname
-    
-    df = open(dumpname,'rt')
-    lines = df.readlines()
-    df.close()
-    
-    for l in lines:
-      l = l.strip().replace('\n','')
-      if l.count(':')==1:
-        req,rsp = l.split(':')
-        ecudump[req] = rsp
-    
-    self.elm.setDump( ecudump )
+    #print 'Loading dump:', dumpname
+
+    self.elm.loadDump(dumpname)
+    #df = open(dumpname,'rt')
+    #lines = df.readlines()
+    #df.close()
+    #
+    #for l in lines:
+    #  l = l.strip().replace('\n','')
+    #  if l.count(':')==1:
+    #    req,rsp = l.split(':')
+    #    ecudump[req] = rsp
+    #
+    #self.elm.setDump( ecudump )
     
   def get_st( self, name ):
     if name not in self.States.keys():

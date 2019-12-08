@@ -21,6 +21,9 @@ stack = []
 
 auto_macro = ""
 auto_dia = False
+debug_mode = False
+
+key_pressed = ''
 
 mod_globals.os = os.name
 
@@ -175,6 +178,7 @@ def optParser():
   
   global auto_macro
   global auto_dia
+  global debug_mode
 
   parser = argparse.ArgumentParser(
     #usage = "%prog -p <port> [options]",
@@ -238,6 +242,13 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--debug",
+      help="for debug purpose only",
+      dest="dbg",
+      default=False,
+      action="store_true")
+
+
   options = parser.parse_args()
   
   if not options.port and mod_globals.os != 'android':
@@ -260,6 +271,7 @@ def optParser():
     mod_globals.opt_cfc0      = options.cfc
     mod_globals.opt_n1c       = options.n1c
     auto_dia                  = options.dia
+    debug_mode                = options.dbg
 
 class FileChooser():
     lay = '''<?xml version="1.0" encoding="utf-8"?>
@@ -426,9 +438,17 @@ def play_macro(mname, elm):
 
     stack.remove(mname)
 
+def term_cmd( c, elm ):
+    global var
+    rsp = elm.request(c, cache=False)
+    #rsp = elm.cmd(rcmd)
+    var['$lastResponse'] = rsp
+    return rsp
+
 def bit_cmd( l, elm, fnc='set_bits' ):
 
-    error_msg = '''ERROR: command should have 5 parameters: <lid> <rsp_len> <offset> <hex mask> <hex value>"
+    error_msg1 = '''ERROR: command should have 5 parameters: 
+    <command> <lid> <rsp_len> <offset> <hex mask> <hex value>
         <lid> - ECUs local identifier. Length should be 2 simbols for KWP or 4 for CAN
         <rsp_len> - lengt of command response including positive response bytes, equals MinBytes from ddt db
         <offset> - offeset in bytes to first changed byte (starts from 1 not 0) 
@@ -437,16 +457,55 @@ def bit_cmd( l, elm, fnc='set_bits' ):
     <hex mask> and <hex value> should have equal length
     
     '''
+    error_msg2 = '''ERROR: command should have 6 parameters: 
+    <command> <lid> <rsp_len> <offset> <hex mask> <hex value> <label>
+        <lid> - ECUs local identifier. Length should be 2 simbols for KWP or 4 for CAN
+        <rsp_len> - lengt of command response including positive response bytes, equals MinBytes from ddt db
+        <offset> - offeset in bytes to first changed byte (starts from 1 not 0) 
+        <hex mask> - bit mask for changed bits, 1 - changable, 0 - untachable
+        <hex value> - bit value
+        <label> - label to go
+    <hex mask> and <hex value> should have equal length
 
-    if fnc not in ['set_bits','xor_bits','exit_if','exit_if_not']:
+    '''
+
+    error_msg3 = '''ERROR: command should have 6 parameters: 
+    <command> <lid> <rsp_len> <offset> <hex mask> <hex value> <label>
+        <lid> - ECUs local identifier. Length should be 2 simbols for KWP or 4 for CAN
+        <rsp_len> - lengt of command response including positive response bytes, equals MinBytes from ddt db
+        <offset> - offeset in bytes to first changed byte (starts from 1 not 0) 
+        <hex mask> - bit mask for changed bits, 1 - changable, 0 - untachable
+        <val step> - value step
+        <val offset> - value offset
+        <val divider> - value divider
+
+    '''
+    if fnc not in ['set_bits','xor_bits','exit_if','exit_if_not'] and \
+            fnc not in ['goto_if','goto_if_not', 'value']:
         print "\nERROR: Unknown function\n"
         return
 
     par = l.strip().split(' ')
-    if len(par)!=5:
-        print error_msg
-        return
 
+    if fnc in ['set_bits','xor_bits','exit_if','exit_if_not']:
+        error_msg = error_msg1
+        if len(par)!=5:
+            print error_msg
+            return
+
+    if fnc in ['goto_if','goto_if_not']:
+        error_msg = error_msg2
+        if len(par)!=6:
+            print error_msg
+            return
+
+    if fnc in ['value']:
+        error_msg = error_msg3
+        if len(par)==4:
+            par = par + ['1','0','1']
+        if len(par)!=7:
+            print error_msg
+            return
 
     try:
         lid = par[0].strip()
@@ -454,11 +513,22 @@ def bit_cmd( l, elm, fnc='set_bits' ):
         off = int(par[2].strip())-1
         mask = par[3].strip()
         val = par[4].strip()
+        if fnc in ['goto_if', 'goto_if_not']:
+            go = par[5].strip()
+        if fnc in ['value']:
+            val = '0'*len(mask)
+            stp = par[4].strip()
+            ofs = par[5].strip()
+            div = par[6].strip()
     except:
         print error_msg
         return
 
-    if len(lid) not in [2,4] or (len(mask)!=len(val)) or off<0 or off>lng:
+    if len(lid) in [2,4] and off>=0 and off<=lng:
+        if fnc not in ['value'] and (len(mask)!=len(val)):
+            print error_msg
+            return
+    else:
         print error_msg
         return
 
@@ -467,10 +537,11 @@ def bit_cmd( l, elm, fnc='set_bits' ):
     else: #CAN
         rcmd = '22' + lid
 
-    rsp = elm.cmd(rcmd)
+    rsp = term_cmd( rcmd, elm )
     rsp = rsp.replace(' ','')[:lng*2].upper()
 
-    print "read  value:",rsp
+    if fnc not in ['value']:
+        print "read  value:",rsp
 
     if len(rsp) != lng * 2:
         print '\nERROR: Length is unexpected\n'
@@ -493,6 +564,7 @@ def bit_cmd( l, elm, fnc='set_bits' ):
 
     diff = 0
     i = 0
+    int_val = 0
     while i<len(mask)/2:
         c_by = int(rsp[(off+i)*2:(off+i)*2+2],16)
         c_ma = int(mask[i*2:i*2+2],16)
@@ -503,6 +575,8 @@ def bit_cmd( l, elm, fnc='set_bits' ):
         elif fnc == 'set_bits':
             n_by = (c_by & ~c_ma) | c_va
         else:
+            n_by = c_by & c_ma
+            int_val = int_val * 256 + n_by
             if (c_by & c_ma) != (c_va & c_ma):
                 diff += 1
             i += 1
@@ -516,19 +590,40 @@ def bit_cmd( l, elm, fnc='set_bits' ):
 
     if fnc == 'exit_if':
         if diff==0:
-            print "\n Match. Exit \n"
+            print "Match. Exit"
             sys.exit()
         else:
-            print "\n Not match. Continue \n"
+            print "Not match. Continue"
             return
 
     if fnc == 'exit_if_not':
         if diff!=0:
-            print "\n Not match. Exit \n"
+            print "Not match. Exit"
             sys.exit()
         else:
-            print "\n Match. Continue \n"
+            print "Match. Continue"
             return
+
+    if fnc == 'goto_if':
+        if diff==0:
+            print "Match. goto:", go
+            return go
+        else:
+            print "Not match. Continue"
+            return
+
+    if fnc == 'goto_if_not':
+        if diff!=0:
+            print "Not match. goto:", go
+            return go
+        else:
+            print "Match. Continue"
+            return
+
+    if fnc == 'value':
+        res = (int_val*float(stp)+float(ofs))/float(div)
+        print '# LID(',lid,') =', res
+        return
 
     if rsp[:2]=='61':
         wcmd = '3B'+rsp[2:]
@@ -536,12 +631,26 @@ def bit_cmd( l, elm, fnc='set_bits' ):
         wcmd = '2E'+rsp[2:]
 
     print "write value:", wcmd
-    print elm.cmd(wcmd)
+    print term_cmd( wcmd, elm )
+
+def wait_kb( ttw ):
+    global key_pressed
+
+    st = time.time()
+    kb = mod_utils.KBHit()
+
+    while(time.time()<(st+ttw)):
+        if kb.kbhit():
+            key_pressed = kb.getch()
+        time.sleep(0.1)
+
+    kb.set_normal_term()
 
 def proc_line( l, elm ):
     global macro
     global var
     global cmd_delay
+    global key_pressed
 
 
     if '#' in l:
@@ -554,7 +663,6 @@ def proc_line( l, elm ):
         return
 
     if len(l) == 0:
-        print
         return
 
     if l in ['q', 'quit', 'e', 'exit', 'end']:
@@ -562,6 +670,10 @@ def proc_line( l, elm ):
 
     if l in ['h', 'help', '?']:
         print_help()
+        return
+
+    if l in ['cls']:
+        mod_utils.clearScreen()
         return
 
     if l in macro.keys():
@@ -588,15 +700,22 @@ def proc_line( l, elm ):
         if vu in var.keys():
             l = re.sub("\\" + vu, var[vu], l)
         else:
-            print 'Error: unknown variable', vu, 'in', mname
+            print 'Error: unknown variable', vu
             return
         m = re.search('\$\S+', l)
 
     l_parts = l.split()
     if len(l_parts) > 0 and l_parts[0] in ['wait', 'sleep']:
         try:
-            time.sleep(int(l_parts[1]))
+            wait_kb(int(l_parts[1]))
             return
+        except:
+            pass
+
+    if len(l_parts) > 0 and l_parts[0] in ['ses', 'session']:
+        try:
+            elm.startSession = l_parts[1]
+            l = l_parts[1]
         except:
             pass
 
@@ -620,24 +739,48 @@ def proc_line( l, elm ):
         bit_cmd( l.lower()[7:], elm, fnc='exit_if' )
         return
 
+    if l.lower().startswith('goto_if_not'):
+        go = bit_cmd( l.lower()[11:], elm, fnc='goto_if_not' )
+        return go
+
+    if l.lower().startswith('goto_if'):
+        go = bit_cmd( l.lower()[7:], elm, fnc='goto_if' )
+        return go
+
+    if l.lower().startswith('if_key'):
+        if len(l_parts) != 3 or l_parts[1] != key_pressed:
+            return
+        else:
+            key_pressed = ''
+            return l_parts[2]
+
+    if l.lower().startswith('value'):
+        val = bit_cmd( l.lower()[5:], elm, fnc='value' )
+        return
+
     if len(l_parts) > 0 and l_parts[0] in ['go','goto']:
         print l
         return l_parts[1]
 
+    if len(l_parts) > 0 and l_parts[0] in ['var','variable']:
+        print l
+        return
+
     if l.lower().startswith('_'):
         print elm.send_raw(l[1:])
     else:
-        print elm.cmd(l)
+        print term_cmd( l, elm )
 
     if cmd_delay>0:
         print '# delay:', cmd_delay
-        time.sleep(cmd_delay)
+        wait_kb(cmd_delay)
 
 
 def main():
 
     global auto_macro
     global auto_dia
+    global debug_mode
     global macro
     global var
 
@@ -649,27 +792,36 @@ def main():
     
     optParser()
 
-    #debug
-    #mod_globals.opt_demo = True
-
     # disable auto flow control
     mod_globals.opt_cfc0 = True
     
     print 'Opening ELM'
     elm = mod_elm.ELM( mod_globals.opt_port, mod_globals.opt_speed, True )
+
+    # change serial port baud rate
+    elm.port.check_elm()
+    if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
+        elm.port.soft_boudrate(mod_globals.opt_rate)
+
     elm.currentaddress = '7A'
     elm.currentprotocol = 'can'
 
     cmd_lines = []
     cmd_ref = 0
 
-    #debug
-    #auto_dia = True
-
     if auto_dia:
         fname = FileChooser().choose()
         #debug
         #fname = './macro/test/test.cmd'
+        if len(fname)>0:
+            f = open(fname, 'rt')
+            cmd_lines = f.readlines()
+            f.close()
+
+    if debug_mode:
+        mod_globals.opt_demo = True
+        elm.loadDump('./dumps/term_test.txt')
+        fname = './macro/test/test.cmd'
         if len(fname)>0:
             f = open(fname, 'rt')
             cmd_lines = f.readlines()

@@ -618,7 +618,25 @@ class ELM:
     def setDump(self, ecudump):
         """ define ecudum for demo mode"""
         self.ecudump = ecudump
-    
+
+    def loadDump(self, dumpname):
+
+        print 'Loading dump:', dumpname
+
+        df = open(dumpname, 'rt')
+        lines = df.readlines()
+        df.close()
+
+        ecudump = {}
+
+        for l in lines:
+            l = l.strip().replace('\n', '')
+            if l.count(':') == 1:
+                req, rsp = l.split(':')
+                ecudump[req] = rsp
+
+        self.setDump(ecudump)
+
     def debugMonitor(self):
         byte = ""
         try:
