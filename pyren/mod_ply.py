@@ -8,6 +8,7 @@ import ply.lex as lex
 import ply.yacc as yacc
 import os
 import time
+import re
 
 
 class Parser:
@@ -345,7 +346,10 @@ class Calc(Parser):
             p[0] = self.names[p[1]]
         except LookupError:
             print "PLY:Parser:Undefined name '%s'" % p[1]
-            p[0] = 0
+            if re.match('^[a-fA-F0-9]*$',p[1]) != None:
+                p[0] = p[1]
+            else:
+                p[0] = 0
     p_expression_name.func_doc='expression : NAME'
         
     def p_error(self, p):

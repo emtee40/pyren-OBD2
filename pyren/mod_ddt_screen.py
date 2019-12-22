@@ -865,7 +865,19 @@ class DDTScreen (tk.Frame):
             r = str (self.decu.requests[self.decu.req4data[closest]])
 
         
-        xText = d + '\n' + '*' * 50 + '\n' + r + '\n' + '*' * 50 + '\n' + p
+        try:
+            xText = d + '\n' + '*' * 50 + '\n'
+        except:
+            pass
+        try:
+            xText += r + '\n' + '*' * 50 + '\n'
+        except:
+            pass
+        try:
+            xText += p
+        except:
+            pass
+
         dialog = InfoDialog (self.root, xText)
         self.root.wait_window (dialog.top)
     
