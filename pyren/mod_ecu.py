@@ -503,6 +503,7 @@ class ECU:
             kb.set_normal_term()
             if mod_globals.opt_csv and csvf!=0:
               csvf.close()
+            self.saveFavList()
             return
         else:
           n = ord(c)-ord('0')
@@ -574,7 +575,20 @@ class ECU:
           else:
             return st
     else:
-      return False   
+      return False  
+
+  def saveFavList(self):
+    fl = open("./cache/favlist_"+self.ecudata['ecuname']+".txt", "w")
+    for dr in favouriteScreen.datarefs:
+      if dr.name.startswith('P'):
+        for pr in self.Parameters.keys():
+          if dr.name == pr:
+            fl.write(self.Parameters[pr].agcdRef + "\n")
+      if dr.name.startswith('E'):
+        for st in self.States.keys():
+          if dr.name == st:
+            fl.write(self.States[st].agcdRef + "\n")
+    fl.close() 
 
   def show_subfunction(self, subfunction, path):
     while(1): 
@@ -782,17 +796,6 @@ class ECU:
       menu.append("<Up>")
       choice = Choice(menu, "Choose :")
       if choice[0]=="<Up>":
-        fl = open("./cache/favlist_"+self.ecudata['ecuname']+".txt", "w")
-        for dr in favouriteScreen.datarefs:
-          if dr.name.startswith('P'):
-            for pr in self.Parameters.keys():
-              if dr.name == pr:
-                fl.write(self.Parameters[pr].agcdRef + "\n")
-          if dr.name.startswith('E'):
-            for st in self.States.keys():
-              if dr.name == st:
-                fl.write(self.States[st].agcdRef + "\n")
-        fl.close()
         favouriteScreen.datarefs = []
         return
       
