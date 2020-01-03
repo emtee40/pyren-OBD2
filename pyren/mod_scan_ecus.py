@@ -295,6 +295,9 @@ class ScanEcus:
       for row in self.detectedEcus:
         if 'idf' not in row.keys():
           row['idf'] = ''
+        if row['dst'] not in m_elm.dnat.keys():
+          m_elm.dnat[row['dst']] = '000'
+          m_elm.snat[row['dst']] = '000'
         if row['idf'] in families.keys() and families[row['idf']] in mod_globals.language_dict.keys():
           fmlyn = mod_globals.language_dict[families[row['idf']]]
           if mod_globals.opt_scan:

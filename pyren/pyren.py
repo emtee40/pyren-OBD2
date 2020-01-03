@@ -273,8 +273,11 @@ def main():
       if  i in se.allecus.keys():
         se.allecus[i]['ecuname']=i
         se.allecus[i]['idf']=se.allecus[i]['ModelId'][2:4]
-        if se.allecus[i]['idf'][0]=='0': 
-          se.allecus[i]['idf'] = se.allecus[i]['idf'][1]
+        if se.allecus[i]['idf']!='':
+          if se.allecus[i]['idf'][0]=='0':
+            se.allecus[i]['idf'] = se.allecus[i]['idf'][1]
+        else:
+            continue
         se.allecus[i]['pin'] = 'can' 
         se.detectedEcus.append( se.allecus[i] )    
   else:
@@ -307,7 +310,9 @@ def main():
     
     if os.path.isfile(ecucashfile):                         #if cache exists
       ecu = pickle.load( open( ecucashfile, "rb" ) )        #load it
-    else:                                                   #else
+    else:
+      if len(choosen_ecu['ModelId'])!=5:
+          continue
       ecu = ECU(choosen_ecu, lang.dict )                    #loading original data for chosen ECU
       pickle.dump( ecu, open( ecucashfile, "wb" ) )         #and save cache
 
