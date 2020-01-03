@@ -1878,7 +1878,10 @@ class ELM:
             RXa = snat[addr]
         else:
             RXa = 'undefined'
-        
+
+        if mod_globals.opt_stn: # fix for STN
+            self.check_answer(self.cmd("at sp 6"))
+
         self.check_answer (self.cmd ("at sh " + TXa))
         self.check_answer (self.cmd ("at cra " + RXa))
         self.check_answer (self.cmd ("at fc sh " + TXa))
