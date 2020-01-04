@@ -311,7 +311,7 @@ def main():
     if os.path.isfile(ecucashfile):                         #if cache exists
       ecu = pickle.load( open( ecucashfile, "rb" ) )        #load it
     else:
-      if len(choosen_ecu['ModelId'])!=5:
+      if len(choosen_ecu['ecuname'])!=5:
           continue
       ecu = ECU(choosen_ecu, lang.dict )                    #loading original data for chosen ECU
       pickle.dump( ecu, open( ecucashfile, "wb" ) )         #and save cache

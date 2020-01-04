@@ -95,6 +95,9 @@ class InfoDialog (tkSimpleDialog.Dialog):
         b = tk.Button (self.top, text="Close", command=self.close)
         b.pack (side=tk.BOTTOM, padx=5, pady=5)
 
+        b2 = tk.Button (self.top, text="Save", command=self.save)
+        b2.pack (side=tk.BOTTOM, padx=5, pady=5)
+
         if hnid:
           b1 = tk.Button (self.top, text="Hide 'None'", command=self.hnid_func)
           b1.pack (side=tk.BOTTOM, padx=5, pady=5)
@@ -103,6 +106,14 @@ class InfoDialog (tkSimpleDialog.Dialog):
     
     def close(self):
         self.top.destroy ()
+
+    def save(self):
+        f = tkFileDialog.asksaveasfile(mode='w')
+        if f is None:
+            return
+        text2save = str(self.txt.get(1.0, tk.END))
+        f.write(text2save)
+        f.close()
 
     def hnid_func(self):
         self.txt.delete('1.0', tk.END)
@@ -573,6 +584,53 @@ class DDTScreen (tk.Frame):
         del(cv_1)
         del(cv_2)
 
+    def makeMacro(self):
+
+        fname = self.askDumpName()
+
+        if fname == '':
+            return
+
+        # stop periodic requests
+        if self.jid is not None:
+            self.root.after_cancel(self.jid)
+        self.decu.rotaryRunAlloved.clear()
+
+        #save state
+        savedMode = mod_globals.opt_demo
+        mod_globals.opt_demo = True
+        saveDumpName = mod_globals.dumpName
+        self.decu.loadDump(fname)
+
+        (conf_1, cv_1) = self.decu.makeConf(indump=True)
+
+        #restore state
+        mod_globals.dumpName = saveDumpName
+        mod_globals.opt_demo = savedMode
+        if mod_globals.opt_demo:
+            self.decu.loadDump(mod_globals.dumpName)
+        else:
+            self.decu.clearELMcache()
+
+        # show confirmation dialog if approve is True
+        confirmed = True
+        xText = '\n\n'
+        for i in conf_1:
+            xText += "%s\n" % (i)
+
+        dialog = InfoDialog(self.root, xText, hnid=False)
+        self.root.wait_window(dialog.top)
+
+        # re-launch periodic requests
+        if self.start:
+            self.jid = self.root.after(self.updatePeriod, self.updateScreen)
+            self.decu.rotaryRunAlloved.set()
+
+        # request to update dInputs
+        self.update_dInputs()
+        del (conf_1)
+        del (cv_1)
+
     def dumpName2str(self, dn):
         uda = dn.split('/')[-1].split('_')[0]
         fda = datetime.datetime.fromtimestamp(int(uda)).strftime('%Y/%m/%d %H:%M:%S')
@@ -1010,6 +1068,8 @@ class DDTScreen (tk.Frame):
         
         self.toolmenu = tk.Menu (self.menubar, tearoff=0)
         self.toolmenu.add_command (label="RollBack", command=self.dumpRollBack)
+        self.toolmenu.add_separator ()
+        self.toolmenu.add_command (label="Make macro from dump", command=self.makeMacro)
         self.toolmenu.add_separator ()
         self.toolmenu.add_command (label="Show diff", command=self.showDiff)
         self.toolmenu.add_separator ()
