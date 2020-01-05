@@ -799,9 +799,10 @@ def main():
     elm = mod_elm.ELM( mod_globals.opt_port, mod_globals.opt_speed, True )
 
     # change serial port baud rate
-    elm.port.check_elm()
-    if mod_globals.opt_speed < mod_globals.opt_rate and not mod_globals.opt_demo:
-        elm.port.soft_boudrate(mod_globals.opt_rate)
+    if not mod_globals.opt_demo:
+        elm.port.check_elm()
+        if mod_globals.opt_speed < mod_globals.opt_rate:
+            elm.port.soft_boudrate(mod_globals.opt_rate)
 
     elm.currentaddress = '7A'
     elm.currentprotocol = 'can'
