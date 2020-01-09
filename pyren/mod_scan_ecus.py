@@ -77,8 +77,11 @@ class ScanEcus:
     file_list = mod_db_manager.get_file_list_from_clip('Vehicles/TCOM_*.[Xx]ml')
     for file in file_list:
       try: 
-        model_n = int(file[-7:-4])
-        if model_n<86: continue
+        model_n = file[-7:-4]
+        if model_n in ["005","010","026","035","054","064","066","069","073","088","107","110","114"]:
+          continue
+        #model_n = int(file[-7:-4])
+        #if model_n<86: continue
       except ValueError:
         pass
       DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(file))
