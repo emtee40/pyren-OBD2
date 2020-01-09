@@ -123,8 +123,9 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 188 | ----  | 6-14  | ----  | SAMSUNG XM3           | XJL      | yes   | yes   |
 | 189 | ----  | 6-14  | 13-12 | CITY K-ZE             | XBG      | yes   | yes   |
 
-   * Only Siemens Sirius 32N supported
-   ** CAN2 and ISO not supported 
+&ast; Only Siemens Sirius 32N supported
+
+&ast;&ast; CAN2 and ISO not supported 
 
 ## Included tools
 * **doc_maker.py** - build diagnostic documentation for your car (require BVMEXTRACTION folder and extracted DocDB_xx.7ze)
