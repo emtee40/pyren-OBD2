@@ -549,7 +549,7 @@ class ECU:
     if len(fl):
       for drname in fl:
         drname = drname.strip().replace('\n','')
-        if not (drname.startswith("PR") or drname.startswith("ET")):
+        if not (drname.startswith("PR") or drname.startswith("ET") or drname.startswith("ID")):
           return False
         else:
           self.add_elem(drname)
@@ -574,6 +574,14 @@ class ECU:
             return False
           else:
             return st
+    elif elem[:2] =="ID":
+      for idk in self.Identifications.keys():
+        if self.Identifications[idk].agcdRef == elem:
+          if not any(idk == dr.name for dr in favouriteScreen.datarefs):
+            favouriteScreen.datarefs.append(ecu_screen_dataref("",idk,"Identification"))
+            return False
+          else:
+            return idk        
     else:
       return False  
 
@@ -588,6 +596,10 @@ class ECU:
         for st in self.States.keys():
           if dr.name == st:
             fl.write(self.States[st].agcdRef + "\n")
+      if dr.name.startswith('I'):
+        for idk in self.Identifications.keys():
+          if dr.name == idk:
+            fl.write(self.Identifications[idk].agcdRef + "\n")
     fl.close() 
 
   def show_subfunction(self, subfunction, path):

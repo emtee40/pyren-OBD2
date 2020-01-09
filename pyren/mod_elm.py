@@ -1879,11 +1879,7 @@ class ELM:
         else:
             RXa = 'undefined'
 
-        if mod_globals.opt_stn: # fix for STN
-            self.check_answer(self.cmd("at sp 6"))
-
         self.check_answer (self.cmd ("at sh " + TXa))
-        self.check_answer (self.cmd ("at cra " + RXa))
         self.check_answer (self.cmd ("at fc sh " + TXa))
         self.check_answer (self.cmd ("at fc sd 30 00 00"))  # status BS STmin
         self.check_answer (self.cmd ("at fc sm 1"))
@@ -1909,6 +1905,7 @@ class ELM:
                 self.set_can_500()
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
+        self.check_answer (self.cmd ("at cra " + RXa))
         
         self.check_adapter ()
     
