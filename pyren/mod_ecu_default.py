@@ -218,9 +218,9 @@ def get_default_std_b( df, mn, se, elm, calc, getDTCmnemo ):
     description = df[dtc].label  
     
     if mod_globals.os=='android':
-      defstr = "DTC%-6s %-41s %-6s %-10s"%(dtc+dtcType,description,interpretation,isAlive)
+      defstr = "%-6s(DTC%-6s) %-41s %-6s %-10s"%(df[dtc].agcdRef,dtc+dtcType,description,interpretation,isAlive)
     else:
-      defstr = "DTC%-6s %-50s %-6s %-10s"%(dtc+dtcType,description,interpretation,isAlive)
+      defstr = "%-6s(DTC%-6s) %-50s %-6s %-10s"%(df[dtc].agcdRef,dtc+dtcType,description,interpretation,isAlive)
 
     stBitsDef = ['warningIndicatorRequested',
      'testNotCompletedThisOperationCycle',
