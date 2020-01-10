@@ -116,10 +116,10 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 180 | ----  | 6-14  | 13-12 | TRIBER                | XBC      | yes   | yes   |
 | 181 | ----  | 6-14  | ----  | CAPTUR II             | XJB      | yes   | yes   |
 | 182 | ----  | 6-14  | ----  | CAPTUR II CN          | XJE      | yes   | yes   |
-| 183 | ----  | 6-14  | ----  | MEGANE IV ph2         | XFB      | yes   | no    |
-| 184 | ----  | 6-14  | ----  | ESPACE V ph2          | XFC      | yes   | no    |
-| 185 | ----  | 6-14  | ----  | TALISMAN ph2          | XFD      | yes   | no    |
-| 186 | ----  | 6-14  | ----  | NOUVELLE ZOE          | X10      | yes   | no    |
+| 183 | ----  | 6-14  | ----  | MEGANE IV ph2         | XFB      | yes   | yes   |
+| 184 | ----  | 6-14  | ----  | ESPACE V ph2          | XFC      | yes   | yes   |
+| 185 | ----  | 6-14  | ----  | TALISMAN ph2          | XFD      | yes   | yes   |
+| 186 | ----  | 6-14  | ----  | NOUVELLE ZOE          | X10      | yes   | yes   |
 | 188 | ----  | 6-14  | ----  | SAMSUNG XM3           | XJL      | yes   | yes   |
 | 189 | ----  | 6-14  | 13-12 | CITY K-ZE             | XBG      | yes   | yes   |
 
