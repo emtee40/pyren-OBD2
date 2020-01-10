@@ -1829,24 +1829,25 @@ class ELM:
         else:
             self.check_answer(self.cmd("at cfc1"))
 
-        # else:
-        # self.cmd("at st ff")
-        #  self.cmd("at at 0")
-        # self.cmd("at sp 6")
-        # self.cmd("at at 1")
         self.lastCMDtime = 0
 
-    def set_can_500(self):
+    def set_can_500(self, addr='XXX'):
         if mod_globals.opt_can2 and mod_globals.opt_stn:
             tmp = self.cmd("STPBR 500000")
             if '?' not in tmp: return
-        self.cmd("at sp 6")
+        if len(addr)==3:
+            self.cmd("at sp 6")
+        else:
+            self.cmd("at sp 7")
 
-    def set_can_250(self):
+    def set_can_250(self, addr='XXX'):
         if mod_globals.opt_can2 and mod_globals.opt_stn:
             tmp = self.cmd("STPBR 250000")
             if '?' not in tmp: return
-        self.cmd("at sp 8")
+        if len(addr)==3:
+            self.cmd("at sp 8")
+        else:
+            self.cmd("at sp 9")
 
     def set_can_addr(self, addr, ecu):
         
@@ -1879,7 +1880,12 @@ class ELM:
         else:
             RXa = 'undefined'
 
-        self.check_answer (self.cmd ("at sh " + TXa))
+        if len(TXa)==8: # 29bit CANId
+            self.check_answer(self.cmd("at cp " + TXa[:2]))
+            self.check_answer(self.cmd("at sh " + TXa[2:]))
+        else:
+            self.check_answer (self.cmd ("at sh " + TXa))
+
         self.check_answer (self.cmd ("at fc sh " + TXa))
         self.check_answer (self.cmd ("at fc sd 30 00 00"))  # status BS STmin
         self.check_answer (self.cmd ("at fc sm 1"))
@@ -1891,18 +1897,18 @@ class ELM:
             if self.lf != 0:
                 self.lf.write ('#' * 60 + "\n#    Double BRP, try CAN250 and then CAN500\n" + '#' * 60 + "\n")
                 self.lf.flush ()
-            self.set_can_250()
+            self.set_can_250( TXa )
             tmprsp = self.send_raw ("0210C0")  # send any command
             if 'CAN ERROR' in tmprsp:  # not 250!
                 ecu['brp'] = '0'  # brp = 0
-                self.set_can_500()
+                self.set_can_500( TXa )
             else:  # 250!
                 ecu['brp'] = '1'  # brp = 1
         else:  # not double brp
             if 'brp' in ecu.keys () and '1' in ecu['brp']:
-                self.set_can_250()
+                self.set_can_250( TXa )
             else:
-                self.set_can_500()
+                self.set_can_500( TXa )
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
         self.check_answer (self.cmd ("at cra " + RXa))

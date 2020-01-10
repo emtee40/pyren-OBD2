@@ -1084,11 +1084,17 @@ class DDTLauncher():
             else:
                 v_iso = ''
             if e['XId']:
-                v_XId = hex(int(e['XId']))[2:].upper()
+                if len(e['XId'])>6:
+                    v_XId = hex(0x80000000+int(e['XId']))[2:].upper()
+                else:
+                    v_XId = hex(int(e['XId']))[2:].upper()
             else:
                 v_XId = ''
             if e['RId']:
-                v_RId = hex(int(e['RId']))[2:].upper()
+                if len(e['RId'])>6:
+                    v_RId = hex(0x80000000+int(e['RId']))[2:].upper()
+                else:
+                    v_RId = hex(int(e['RId']))[2:].upper()
             else:
                 v_RId = ''
 
