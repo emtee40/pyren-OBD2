@@ -469,7 +469,7 @@ class ECU:
           newScreen = newScreen + pyren_encode( l ) + '  \n'
         if not path[:3] == 'FAV':
           if pages>0:
-            newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] <N> for page number H for help or any other to exit"
+            newScreen = newScreen+'\n'+"[Page "+str(page+1)+" from "+str(pages+1)+"] [N-next P-prev.] H for help or any other to exit"
           else:
             newScreen = newScreen+'\n'+"Press H for help or any key to exit"
         else:
@@ -513,6 +513,16 @@ class ECU:
             continue
           if c in ['h','H']:
             show_doc(self.ecudata['dst'], IDstr)
+            continue
+          if c in ['p','P']:
+            if page>0:
+              page = page-1
+            clearScreen()
+            continue
+          if c in ['n','N']:
+            if page<pages:
+              page = page+1
+            clearScreen()
             continue
           if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
             csvline += ";" + c
