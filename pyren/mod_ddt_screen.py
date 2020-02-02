@@ -1792,7 +1792,7 @@ class DDTScreen (tk.Frame):
         xfSize = str(int(float(10) * self.scf))
         lFont = tkFont.Font(family="Arial", size=xfSize)
         pn = 0
-        for xText in self.decu.requests[rq].ReceivedDI.keys():
+        for xText,zzz in sorted(self.decu.requests[rq].ReceivedDI.items(), key=lambda item: item[1].FirstByte):
 
             pn = pn + 1
 

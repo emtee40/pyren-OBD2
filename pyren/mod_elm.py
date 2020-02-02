@@ -1808,11 +1808,12 @@ class ELM:
 
         # reset ELM
         elm_ver = self.cmd("at ws")
-        if 'v1.3a' in elm_ver:
-            mod_globals.opt_stn = True
         self.check_answer(elm_ver)
 
         # check STN
+        st_rsp = self.cmd("STPR")
+        if '?' not in st_rsp:
+            mod_globals.opt_stn = True
         if mod_globals.opt_can2 and mod_globals.opt_stn:
             tmp = self.cmd("STP 53")
             if 'OK' not in tmp:

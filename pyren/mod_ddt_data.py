@@ -148,7 +148,7 @@ class decu_data:
           self.Step = float(sc.attrib["Step"])
         
         self.Offset = 0.0
-        if "Offset" in sc.attrib.keys():
+        if "Offset" in sc.attrib.keys() and sc.attrib["Offset"]!='':
           self.Offset = float (sc.attrib["Offset"])
 
         self.DivideBy = 1.0
