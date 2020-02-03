@@ -7,11 +7,13 @@ from xml.dom.minidom    import parseString
 import xml.dom.minidom
 import mod_globals
 
-def get_identification( id, mn, se, elm, calc ):
+def get_identification( id, mn, se, elm, calc, raw = 0 ):
   comp = id.computation
   comp = comp.replace("&amp;","&")
   for m in sorted(id.mnemolist, key=len, reverse=True):
-    hex_val = get_mnemonic( mn[m], se, elm )
+    hex_val = get_mnemonic( mn[m], se, elm, raw)
+    if raw:
+      return hex_val
     comp = comp.replace(m, hex_val)
   id.value = calc.calculate(comp)
   ######

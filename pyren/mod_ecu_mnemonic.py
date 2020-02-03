@@ -33,7 +33,7 @@ def get_mnemonicDTC( m, resp ):
   return hexval
 
 
-def get_mnemonic( m, se, elm ):
+def get_mnemonic( m, se, elm, raw = 0 ):
 
   #get responce
   if len(m.sids)>0:
@@ -63,6 +63,9 @@ def get_mnemonic( m, se, elm ):
   #extract hex
   hexval = resp[sb*3:(sb+bytes)*3-1]
   hexval = hexval.replace(" ","")
+
+  if raw:
+    return hexval
 
   #shift and mask
   val = (int(hexval,16)>>rshift)&(2**bits-1)

@@ -255,7 +255,7 @@ class ECU:
       return None      
     return self.Parameters[name]
       
-  def get_id( self, name ):
+  def get_id( self, name, raw = 0):
     if name not in self.Identifications.keys():
       for i in self.Identifications.keys():
         if name==self.Identifications[i].codeMR:
@@ -264,6 +264,8 @@ class ECU:
     if name not in self.Identifications.keys():
       return 'none','unknown identification'      
     self.elm.clear_cache()
+    if raw:
+      return get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc, raw)
     datastr, help, csvd = get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc )
     return csvd, datastr
 
