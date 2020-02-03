@@ -169,19 +169,13 @@ def run( elm, ecu, command, data ):
           if ecuSet.ncalib:
             value2, datastr2 = ecu.get_id(ScmParam['Ncalib'])
             if ecuSet.ncalib == value2.upper():
-              # print datastr1
-              # print datastr2
               correctEcu = ecuSet
               break
             elif ecuSet.ncalib == "Other":
-              # print datastr1
-              # print ecuSet.ncalib
               correctEcu = ecuSet
           else:
-            # print datastr1
             correctEcu = ecuSet
         else:
-          # print datastr1
           correctEcu = ecuSet
   else:
     correctEcu = ecusList[0]
@@ -193,6 +187,7 @@ def run( elm, ecu, command, data ):
   #     print l
   #     print str(i.buttons[l])
 
+  #Prepare buttons
   buttons = OrderedDict()
 
   for l in correctEcu.buttons.keys():
@@ -209,6 +204,7 @@ def run( elm, ecu, command, data ):
       if str(correctEcu.buttons[l]) == 'true':
         buttons[l.strip('Button')] = get_message(l[:-6] + "Text")
   
+  #Get identifications
   identsList = OrderedDict()
 
   def getIdents(start, end):
@@ -224,6 +220,7 @@ def run( elm, ecu, command, data ):
       end = int(ScmParam['Idents'+key+'End'])
       identsList[key] = getIdents(start, end)
 
+  #Get commands
   commands = {}
   
   for child in root:
