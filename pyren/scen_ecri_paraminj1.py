@@ -209,6 +209,13 @@ def run( elm, ecu, command, data ):
       if str(correctEcu.buttons[l]) == 'true':
         buttons[l.strip('Button')] = get_message(l[:-6] + "Text")
 
+  commands = {}
+  for child in root:
+      if child.attrib["name"] == "Commands":
+        if len(child.keys()) == 1:
+          for param in child:
+            commands[param.attrib["name"]] = param.attrib["value"]
+  
   def getIdents(start, end):
     identsDict = OrderedDict()
     for idnum in range(start,end + 1):
@@ -226,19 +233,20 @@ def run( elm, ecu, command, data ):
 
 
   def resetEGRValve():
+    paramToSend = ""
     params = {}
     for child in root:
       if child.attrib["name"] == "EGR_VALVE":
         if len(child.keys()) == 1:
           for param in child:
-            params[param.attrib("name")] = param.attrib("value")
+            params[param.attrib["name"]] = param.attrib["value"]
 
-    for k,v in params.iteritems():
-      print k,v
-    print "gówno"
     confirm = get_message('MessageBox5')
     successMessage = get_message('Message32')
     clearScreen()
+
+    # for k,v in params.iteritems():
+    #   print k,v
 
     for idKey in identsList['X'].keys():
       identsList['X'][idKey] = ecu.get_id(identsList['X'][idKey], 1)
@@ -250,9 +258,16 @@ def run( elm, ecu, command, data ):
       ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
         return
+    
+    for k,v in params.iteritems():
+      identsList['X'][k] = v
+      
+    for v in identsList['X'].values():
+      paramToSend += v
 
-    # for k,v in identsList['X'].iteritems():
-    #   print k,v
+    ecu.run_cmd(commands['Cmd5'],paramToSend)
+    
+
 
 
   functions = OrderedDict()
