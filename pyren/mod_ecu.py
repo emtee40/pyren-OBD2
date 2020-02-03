@@ -545,6 +545,9 @@ class ECU:
           for dr in favouriteScreen.datarefs:
             if pr == dr.name:
               favouriteScreen.datarefs.remove(dr)
+    else:
+      raw_input("\nYou have reached parameters limit. Removing last parameter.")
+      favouriteScreen.datarefs.pop()
     clearScreen()
 
   def loadFavList(self):
