@@ -169,19 +169,19 @@ def run( elm, ecu, command, data ):
           if ecuSet.ncalib:
             value2, datastr2 = ecu.get_id(ScmParam['Ncalib'])
             if ecuSet.ncalib == value2.upper():
-              print datastr1
-              print datastr2
+              # print datastr1
+              # print datastr2
               correctEcu = ecuSet
               break
             elif ecuSet.ncalib == "Other":
-              print datastr1
-              print ecuSet.ncalib
+              # print datastr1
+              # print ecuSet.ncalib
               correctEcu = ecuSet
           else:
-            print datastr1
+            # print datastr1
             correctEcu = ecuSet
         else:
-          print datastr1
+          # print datastr1
           correctEcu = ecuSet
   else:
     correctEcu = ecusList[0]
@@ -208,21 +208,14 @@ def run( elm, ecu, command, data ):
     if l.startswith("Button"):
       if str(correctEcu.buttons[l]) == 'true':
         buttons[l.strip('Button')] = get_message(l[:-6] + "Text")
-
-  commands = {}
-  for child in root:
-      if child.attrib["name"] == "Commands":
-        if len(child.keys()) == 1:
-          for param in child:
-            commands[param.attrib["name"]] = param.attrib["value"]
   
+  identsList = OrderedDict()
+
   def getIdents(start, end):
     identsDict = OrderedDict()
     for idnum in range(start,end + 1):
       identsDict['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
     return identsDict
-  
-  identsList = OrderedDict()
 
   for param in ScmParam.keys():
     if param.startswith('Idents') and param.endswith('Begin'):
@@ -231,6 +224,13 @@ def run( elm, ecu, command, data ):
       end = int(ScmParam['Idents'+key+'End'])
       identsList[key] = getIdents(start, end)
 
+  commands = {}
+  
+  for child in root:
+      if child.attrib["name"] == "Commands":
+        if len(child.keys()) == 1:
+          for param in child:
+            commands[param.attrib["name"]] = param.attrib["value"]
 
   def resetEGRValve():
     paramToSend = ""
@@ -267,8 +267,6 @@ def run( elm, ecu, command, data ):
 
     ecu.run_cmd(commands['Cmd5'],paramToSend)
     
-
-
 
   functions = OrderedDict()
   functions[2] = resetEGRValve
