@@ -182,12 +182,13 @@ def run( elm, ecu, command, data ):
   
   if not correctEcu and mod_globals.opt_demo:
     correctEcu = ecusList[0]
-  for i in ecusList:
-    print i.vdiag
-    print i.ncalib
-    for l in i.buttons.keys():
-      print l
-      print str(i.buttons[l])
+
+  # for i in ecusList:
+  #   print i.vdiag
+  #   print i.ncalib
+  #   for l in i.buttons.keys():
+  #     print l
+  #     print str(i.buttons[l])
 
   #Prepare buttons
   buttons = OrderedDict()
@@ -265,13 +266,16 @@ def run( elm, ecu, command, data ):
   confirm = get_message_by_id('19800')
   successMessage = get_message('Message32')
   failMessage = get_message('MessageNACK')
+  mainText = get_message('Title')
 
-  def resetValues():
+  def resetEGRValve():
     paramToSend = ""
     params = getValuesToChange("EGR_VALVE")
 
     clearScreen()
 
+    print mainText
+    print
     print buttons[2]
     print
     ch = raw_input(confirm + ' <YES/NO>: ')
@@ -313,12 +317,62 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
+  def resetInletFlap():
+    paramToSend = ""
+    params = getValuesToChange("INLET_FLAP")
+
+    clearScreen()
+
+    print mainText
+    print
+    print buttons[3]
+    print
+    ch = raw_input(confirm + ' <YES/NO>: ')
+    while (ch.upper()!='YES') and (ch.upper()!='NO'):
+      ch = raw_input(confirm + ' <YES/NO>: ')
+    if ch.upper()!='YES':
+        return
+
+    clearScreen()
+
+    if not params:
+      print
+      response = ecu.run_cmd(commands['Cmd6'])
+      print
+      if "NR" in response:
+        print failMessage
+      else:
+        print successMessage
+      print
+      ch = raw_input('Press ENTER to exit')
+      return
+    
+    for idKey in range(identsKeys[identsKeys.keys()[1]]['begin'], identsKeys[identsKeys.keys()[1]]['end'] + 1):
+      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+
+    replaceValues(params)
+    
+    for idKey in range(identsKeys[identsKeys.keys()[1]]['begin'], identsKeys[identsKeys.keys()[1]]['end'] + 1):
+      paramToSend += identsList["D" + str(idKey)]
+      
+    print
+    response = ecu.run_cmd(commands['Cmd6'],paramToSend)
+    print
+
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
+
 
   functions = OrderedDict()
   functions[2] = resetEGRValve
+  functions[3] = resetInletFlap
 
   infoMessage = get_message('Message1')
-  mainText = get_message('Title')
   confirmButton = get_message_by_id('8405')
 
   print mainText
