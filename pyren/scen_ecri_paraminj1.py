@@ -180,6 +180,8 @@ def run( elm, ecu, command, data ):
   else:
     correctEcu = ecusList[0]
   
+  if not correctEcu and mod_globals.opt_demo:
+    correctEcu = ecusList[0]
   # for i in ecusList:
   #   print i.vdiag
   #   print i.ncalib
@@ -206,19 +208,29 @@ def run( elm, ecu, command, data ):
   
   #Get identifications
   identsList = OrderedDict()
-
-  def getIdents(start, end):
-    identsDict = OrderedDict()
-    for idnum in range(start,end + 1):
-      identsDict['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
-    return identsDict
+  identsKeys = OrderedDict()
 
   for param in ScmParam.keys():
     if param.startswith('Idents') and param.endswith('Begin'):
       key = param[6:-5]
-      start = int(ScmParam['Idents'+key+'Begin'])
+      begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
-      identsList[key] = getIdents(start, end)
+      identsKeys[key] = {"begin": begin, "end": end}
+      for idnum in range(begin ,end + 1):
+        identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
+
+  # def getIdents(start, end):
+  #   identsDict = OrderedDict()
+  #   for idnum in range(start,end + 1):
+  #     identsDict['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
+  #   return identsDict
+
+  # for param in ScmParam.keys():
+  #   if param.startswith('Idents') and param.endswith('Begin'):
+  #     key = param[6:-5]
+  #     start = int(ScmParam['Idents'+key+'Begin'])
+  #     end = int(ScmParam['Idents'+key+'End'])
+  #     identsList[key] = getIdents(start, end)
 
   #Get commands
   commands = {}
@@ -229,24 +241,33 @@ def run( elm, ecu, command, data ):
           for param in child:
             commands[param.attrib["name"]] = param.attrib["value"]
 
-  def resetEGRValve():
-    paramToSend = ""
+  def getValuesToChange(resetItem):
     params = {}
     for child in root:
-      if child.attrib["name"] == "EGR_VALVE":
+      if child.attrib["name"] == resetItem:
         if len(child.keys()) == 1:
           for param in child:
             params[param.attrib["name"]] = param.attrib["value"]
+    return params
+  
+  def replaceValues(params):
+    for k,v in params.iteritems():
+      if v in identsList.keys():
+        identsList[k] = ecu.get_id(identsList[v], 1)
+      else:
+        identsList[k] = v
 
-    confirm = get_message('MessageBox5')
+  def resetEGRValve():
+    paramToSend = ""
+    params = getValuesToChange("EGR_VALVE")
+
+    confirm = get_message_by_id('19800')
     successMessage = get_message('Message32')
+    failMessage = get_message('MessageNACK')
     clearScreen()
-
-    # for k,v in params.iteritems():
-    #   print k,v
-
-    for idKey in identsList['X'].keys():
-      identsList['X'][idKey] = ecu.get_id(identsList['X'][idKey], 1)
+    
+    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
+      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
 
     print buttons[2]
     print
@@ -255,15 +276,23 @@ def run( elm, ecu, command, data ):
       ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
         return
-    
-    for k,v in params.iteritems():
-      identsList['X'][k] = v
-      
-    for v in identsList['X'].values():
-      paramToSend += v
 
-    ecu.run_cmd(commands['Cmd5'],paramToSend)
+    clearScreen()
     
+    replaceValues(params)
+    
+    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
+      paramToSend += identsList["D" + str(idKey)]
+      
+    print
+    response = ecu.run_cmd(commands['Cmd5'],paramToSend)
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
 
   functions = OrderedDict()
   functions[2] = resetEGRValve
@@ -296,7 +325,7 @@ def run( elm, ecu, command, data ):
   # print pyren_encode(datastr1)
   # print pyren_encode(datastr2)
 
-  ch = raw_input('')    
+  return    
   #
   #     Important information
   #
