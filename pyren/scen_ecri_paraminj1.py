@@ -182,12 +182,12 @@ def run( elm, ecu, command, data ):
   
   if not correctEcu and mod_globals.opt_demo:
     correctEcu = ecusList[0]
-  # for i in ecusList:
-  #   print i.vdiag
-  #   print i.ncalib
-  #   for l in i.buttons.keys():
-  #     print l
-  #     print str(i.buttons[l])
+  for i in ecusList:
+    print i.vdiag
+    print i.ncalib
+    for l in i.buttons.keys():
+      print l
+      print str(i.buttons[l])
 
   #Prepare buttons
   buttons = OrderedDict()
@@ -216,8 +216,13 @@ def run( elm, ecu, command, data ):
       begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
       identsKeys[key] = {"begin": begin, "end": end}
-      for idnum in range(begin ,end + 1):
-        identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
+      try:
+        identsList['D'+str(begin)] = ScmParam['Ident'+str(begin)]
+      except:
+        break
+      else:
+        for idnum in range(begin ,end + 1):
+          identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
 
   # def getIdents(start, end):
   #   identsDict = OrderedDict()
@@ -257,17 +262,15 @@ def run( elm, ecu, command, data ):
       else:
         identsList[k] = v
 
-  def resetEGRValve():
+  confirm = get_message_by_id('19800')
+  successMessage = get_message('Message32')
+  failMessage = get_message('MessageNACK')
+
+  def resetValues():
     paramToSend = ""
     params = getValuesToChange("EGR_VALVE")
 
-    confirm = get_message_by_id('19800')
-    successMessage = get_message('Message32')
-    failMessage = get_message('MessageNACK')
     clearScreen()
-    
-    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
-      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
 
     print buttons[2]
     print
@@ -278,7 +281,22 @@ def run( elm, ecu, command, data ):
         return
 
     clearScreen()
+
+    if not params:
+      print
+      response = ecu.run_cmd(commands['Cmd5'])
+      print
+      if "NR" in response:
+        print failMessage
+      else:
+        print successMessage
+      print
+      ch = raw_input('Press ENTER to exit')
+      return
     
+    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
+      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+
     replaceValues(params)
     
     for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
@@ -286,6 +304,7 @@ def run( elm, ecu, command, data ):
       
     print
     response = ecu.run_cmd(commands['Cmd5'],paramToSend)
+    print
     if "NR" in response:
       print failMessage
     else:
@@ -293,6 +312,7 @@ def run( elm, ecu, command, data ):
 
     print
     ch = raw_input('Press ENTER to exit')
+
 
   functions = OrderedDict()
   functions[2] = resetEGRValve
