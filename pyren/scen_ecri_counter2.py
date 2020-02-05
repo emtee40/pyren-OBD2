@@ -62,24 +62,24 @@ def run( elm, ecu, command, data ):
     
 	kb = KBHit()
 
-	paramsToSend = ""
+	# paramsToSend = ""
 	
-	identList = ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', '00000000', 'ID123', 'ID124', 'ID186', 'ID187']
+	# identList = ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', '00000000', 'ID123', 'ID124', 'ID186', 'ID187']
 	
-	for ident in identList:
-		if ident.startswith("ID"):
-			paramsToSend += ecu.get_id(ident, 1)
-		else:
-			paramsToSend += ident
+	# for ident in identList:
+	# 	if ident.startswith("ID"):
+	# 		paramsToSend += ecu.get_id(ident, 1)
+	# 	else:
+	# 		paramsToSend += ident
 	
-	ch = raw_input('Do you want to continue? <yes/no> ')
-	while (ch.upper() != 'YES') and (ch.upper()!= 'NO'):
-		ch = raw_input('Do you want to continue? <yes/no> ')
-	if ch.upper() != 'YES':
-		return
+	# ch = raw_input('Do you want to continue? <yes/no> ')
+	# while (ch.upper() != 'YES') and (ch.upper()!= 'NO'):
+	# 	ch = raw_input('Do you want to continue? <yes/no> ')
+	# if ch.upper() != 'YES':
+	# 	return
 
-	responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
+	# responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
 
-	print
+	# print
 	ch = raw_input('Press ENTER to exit')
 	return
