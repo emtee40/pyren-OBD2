@@ -64,24 +64,6 @@ def run( elm, ecu, command, data ):
     
 	kb = KBHit()
 	
-	# ids = []
-	# for param in ScmParam.keys():
-	# 	if param == "IdentsZBegin":
-	# 		key = param[6:-5]
-	# 		begin = int(ScmParam['Idents'+key+'Begin'])
-	# 		end = int(ScmParam['Idents'+key+'End'])
-	# 		for idnum in range(begin ,end + 1):
-	# 			ids.append(ScmParam['Ident'+str(idnum)])
-	# print ids
-
-	# for ident in identList:
-    #     if ident.startswith("ID")
-    #         paramsToSend += ecu.get_id(ident, 1)
-    #     else:
-    #         paramsToSend += ident
-# ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', 'ID122', 'ID123', 'ID124', 'ID186', 'ID187']
-
-	# responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
 
 	# mainText = get_message('TexteTitre')
 	# important = get_message('TexteConsigne')
