@@ -205,7 +205,17 @@ def run( elm, ecu, command, data ):
         buttons[3] = get_message("INLET_FLAP")
     if l.startswith("Button"):
       if str(correctEcu.buttons[l]) == 'true':
-        buttons[l.strip('Button')] = get_message(l[:-6] + "Text")
+        buttons[int(l.strip('Button'))] = get_message(l[:-6] + "Text")
+  
+
+  #Get commands
+  commands = {}
+  
+  for child in root:
+    if child.attrib["name"] == "Commands":
+      if len(child.keys()) == 1:
+        for param in child:
+          commands[param.attrib["name"]] = param.attrib["value"]
   
   #Get identifications
   identsList = OrderedDict()
@@ -238,15 +248,6 @@ def run( elm, ecu, command, data ):
   #     end = int(ScmParam['Idents'+key+'End'])
   #     identsList[key] = getIdents(start, end)
 
-  #Get commands
-  commands = {}
-  
-  for child in root:
-      if child.attrib["name"] == "Commands":
-        if len(child.keys()) == 1:
-          for param in child:
-            commands[param.attrib["name"]] = param.attrib["value"]
-
   def getValuesToChange(resetItem):
     params = {}
     for child in root:
@@ -256,28 +257,88 @@ def run( elm, ecu, command, data ):
             params[param.attrib["name"]] = param.attrib["value"]
     return params
   
-  def replaceValues(params):
-    for k,v in params.iteritems():
-      if v in identsList.keys():
-        identsList[k] = ecu.get_id(identsList[v], 1)
-      else:
-        identsList[k] = v
+  # def replaceValues(params):
+  #   for k,v in params.iteritems():
+  #     if v in identsList.keys():
+  #       identsList[k] = ecu.get_id(identsList[v], 1)
+  #     else:
+  #       identsList[k] = v
 
   confirm = get_message_by_id('19800')
   successMessage = get_message('Message32')
   failMessage = get_message('MessageNACK')
   mainText = get_message('Title')
 
-  def resetEGRValve():
+  # def resetEGRValve():
+  #   paramToSend = ""
+  #   params = getValuesToChange("EGR_VALVE")
+
+  #   clearScreen()
+
+  #   print mainText
+  #   print
+  #   print buttons[2]
+  #   print
+  #   ch = raw_input(confirm + ' <YES/NO>: ')
+  #   while (ch.upper()!='YES') and (ch.upper()!='NO'):
+  #     ch = raw_input(confirm + ' <YES/NO>: ')
+  #   if ch.upper()!='YES':
+  #       return
+
+  #   clearScreen()
+
+  #   if not params:
+  #     print
+  #     response = ecu.run_cmd(commands['Cmd5'])
+  #     print
+  #     if "NR" in response:
+  #       print failMessage
+  #     else:
+  #       print successMessage
+  #     print
+  #     ch = raw_input('Press ENTER to exit')
+  #     return
+    
+    
+  #   for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
+  #     identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+
+  #   for k,v in params.iteritems():
+  #     if v in identsList.keys():
+  #       identsList[k] = ecu.get_id(identsList[v], 1)
+  #     else:
+  #       identsList[k] = v
+    
+  #   for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
+  #     paramToSend += identsList["D" + str(idKey)]
+      
+  #   print
+  #   response = ecu.run_cmd(commands['Cmd5'],paramToSend)
+  #   print
+  #   if "NR" in response:
+  #     print failMessage
+  #   else:
+  #     print successMessage
+
+  #   print
+  #   ch = raw_input('Press ENTER to exit')
+
+  def resetValues(title, button, command, rangeKey, message = ''):
     paramToSend = ""
-    params = getValuesToChange("EGR_VALVE")
+    params = getValuesToChange(title)
 
     clearScreen()
 
     print mainText
     print
-    print buttons[2]
+    print buttons[button]
     print
+    if button == 4:
+      print get_message_by_id('55662')
+      print
+    if button == 5:
+      print get_message_by_id('55663')
+      print
     ch = raw_input(confirm + ' <YES/NO>: ')
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
       ch = raw_input(confirm + ' <YES/NO>: ')
@@ -288,7 +349,7 @@ def run( elm, ecu, command, data ):
 
     if not params:
       print
-      response = ecu.run_cmd(commands['Cmd5'])
+      response = ecu.run_cmd(command)
       print
       if "NR" in response:
         print failMessage
@@ -297,66 +358,25 @@ def run( elm, ecu, command, data ):
       print
       ch = raw_input('Press ENTER to exit')
       return
-    
-    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
-      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
-
-    replaceValues(params)
-    
-    for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
-      paramToSend += identsList["D" + str(idKey)]
       
-    print
-    response = ecu.run_cmd(commands['Cmd5'],paramToSend)
-    print
-    if "NR" in response:
-      print failMessage
-    else:
-      print successMessage
+    idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
 
-    print
-    ch = raw_input('Press ENTER to exit')
-
-  def resetInletFlap():
-    paramToSend = ""
-    params = getValuesToChange("INLET_FLAP")
-
-    clearScreen()
-
-    print mainText
-    print
-    print buttons[3]
-    print
-    ch = raw_input(confirm + ' <YES/NO>: ')
-    while (ch.upper()!='YES') and (ch.upper()!='NO'):
-      ch = raw_input(confirm + ' <YES/NO>: ')
-    if ch.upper()!='YES':
-        return
-
-    clearScreen()
-
-    if not params:
-      print
-      response = ecu.run_cmd(commands['Cmd6'])
-      print
-      if "NR" in response:
-        print failMessage
+    for k,v in params.iteritems():
+      if v in identsList.keys():
+        identsList[k] = ecu.get_id(identsList[v], 1)
       else:
-        print successMessage
-      print
-      ch = raw_input('Press ENTER to exit')
-      return
-    
-    for idKey in range(identsKeys[identsKeys.keys()[1]]['begin'], identsKeys[identsKeys.keys()[1]]['end'] + 1):
-      identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+        identsList[k] = v
 
-    replaceValues(params)
-    
-    for idKey in range(identsKeys[identsKeys.keys()[1]]['begin'], identsKeys[identsKeys.keys()[1]]['end'] + 1):
+    for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
+      print str(idKey), identsList["D" + str(idKey)]
+      if identsList["D" + str(idKey)].startswith("ID"):
+        identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
       paramToSend += identsList["D" + str(idKey)]
+      print str(idKey), identsList["D" + str(idKey)]
+      
       
     print
-    response = ecu.run_cmd(commands['Cmd6'],paramToSend)
+    response = ecu.run_cmd(command,paramToSend)
     print
 
     if "NR" in response:
@@ -369,8 +389,10 @@ def run( elm, ecu, command, data ):
 
 
   functions = OrderedDict()
-  functions[2] = resetEGRValve
-  functions[3] = resetInletFlap
+  functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
+  functions[3] = ["INLET_FLAP", 3, commands['Cmd6'], 1]
+  functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
+  functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
 
   infoMessage = get_message('Message1')
   confirmButton = get_message_by_id('8405')
@@ -383,186 +405,5 @@ def run( elm, ecu, command, data ):
   choice = Choice(buttons.values(), "Choose :")
   for key, value in buttons.iteritems():
     if value == choice[0]:
-        functions[key]()
-
-
-  # print correctEcu.vdiag
-  # print correctEcu.ncalib
-  # for l in correctEcu.buttons.keys():
-  #     print l
-  #     print str(correctEcu.buttons[l])
-
-
-
-  # value1, datastr1 = ecu.get_id(ScmParam['VDiag'])
-  # value2, datastr2 = ecu.get_id(ScmParam['Ncalib'])
-  # print pyren_encode(datastr1)
-  # print pyren_encode(datastr2)
-
-  return    
-  #
-  #     Important information
-  #
-  # clearScreen()
-#   value1, datastr1 = ecu.get_id(ScmParam['Injecteur1'])
-#   value2, datastr2 = ecu.get_id(ScmParam['Injecteur2'])
-#   value3, datastr3 = ecu.get_id(ScmParam['Injecteur3'])
-#   value4, datastr4 = ecu.get_id(ScmParam['Injecteur4'])
-#   print pyren_encode(header)
-#   print get_message('TexteTitre')  
-#   print '*'*80
-#   print pyren_encode(datastr1)
-#   print pyren_encode(datastr2)
-#   print pyren_encode(datastr3)
-#   print pyren_encode(datastr4)
-#   print '*'*80
-
-#   ch = raw_input('Are you ready to change the Injector Codes? <y/n>:')
-#   while (ch.lower() !='y') and (ch.lower() !='n'):
-#       ch = raw_input('Are you ready to change the Injector Codes? <y/n>:')
-#   if ch.lower()!='y': return
-
-#   #
-#   #     INFO
-#   #
-  
-#   clearScreen()
-#   value1, datastr1 = ecu.get_id(ScmParam['Injecteur1'])
-#   value2, datastr2 = ecu.get_id(ScmParam['Injecteur2'])
-#   value3, datastr3 = ecu.get_id(ScmParam['Injecteur3'])
-#   value4, datastr4 = ecu.get_id(ScmParam['Injecteur4'])
-#   print pyren_encode(header)
-#   print '*'*80
-#   print pyren_encode(datastr1)
-#   print pyren_encode(datastr2)
-#   print pyren_encode(datastr3)
-#   print pyren_encode(datastr4)
-#   print '*'*80
-#   print pyren_encode('Permitted Characters'),get_message('PermittedCharacters')  
-#   print '*'*80
-  
-#   #
-#   #    Receive data length and format from scenario
-#   #
-
-#   nbCC = ScmParam['nbCaractereCode']
-#   nbCC = int(nbCC)
-#   if nbCC !=6 and nbCC !=7 and nbCC !=16:
-#     ch = raw_input('Error nbCaractereCode in scenario xml')
-#     return
-#   isHEX = ScmParam['FormatHexadecimal']
-#   isHEX = int(isHEX)
-#   if isHEX != 0 and isHEX != 1:
-#     ch = raw_input('Error FormatHexadecimal in scenario xml')
-#     return
-#   prmCHAR = ScmParam['PermittedCharacters']
-#   if len(prmCHAR) << 16 and len(prmCHAR) >> 33:
-#     ch = raw_input('Error PermittedCharacters in scenario xml')
-#     return
- 
-#   #
-#   #    Get IMA from input
-#   #
-
-  
-#   ch1 = raw_input(get_message('dat_Cylindre1')+': ').upper()
-#   while not (all (c in prmCHAR for c in ch1.upper()) and (len(ch1)==nbCC)):
-#       ch1 = raw_input(get_message('dat_Cylindre1')+': ').upper()
-#   ch2 = raw_input(get_message('dat_Cylindre2')+': ').upper()
-#   while not (all (c in prmCHAR for c in ch2.upper()) and (len(ch2)==nbCC)):
-#       ch2 = raw_input(get_message('dat_Cylindre2')+': ').upper()
-#   ch3 = raw_input(get_message('dat_Cylindre3')+': ').upper()
-#   while not (all (c in prmCHAR for c in ch3.upper()) and (len(ch3)==nbCC)):
-#       ch3 = raw_input(get_message('dat_Cylindre3')+': ').upper()
-#   ch4 = raw_input(get_message('dat_Cylindre4')+': ').upper()
-#   while not (all (c in prmCHAR for c in ch4.upper()) and (len(ch4)==nbCC)):
-#       ch4 = raw_input(get_message('dat_Cylindre4')+': ').upper()
-      
-#  #
-#  #  Check all data format of input
-#  #
- 
-#   chk = ( ch1 + ch2 + ch3 + ch4 )
-
-#   if isHEX == 1 and not (all (c in prmCHAR for c in chk.upper()) and (len(chk) == nbCC * 4)):
-#       print '*'*80
-#       ch = raw_input('Hexdata check failed. Press ENTER to exit')
-#       return
-#   elif isHEX == 0 and not (all (c in prmCHAR for c in chk.upper()) and (len(chk) == nbCC * 4)) :
-#       print '*'*80
-#       ch = raw_input('ASCII check failed. Press ENTER to exit')
-#       return
-#   else:
-#       print '*'*80
-#       ch = raw_input('All checks passed successfull. Press ENTER to continue')
-  
-
-#   #
-#   # If all checks are successful script prepares the data according to their type
-#   #
-
-#   if isHEX == 1:
-#       inj_code = ( ch1 + ch2 + ch3 + ch4 ).upper()  
-#   elif isHEX == 0:
-#       inj_code = ASCIITOHEX ( ch1 + ch2 + ch3 + ch4 ).upper()
-#   else:
-#       print '*'*80
-#       ch = raw_input('!!!!!!!!There is a bug somwhere in the scenario, operation aborted!!!!!!!!!')
-#       return
-
-#   #
-#   # print old and new data 
-#   #
-   
-#   clearScreen()
-#   print '*'*80
-#   print pyren_encode('Old injector codes')
-#   print pyren_encode(datastr1)
-#   print pyren_encode(datastr2)
-#   print pyren_encode(datastr3)
-#   print pyren_encode(datastr4)
-#   print '*'*80
-#   print pyren_encode('New injector codes')
-#   print get_message('dat_Cylindre1'),pyren_encode(':'),pyren_encode(ch1)
-#   print get_message('dat_Cylindre2'),pyren_encode(':'),pyren_encode(ch2)
-#   print get_message('dat_Cylindre3'),pyren_encode(':'),pyren_encode(ch3)
-#   print get_message('dat_Cylindre4'),pyren_encode(':'),pyren_encode(ch4)
-#   print '*'*80
-#   print pyren_encode('Permitted Characters'),get_message('PermittedCharacters')
-#   print '*'*80
-
- 
-#   ch = raw_input('Start injectors writing? YES/QUIT>')
-#   while (ch.upper()!='YES') and (ch.upper()!='QUIT'):
-#       ch = raw_input('Start injectors codes writing? YES/QUIT>')
-#   if ch.upper()!='YES':
-#       return
-
-#   #
-#   #     Write Injector Codes
-#   #
-
-#   clearScreen()
-#   cmd = ecu.get_ref_cmd(get_message('EcritureCodeInjecteur'))
-#   print '*'*80
-#   responce = ecu.run_cmd(ScmParam['EcritureCodeInjecteur'],inj_code)
-#   value5, datastr5 = ecu.get_id(ScmParam['Injecteur1'])
-#   value6, datastr6 = ecu.get_id(ScmParam['Injecteur2'])
-#   value7, datastr7 = ecu.get_id(ScmParam['Injecteur3'])
-#   value8, datastr8 = ecu.get_id(ScmParam['Injecteur4'])
-#   print '*'*80
-#   print pyren_encode('Old injector codes')
-#   print pyren_encode(datastr1)
-#   print pyren_encode(datastr2)
-#   print pyren_encode(datastr3)
-#   print pyren_encode(datastr4)
-#   print '*'*80
-#   print pyren_encode('New injector codes')
-#   print pyren_encode(datastr5)
-#   print pyren_encode(datastr6)
-#   print pyren_encode(datastr7)
-#   print pyren_encode(datastr8)
-#   print '*'*80
-
-#   ch = raw_input('Press ENTER to exit')
-#   return
+      resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+      return
