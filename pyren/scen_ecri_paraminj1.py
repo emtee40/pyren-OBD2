@@ -256,72 +256,11 @@ def run( elm, ecu, command, data ):
           for param in child:
             params[param.attrib["name"]] = param.attrib["value"]
     return params
-  
-  # def replaceValues(params):
-  #   for k,v in params.iteritems():
-  #     if v in identsList.keys():
-  #       identsList[k] = ecu.get_id(identsList[v], 1)
-  #     else:
-  #       identsList[k] = v
 
   confirm = get_message_by_id('19800')
   successMessage = get_message('Message32')
   failMessage = get_message('MessageNACK')
   mainText = get_message('Title')
-
-  # def resetEGRValve():
-  #   paramToSend = ""
-  #   params = getValuesToChange("EGR_VALVE")
-
-  #   clearScreen()
-
-  #   print mainText
-  #   print
-  #   print buttons[2]
-  #   print
-  #   ch = raw_input(confirm + ' <YES/NO>: ')
-  #   while (ch.upper()!='YES') and (ch.upper()!='NO'):
-  #     ch = raw_input(confirm + ' <YES/NO>: ')
-  #   if ch.upper()!='YES':
-  #       return
-
-  #   clearScreen()
-
-  #   if not params:
-  #     print
-  #     response = ecu.run_cmd(commands['Cmd5'])
-  #     print
-  #     if "NR" in response:
-  #       print failMessage
-  #     else:
-  #       print successMessage
-  #     print
-  #     ch = raw_input('Press ENTER to exit')
-  #     return
-    
-    
-  #   for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
-  #     identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
-
-  #   for k,v in params.iteritems():
-  #     if v in identsList.keys():
-  #       identsList[k] = ecu.get_id(identsList[v], 1)
-  #     else:
-  #       identsList[k] = v
-    
-  #   for idKey in range(identsKeys[identsKeys.keys()[0]]['begin'], identsKeys[identsKeys.keys()[0]]['end'] + 1):
-  #     paramToSend += identsList["D" + str(idKey)]
-      
-  #   print
-  #   response = ecu.run_cmd(commands['Cmd5'],paramToSend)
-  #   print
-  #   if "NR" in response:
-  #     print failMessage
-  #   else:
-  #     print successMessage
-
-  #   print
-  #   ch = raw_input('Press ENTER to exit')
 
   def resetValues(title, button, command, rangeKey, message = ''):
     paramToSend = ""
@@ -374,7 +313,6 @@ def run( elm, ecu, command, data ):
       paramToSend += identsList["D" + str(idKey)]
       print str(idKey), identsList["D" + str(idKey)]
       
-      
     print
     response = ecu.run_cmd(command,paramToSend)
     print
@@ -395,7 +333,6 @@ def run( elm, ecu, command, data ):
   functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
 
   infoMessage = get_message('Message1')
-  confirmButton = get_message_by_id('8405')
 
   print mainText
   print
