@@ -122,7 +122,8 @@ def run( elm, ecu, command, data ):
                     if ncalibButtons.attrib["name"] == "Buttons":
                       for ncalibButton in ncalibButtons:
                         buttons[ncalibButton.attrib["name"]] = ncalibButton.attrib["value"]
-                    ecusList.append(ecus(vDiagName.attrib["name"],ncalibName.attrib["name"], buttons))
+                      ecusList.append(ecus(vDiagName.attrib["name"],ncalibName.attrib["name"], buttons))
+                      buttons = OrderedDict()
               else:
                 if vDiagButtons.attrib["name"] == "Buttons":
                   for vDiagButton in vDiagButtons:
@@ -189,6 +190,12 @@ def run( elm, ecu, command, data ):
   #   for l in i.buttons.keys():
   #     print l
   #     print str(i.buttons[l])
+  # print 
+
+  # print correctEcu.vdiag
+  # print correctEcu.ncalib
+  # for k,v in correctEcu.buttons.iteritems():
+  #   print k,v
 
   #Prepare buttons
   buttons = OrderedDict()
@@ -227,7 +234,7 @@ def run( elm, ecu, command, data ):
       begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
       identsKeys[key] = {"begin": begin, "end": end}
-      try:
+      try:  #10099 trap
         identsList['D'+str(begin)] = ScmParam['Ident'+str(begin)]
       except:
         break
@@ -262,7 +269,7 @@ def run( elm, ecu, command, data ):
   failMessage = get_message('MessageNACK')
   mainText = get_message('Title')
 
-  def resetValues(title, button, command, rangeKey, message = ''):
+  def resetValues(title, button, command, rangeKey):
     paramToSend = ""
     params = getValuesToChange(title)
 
@@ -286,7 +293,7 @@ def run( elm, ecu, command, data ):
 
     clearScreen()
 
-    if not params:
+    if not params:  #VP042 for INLET_FLAP
       print
       response = ecu.run_cmd(command)
       print
@@ -307,11 +314,11 @@ def run( elm, ecu, command, data ):
         identsList[k] = v
 
     for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
-      print str(idKey), identsList["D" + str(idKey)]
+      # print str(idKey), identsList["D" + str(idKey)]
       if identsList["D" + str(idKey)].startswith("ID"):
         identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
       paramToSend += identsList["D" + str(idKey)]
-      print str(idKey), identsList["D" + str(idKey)]
+      # print str(idKey), identsList["D" + str(idKey)]
       
     print
     response = ecu.run_cmd(command,paramToSend)
