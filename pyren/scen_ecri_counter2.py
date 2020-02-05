@@ -59,63 +59,27 @@ def run( elm, ecu, command, data ):
 			
 			ScmSet[setname]= value
 			ScmParam[name] = value
-			# print setname, value
-			# print name
     
 	kb = KBHit()
+
+	paramsToSend = ""
 	
-	# ids = []
-	# for param in ScmParam.keys():
-	# 	if param == "IdentsZBegin":
-	# 		key = param[6:-5]
-	# 		begin = int(ScmParam['Idents'+key+'Begin'])
-	# 		end = int(ScmParam['Idents'+key+'End'])
-	# 		for idnum in range(begin ,end + 1):
-	# 			ids.append(ScmParam['Ident'+str(idnum)])
-	# print ids
-
-	# for ident in identList:
-    #     if ident.startswith("ID")
-    #         paramsToSend += ecu.get_id(ident, 1)
-    #     else:
-    #         paramsToSend += ident
-# ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', 'ID122', 'ID123', 'ID124', 'ID186', 'ID187']
-
-	# responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
-
-	# mainText = get_message('TexteTitre')
-	# important = get_message('TexteConsigne')
-	# tilt = get_message('TexteValeurInclinaison')
-	# degreeSymbol = get_message('TexteDegre')
-	# value2, datastr2 = ecu.get_pr(ScmParam['ParametreInclinaison'])
-
-	# clearScreen()
-	# print pyren_encode(header)
-	# print mainText
-	# print '*'*80
-	# print
-	# print important
-	# print
-
+	identList = ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', '00000000', 'ID123', 'ID124', 'ID186', 'ID187']
+	
+	for ident in identList:
+		if ident.startswith("ID"):
+			paramsToSend += ecu.get_id(ident, 1)
+		else:
+			paramsToSend += ident
+	
 	ch = raw_input('Do you want to continue? <yes/no> ')
 	while (ch.upper() != 'YES') and (ch.upper()!= 'NO'):
 		ch = raw_input('Do you want to continue? <yes/no> ')
 	if ch.upper() != 'YES':
 		return
-	
-	# clearScreen()
-	# cmd = ecu.get_ref_cmd(get_message('Commande1'))
-	# resVal = ScmParam['ParametreCommande1']
-	# print '*'*80
-	# responce = ecu.run_cmd(ScmParam['Commande1'], resVal)
-	# print '*'*80
-	# if 'NR' in responce:
-	# 	print get_message('TexteProcedureInterompue')
-	# else:
-	# 	print get_message('TexteInitialisationEffectuee')
-	# print
-	# print tilt, pyren_encode(':'), value2, degreeSymbol
-	# print
 
-	# ch = raw_input('Press ENTER to exit')
-	# return
+	responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
+
+	print
+	ch = raw_input('Press ENTER to exit')
+	return
