@@ -174,15 +174,24 @@ def run( elm, ecu, command, data ):
               break
             elif ecuSet.ncalib == "Other":
               correctEcu = ecuSet
+              break
           else:
             correctEcu = ecuSet
+            break
         else:
           correctEcu = ecuSet
+          break 
   else:
     correctEcu = ecusList[0]
-  
+
   if not correctEcu and mod_globals.opt_demo:
     correctEcu = ecusList[0]
+  
+  if vdiagExists:
+    if not correctEcu:
+      print '*'*80
+      ch = raw_input('Unknown diagnostic version. Press ENTER to exit')
+      return
 
   # for i in ecusList:
   #   print i.vdiag
@@ -308,21 +317,12 @@ def run( elm, ecu, command, data ):
         return
 
     clearScreen()
-
-    if not params:  #VP042 for INLET_FLAP
-      print
-      response = ecu.run_cmd(command)
-      print
-      if "NR" in response:
-        print failMessage
-      else:
-        print successMessage
-      print
-      ch = raw_input('Press ENTER to exit')
-      return
       
     print
-    response = ecu.run_cmd(command,paramToSend)
+    if params:
+      response = ecu.run_cmd(command,paramToSend)
+    else: #VP042 for INLET_FLAP
+      response = ecu.run_cmd(command)
     print
 
     if "NR" in response:
