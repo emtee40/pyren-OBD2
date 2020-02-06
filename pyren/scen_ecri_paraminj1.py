@@ -272,6 +272,22 @@ def run( elm, ecu, command, data ):
   def resetValues(title, button, command, rangeKey):
     paramToSend = ""
     params = getValuesToChange(title)
+    
+    if params:
+      idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
+
+      for k,v in params.iteritems():
+        if v in identsList.keys():
+          identsList[k] = ecu.get_id(identsList[v], 1)
+        else:
+          identsList[k] = v
+
+      for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
+        # print str(idKey), identsList["D" + str(idKey)]
+        if identsList["D" + str(idKey)].startswith("ID"):
+          identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+        paramToSend += identsList["D" + str(idKey)]
+        # print str(idKey), identsList["D" + str(idKey)]
 
     clearScreen()
 
@@ -304,21 +320,6 @@ def run( elm, ecu, command, data ):
       print
       ch = raw_input('Press ENTER to exit')
       return
-      
-    idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
-
-    for k,v in params.iteritems():
-      if v in identsList.keys():
-        identsList[k] = ecu.get_id(identsList[v], 1)
-      else:
-        identsList[k] = v
-
-    for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
-      # print str(idKey), identsList["D" + str(idKey)]
-      if identsList["D" + str(idKey)].startswith("ID"):
-        identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
-      paramToSend += identsList["D" + str(idKey)]
-      # print str(idKey), identsList["D" + str(idKey)]
       
     print
     response = ecu.run_cmd(command,paramToSend)
