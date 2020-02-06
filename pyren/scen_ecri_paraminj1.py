@@ -222,7 +222,7 @@ def run( elm, ecu, command, data ):
     if l.startswith("Button"):
       if str(correctEcu.buttons[l]) == 'true':
         buttons[int(l.strip('Button'))] = get_message(l[:-6] + "Text")
-  
+  buttons["exit"] = '<exit>'
 
   #Get commands
   commands = {}
@@ -251,19 +251,6 @@ def run( elm, ecu, command, data ):
         for idnum in range(begin ,end + 1):
           identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
 
-  # def getIdents(start, end):
-  #   identsDict = OrderedDict()
-  #   for idnum in range(start,end + 1):
-  #     identsDict['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
-  #   return identsDict
-
-  # for param in ScmParam.keys():
-  #   if param.startswith('Idents') and param.endswith('Begin'):
-  #     key = param[6:-5]
-  #     start = int(ScmParam['Idents'+key+'Begin'])
-  #     end = int(ScmParam['Idents'+key+'End'])
-  #     identsList[key] = getIdents(start, end)
-
   def getValuesToChange(resetItem):
     params = {}
     for child in root:
@@ -277,6 +264,69 @@ def run( elm, ecu, command, data ):
   successMessage = get_message('Message32')
   failMessage = get_message('MessageNACK')
   mainText = get_message('Title')
+
+  def setGlowPlugsType(title, button, command, rangeKey):
+    paramToSend = ""
+    params = getValuesToChange(title)
+    currentType = ecu.get_id(identsList[params["IdentToBeDisplayed"].replace("Ident", "D")], 1)
+    slowTypeValue = get_message('ValueSlowParam')
+    fastTypeValue = get_message('ValueFastParam')
+    currentMessage = get_message('Current')
+    slowMessage = get_message('Slow')
+    fastMessage = get_message('Fast')
+    notDefinedMessage = get_message('NotDefined')
+    message2 = get_message('Message282')
+
+    typesButtons = OrderedDict()
+
+    typesButtons[slowMessage] = slowTypeValue
+    typesButtons[fastMessage] = fastTypeValue
+    typesButtons['<exit>'] = ""
+
+    clearScreen()
+
+    print mainText
+    print '*'*80
+    print buttons[button]
+    print '*'*80
+    print message2
+    print '*'*80
+    print
+    if currentType == slowTypeValue:
+      print currentMessage + ': ' + slowMessage
+    elif currentType == fastTypeValue:
+      print currentMessage + ': ' + fastMessage
+    else:
+      print currentMessage + ': ' + notDefinedMessage
+    print
+
+    choice = Choice(typesButtons.keys(), "Choose :")
+    if choice[0]=='<exit>': return
+
+    idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
+
+    identsList[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
+
+    for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
+      # print str(idKey), identsList["D" + str(idKey)]
+      if identsList["D" + str(idKey)].startswith("ID"):
+        identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+      paramToSend += identsList["D" + str(idKey)]
+      # print str(idKey), identsList["D" + str(idKey)]
+    
+    clearScreen()
+      
+    print
+    response = ecu.run_cmd(command,paramToSend)
+    print
+
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
 
   def resetValues(title, button, command, rangeKey):
     paramToSend = ""
@@ -301,15 +351,16 @@ def run( elm, ecu, command, data ):
     clearScreen()
 
     print mainText
-    print
+    print '*'*80
     print buttons[button]
-    print
+    print '*'*80
     if button == 4:
       print get_message_by_id('55662')
-      print
+      print '*'*80
     if button == 5:
       print get_message_by_id('55663')
-      print
+      print '*'*80
+    print
     ch = raw_input(confirm + ' <YES/NO>: ')
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
       ch = raw_input(confirm + ' <YES/NO>: ')
@@ -339,6 +390,7 @@ def run( elm, ecu, command, data ):
   functions[3] = ["INLET_FLAP", 3, commands['Cmd6'], 1]
   functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
   functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
+  functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], 3]
 
   infoMessage = get_message('Message1')
 
@@ -349,6 +401,10 @@ def run( elm, ecu, command, data ):
 
   choice = Choice(buttons.values(), "Choose :")
   for key, value in buttons.iteritems():
+    if choice[0]=='<exit>': return
     if value == choice[0]:
-      resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+      if key == 8:
+        setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+      else:
+        resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       return
