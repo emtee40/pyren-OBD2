@@ -399,10 +399,16 @@ def run( elm, ecu, command, data ):
   print infoMessage
   print
 
+  notSupported =[1,6,7]
+
   choice = Choice(buttons.values(), "Choose :")
+
   for key, value in buttons.iteritems():
     if choice[0]=='<exit>': return
     if value == choice[0]:
+      if key in notSupported:
+        ch = raw_input("\nNot Supported yet. Press ENTER to exit")
+        return
       if key == 8:
         setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       else:
