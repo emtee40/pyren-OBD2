@@ -266,6 +266,41 @@ def run( elm, ecu, command, data ):
   mainText = get_message('Title')
   inProgressMessage = get_message('CommandInProgressMessage')
 
+  def resetInjetorsData(button, commandsList):
+    injectorsInfoMessage = get_message('Message21')
+    response = ""
+    clearScreen()
+
+    print mainText
+    print '*'*80
+    print buttons[button]
+    print '*'*80
+    print injectorsInfoMessage
+    print '*'*80
+    print
+
+    ch = raw_input(confirm + ' <YES/NO>: ')
+    while (ch.upper()!='YES') and (ch.upper()!='NO'):
+      ch = raw_input(confirm + ' <YES/NO>: ')
+    if ch.upper()!='YES':
+        return
+    
+    clearScreen()
+    
+    print
+    for command in commandsList:
+      response += ecu.run_cmd(command)
+    print
+    
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
+
+
   def setGlowPlugsType(title, button, command, rangeKey):
     paramToSend = ""
     params = getValuesToChange(title)
@@ -393,6 +428,8 @@ def run( elm, ecu, command, data ):
 
   functions = OrderedDict()
   for cmdKey in commands.keys():
+    if cmdKey == 'Cmd1':
+      functions[1] = [1, [commands['Cmd1'],commands['Cmd2'],commands['Cmd3'],commands['Cmd4']]]
     if cmdKey == 'Cmd5':
       functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
     if cmdKey == 'Cmd6':
@@ -410,7 +447,7 @@ def run( elm, ecu, command, data ):
   print infoMessage
   print
 
-  notSupported =[1,6,7]
+  notSupported = [6,7]
 
   choice = Choice(buttons.values(), "Choose :")
 
@@ -420,7 +457,9 @@ def run( elm, ecu, command, data ):
       if key in notSupported:
         ch = raw_input("\nNot Supported yet. Press ENTER to exit")
         return
-      if key == 8:
+      if key == 1:
+        resetInjetorsData(functions[key][0],functions[key][1])
+      elif key == 8:
         setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       else:
         resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
