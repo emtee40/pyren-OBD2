@@ -264,6 +264,7 @@ def run( elm, ecu, command, data ):
   successMessage = get_message('Message32')
   failMessage = get_message('MessageNACK')
   mainText = get_message('Title')
+  inProgressMessage = get_message('CommandInProgressMessage')
 
   def setGlowPlugsType(title, button, command, rangeKey):
     paramToSend = ""
@@ -302,6 +303,11 @@ def run( elm, ecu, command, data ):
 
     choice = Choice(typesButtons.keys(), "Choose :")
     if choice[0]=='<exit>': return
+
+    clearScreen()
+
+    print
+    print inProgressMessage
 
     idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
 
@@ -386,11 +392,16 @@ def run( elm, ecu, command, data ):
 
 
   functions = OrderedDict()
-  functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
-  functions[3] = ["INLET_FLAP", 3, commands['Cmd6'], 1]
-  functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
-  functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
-  functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], 3]
+  for cmdKey in commands.keys():
+    if cmdKey == 'Cmd5':
+      functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
+    if cmdKey == 'Cmd6':
+      functions[3] = ["INLET_FLAP", 3, commands['Cmd6'], 1]
+    if cmdKey == 'Cmd7':
+      functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
+      functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
+    if cmdKey == 'Cmd9':
+      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], 3]
 
   infoMessage = get_message('Message1')
 
