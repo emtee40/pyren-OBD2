@@ -70,7 +70,7 @@ def run( elm, ecu, command, data ):
 
   def get_message_by_id( id ):
     if id.isdigit() and id in mod_globals.language_dict.keys():
-      value = pyren_encode( mod_globals.language_dict[id] )
+      value = mod_globals.language_dict[id]
     return value
   
   #
@@ -291,7 +291,7 @@ def run( elm, ecu, command, data ):
     for command in commandsList:
       response += ecu.run_cmd(command)
     print
-    
+
     if "NR" in response:
       print failMessage
     else:
@@ -307,7 +307,7 @@ def run( elm, ecu, command, data ):
     currentType = ecu.get_id(identsList[params["IdentToBeDisplayed"].replace("Ident", "D")], 1)
     slowTypeValue = get_message('ValueSlowParam')
     fastTypeValue = get_message('ValueFastParam')
-    currentMessage = get_message('Current')
+    currentMessage = get_message_by_id('52676')
     slowMessage = get_message('Slow')
     fastMessage = get_message('Fast')
     notDefinedMessage = get_message('NotDefined')
@@ -320,7 +320,6 @@ def run( elm, ecu, command, data ):
     typesButtons['<exit>'] = ""
 
     clearScreen()
-
     print mainText
     print '*'*80
     print buttons[button]
@@ -353,8 +352,8 @@ def run( elm, ecu, command, data ):
       if identsList["D" + str(idKey)].startswith("ID"):
         identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
       paramToSend += identsList["D" + str(idKey)]
-      # print str(idKey), identsList["D" + str(idKey)]
-    
+    #   print str(idKey), identsList["D" + str(idKey)]
+    # raw_input()
     clearScreen()
       
     print
@@ -438,7 +437,7 @@ def run( elm, ecu, command, data ):
       functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
       functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
     if cmdKey == 'Cmd9':
-      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], 3]
+      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsKeys) - 1]
 
   infoMessage = get_message('Message1')
 
