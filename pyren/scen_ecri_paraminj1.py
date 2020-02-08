@@ -257,7 +257,7 @@ def run( elm, ecu, command, data ):
       if child.attrib["name"] == resetItem:
         if len(child.keys()) == 1:
           for param in child:
-            params[param.attrib["name"]] = param.attrib["value"]
+            params[param.attrib["name"].replace("D0", "D")] = param.attrib["value"]
     return params
 
   confirm = get_message_by_id('19800')
@@ -266,7 +266,7 @@ def run( elm, ecu, command, data ):
   mainText = get_message('Title')
   inProgressMessage = get_message('CommandInProgressMessage')
 
-  def resetInjetorsData(button, commandsList):
+  def resetInjetorsData(button, injectorsList):
     injectorsInfoMessage = get_message('Message21')
     response = ""
     clearScreen()
@@ -279,17 +279,13 @@ def run( elm, ecu, command, data ):
     print '*'*80
     print
 
-    ch = raw_input(confirm + ' <YES/NO>: ')
-    while (ch.upper()!='YES') and (ch.upper()!='NO'):
-      ch = raw_input(confirm + ' <YES/NO>: ')
-    if ch.upper()!='YES':
-        return
+    choice = Choice(injectorsList.keys(), "Choose :")
+    if choice[0]=='<exit>': return
     
     clearScreen()
     
     print
-    for command in commandsList:
-      response += ecu.run_cmd(command)
+    response = ecu.run_cmd(injectorsList[choice[0]])
     print
 
     if "NR" in response:
@@ -352,8 +348,7 @@ def run( elm, ecu, command, data ):
       if identsList["D" + str(idKey)].startswith("ID"):
         identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
       paramToSend += identsList["D" + str(idKey)]
-    #   print str(idKey), identsList["D" + str(idKey)]
-    # raw_input()
+      # print str(idKey), identsList["D" + str(idKey)]
     clearScreen()
       
     print
@@ -428,7 +423,13 @@ def run( elm, ecu, command, data ):
   functions = OrderedDict()
   for cmdKey in commands.keys():
     if cmdKey == 'Cmd1':
-      functions[1] = [1, [commands['Cmd1'],commands['Cmd2'],commands['Cmd3'],commands['Cmd4']]]
+      injectorsDict = OrderedDict()
+      injectorsDict[get_message('Cylinder1')] = commands['Cmd1']
+      injectorsDict[get_message('Cylinder2')] = commands['Cmd2']
+      injectorsDict[get_message('Cylinder3')] = commands['Cmd3']
+      injectorsDict[get_message('Cylinder4')] = commands['Cmd4']
+      injectorsDict['<exit>'] = ""
+      functions[1] = [1, injectorsDict]
     if cmdKey == 'Cmd5':
       functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
     if cmdKey == 'Cmd6':
