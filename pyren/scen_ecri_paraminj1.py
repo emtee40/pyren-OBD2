@@ -235,14 +235,14 @@ def run( elm, ecu, command, data ):
   
   #Get identifications
   identsList = OrderedDict()
-  identsKeys = OrderedDict()
+  identsRangeKeys = OrderedDict()
 
   for param in ScmParam.keys():
     if param.startswith('Idents') and param.endswith('Begin'):
       key = param[6:-5]
       begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
-      identsKeys[key] = {"begin": begin, "end": end}
+      identsRangeKeys[key] = {"begin": begin, "end": end}
       try:  #10099 trap
         identsList['D'+str(begin)] = ScmParam['Ident'+str(begin)]
       except:
@@ -339,7 +339,7 @@ def run( elm, ecu, command, data ):
     print
     print inProgressMessage
 
-    idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
+    idRangeKey = identsRangeKeys[identsRangeKeys.keys()[rangeKey]]
 
     identsList[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
 
@@ -365,10 +365,18 @@ def run( elm, ecu, command, data ):
 
   def resetValues(title, button, command, rangeKey):
     paramToSend = ""
+    commandTakesParams = True
     params = getValuesToChange(title)
     
-    if params:
-      idRangeKey = identsKeys[identsKeys.keys()[rangeKey]]
+    commandServices = ecu.Commands[command.replace("VP", "V")].serviceID  
+    for sid in commandServices:
+      if not ecu.Services[sid].params:  #For INLET_FLAP VP042 in 10959 or VP018 EGR_VALVE in 10527
+        commandTakesParams = False
+      else:
+        commandTakesParams = True
+    
+    if commandTakesParams:
+      idRangeKey = identsRangeKeys[identsRangeKeys.keys()[rangeKey]]
 
       for k,v in params.iteritems():
         if v in identsList.keys():
@@ -382,7 +390,6 @@ def run( elm, ecu, command, data ):
           identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
         paramToSend += identsList["D" + str(idKey)]
         # print str(idKey), identsList["D" + str(idKey)]
-
     clearScreen()
 
     print mainText
@@ -405,9 +412,9 @@ def run( elm, ecu, command, data ):
     clearScreen()
       
     print
-    if params:
+    if commandTakesParams:
       response = ecu.run_cmd(command,paramToSend)
-    else: #VP042 for INLET_FLAP
+    else:
       response = ecu.run_cmd(command)
     print
 
@@ -438,10 +445,10 @@ def run( elm, ecu, command, data ):
       functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
       functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
     if cmdKey == 'Cmd9':
-      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsKeys) - 1]
+      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsRangeKeys) - 1]
 
   infoMessage = get_message('Message1')
-
+  
   print mainText
   print
   print infoMessage
