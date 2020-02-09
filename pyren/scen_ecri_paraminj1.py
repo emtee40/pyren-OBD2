@@ -374,6 +374,7 @@ def run( elm, ecu, command, data ):
         commandTakesParams = False
       else:
         commandTakesParams = True
+        break
     
     if commandTakesParams:
       idRangeKey = identsRangeKeys[identsRangeKeys.keys()[rangeKey]]
