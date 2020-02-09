@@ -193,19 +193,6 @@ def run( elm, ecu, command, data ):
       ch = raw_input('Unknown diagnostic version. Press ENTER to exit')
       return
 
-  # for i in ecusList:
-  #   print i.vdiag
-  #   print i.ncalib
-  #   for l in i.buttons.keys():
-  #     print l
-  #     print str(i.buttons[l])
-  # print 
-
-  # print correctEcu.vdiag
-  # print correctEcu.ncalib
-  # for k,v in correctEcu.buttons.iteritems():
-  #   print k,v
-
   #Prepare buttons
   buttons = OrderedDict()
 
@@ -344,11 +331,10 @@ def run( elm, ecu, command, data ):
     identsList[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
 
     for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
-      # print str(idKey), identsList["D" + str(idKey)]
       if identsList["D" + str(idKey)].startswith("ID"):
         identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
       paramToSend += identsList["D" + str(idKey)]
-      # print str(idKey), identsList["D" + str(idKey)]
+    
     clearScreen()
       
     print
@@ -386,11 +372,10 @@ def run( elm, ecu, command, data ):
           identsList[k] = v
 
       for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
-        # print str(idKey), identsList["D" + str(idKey)]
         if identsList["D" + str(idKey)].startswith("ID"):
           identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
         paramToSend += identsList["D" + str(idKey)]
-        # print str(idKey), identsList["D" + str(idKey)]
+    
     clearScreen()
 
     print mainText
