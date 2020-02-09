@@ -11,6 +11,7 @@ import mod_ecu
 from mod_utils import clearScreen
 from mod_utils import pyren_encode
 from mod_utils import KBHit
+import mod_ecu_mnemonic
 import xml.dom.minidom
 
 def run( elm, ecu, command, data ):
@@ -62,24 +63,53 @@ def run( elm, ecu, command, data ):
     
 	kb = KBHit()
 
-	# paramsToSend = ""
-	
-	# identList = ['ID101', 'ID102', 'ID103', 'ID125', 'ID126', 'ID105', 'ID106', 'ID107', 'ID108', 'ID109', 'ID110', 'ID111', 'ID112', 'ID113', 'ID114', 'ID115', 'ID116', 'ID117', 'ID118', 'ID119', 'ID120', 'ID121', '00000000', 'ID123', 'ID124', 'ID186', 'ID187']
-	
-	# for ident in identList:
-	# 	if ident.startswith("ID"):
-	# 		paramsToSend += ecu.get_id(ident, 1)
-	# 	else:
-	# 		paramsToSend += ident
-	
-	# ch = raw_input('Do you want to continue? <yes/no> ')
-	# while (ch.upper() != 'YES') and (ch.upper()!= 'NO'):
-	# 	ch = raw_input('Do you want to continue? <yes/no> ')
-	# if ch.upper() != 'YES':
-	# 	return
+	confirm = get_message_by_id('19800')
+	title = get_message("Title")
+	messageInfo = get_message("Message1")
+	succesMessage = get_message("CommandFinished")
+	failMessage = get_message("CommandImpossible")
 
-	# responce = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
+	mnemonics = ecu.get_ref_id(ScmParam["default"]).mnemolist
 
-	# print
+	if mnemonics[0][-2:] > mnemonics[1][-2:]:
+		mnemo1 = mnemonics[1]
+		mnemo2 = mnemonics[0]
+	else:
+		mnemo1 = mnemonics[0]
+		mnemo2 = mnemonics[1]
+	
+	byte1 = int(mnemo1[-2:])
+	byte2 = int(re.findall("\d+", mnemo2)[1])
+	byteCount = byte2 - byte1 - 1
+	resetBytes = byteCount * "00"
+
+	mnemo1Data = mod_ecu_mnemonic.get_mnemonic(ecu.Mnemonics[mnemo1], ecu.Services, elm, 1)
+	mnemo2Data = mod_ecu_mnemonic.get_mnemonic(ecu.Mnemonics[mnemo2], ecu.Services, elm, 1)
+
+	paramsToSend = mnemo1Data + resetBytes + mnemo2Data
+	
+	print title
+	print '*'*80
+	print messageInfo
+	print '*'*80
+	print
+	ch = raw_input(confirm + ' <YES/NO>: ')
+	while (ch.upper()!='YES') and (ch.upper()!='NO'):
+		ch = raw_input(confirm + ' <YES/NO>: ')
+	if ch.upper()!='YES':
+		return
+	
+	clearScreen()
+
+	print
+	response = ecu.run_cmd(ScmParam['Cmde1'], paramsToSend)
+	print
+
+	if "NR" in response:
+		print failMessage
+	else:
+		print succesMessage
+	
+	print
 	ch = raw_input('Press ENTER to exit')
 	return
