@@ -78,9 +78,9 @@ def run( elm, ecu, command, data ):
 		mnemo1 = mnemonics[0]
 		mnemo2 = mnemonics[1]
 	
-	byte1 = int(mnemo1[-2:])
-	byte2 = int(re.findall("\d+", mnemo2)[1])
-	byteCount = byte2 - byte1 - 1
+	byteFrom = int(mnemo1[-2:])
+	byteTo = int(re.findall("\d+", mnemo2)[1])
+	byteCount = byteTo - byteFrom - 1
 	resetBytes = byteCount * "00"
 
 	mnemo1Data = mod_ecu_mnemonic.get_mnemonic(ecu.Mnemonics[mnemo1], ecu.Services, elm, 1)
