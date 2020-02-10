@@ -283,6 +283,72 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
+  def afterEcuChange(title, button, command, rangeKey):
+    paramToSend = ""
+    params = getValuesToChange(title)
+    infoMessage = get_message("Message262")
+    mileageText = get_message_by_id('2110')
+
+    clearScreen()
+    print mainText
+    print '*'*80
+    print buttons[button]
+    print '*'*80
+    print infoMessage
+    print '*'*80
+    print get_message("MessageBox2")
+    print 
+    ch = raw_input(confirm + ' <YES/NO>: ')
+    if ch.upper()!='YES':
+        return
+    mileage = raw_input(mileageText + ': ')
+    while not (mileage.isdigit() and 2 <= len(mileage) <= 6 and int(mileage) > 10):
+      print get_message("MessageBox1")
+      print
+      mileage = raw_input(mileageText + ': ')
+
+    clearScreen()
+
+    print mileageText + ': ' + mileage
+    print
+    ch = raw_input(confirm + ' <YES/NO>: ')
+    while (ch.upper()!='YES') and (ch.upper()!='NO'):
+      ch = raw_input(confirm + ' <YES/NO>: ')
+    if ch.upper()!='YES':
+        return
+
+    mileage = int(mileage)
+
+    for k,v in params.iteritems():
+      if v in identsList.keys():
+        identsList[k] = ecu.get_id(identsList[v], 1)
+      elif v == "Mileage":
+        identValue = ecu.get_id(identsList[k], 1)
+        hexValue = "{0:0{1}X}".format(mileage,len(identValue))
+        identsList[k] = hexValue
+      else:
+        identsList[k] = v
+
+    idRangeKey = identsRangeKeys[identsRangeKeys.keys()[rangeKey]]
+
+    for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
+      if identsList["D" + str(idKey)].startswith("ID"):
+        identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+      paramToSend += identsList["D" + str(idKey)]
+    
+    clearScreen()
+      
+    print
+    response = ecu.run_cmd(command,paramToSend)
+    print
+
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
 
   def setGlowPlugsType(title, button, command, rangeKey):
     paramToSend = ""
@@ -430,6 +496,7 @@ def run( elm, ecu, command, data ):
     if cmdKey == 'Cmd7':
       functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
       functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
+      functions[6] = ["Button6ChangeData", 6, commands['Cmd7'], 2]
     if cmdKey == 'Cmd9':
       functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsRangeKeys) - 1]
 
@@ -440,7 +507,7 @@ def run( elm, ecu, command, data ):
   print infoMessage
   print
 
-  notSupported = [6,7]
+  notSupported = [7]
 
   choice = Choice(buttons.values(), "Choose :")
 
@@ -452,6 +519,8 @@ def run( elm, ecu, command, data ):
         return
       if key == 1:
         resetInjetorsData(functions[key][0],functions[key][1])
+      elif key ==6:
+        afterEcuChange(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       elif key == 8:
         setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       else:
