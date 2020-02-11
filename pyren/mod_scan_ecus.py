@@ -294,9 +294,9 @@ class ScanEcus:
         listecu.append( line )
     else:
       if mod_globals.opt_scan:
-        print pyren_encode( "\n     %-7s %-6s %-5s %-40s %s" % ("Addr","Family","Index","Name","Warn") )
+        print pyren_encode( "\n     %-12s %-6s %-5s %-40s %s" % ("Addr","Family","Index","Name","Warn") )
       else:
-        print pyren_encode( "\n     %-7s %-6s %-5s %-40s %s" % ("Addr","Family","Index","Name","Type") )
+        print pyren_encode( "\n     %-12s %-6s %-5s %-40s %s" % ("Addr","Family","Index","Name","Type") )
     
       for row in self.detectedEcus:
         if 'idf' not in row.keys():
@@ -307,14 +307,14 @@ class ScanEcus:
         if row['idf'] in families.keys() and families[row['idf']] in mod_globals.language_dict.keys():
           fmlyn = mod_globals.language_dict[families[row['idf']]]
           if mod_globals.opt_scan:
-            line = "%-2s(%3s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],fmlyn,row['rerr'])
+            line = "%-2s(%8s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],fmlyn,row['rerr'])
           else:
-            line = "%-2s(%3s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],fmlyn,row['stdType'])
+            line = "%-2s(%8s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],fmlyn,row['stdType'])
         else:
           if mod_globals.opt_scan:
-            line = "%-2s(%3s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],row['doc'].strip(),row['rerr'])
+            line = "%-2s(%8s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],row['doc'].strip(),row['rerr'])
           else:
-            line = "%-2s(%3s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],row['doc'].strip(),row['stdType'])
+            line = "%-2s(%8s) %-6s %-5s %-40s %s" % (row['dst'], m_elm.dnat[row['dst']], row['idf'],row['ecuname'],row['doc'].strip(),row['stdType'])
         listecu.append( line )
 
     listecu.append( "Rescan errors" )    
