@@ -68,13 +68,13 @@ def acf_buildFull( platf ):
       return
 
   mtc = {}
-  mtcf = open(plDIR+'/MTC.dat', 'rb')
+  mtcf = open(plDIR+'/MTC.DAT', 'rb')
   mtc_list = csv.reader(mtcf, delimiter=';')
   for i in mtc_list:
       mtc[int(i[0][:-4])] = i[1:]
 
   ref = {}
-  reff = open(plDIR+'/REF.dat', 'rb')
+  reff = open(plDIR+'/REF.DAT', 'rb')
   ref_list = csv.reader(reff, delimiter=';')
   for i in ref_list:
       ref[int(i[0][:10])] = [i[0][11:]] + i[1:]
@@ -198,14 +198,14 @@ def acf_getMTC( VIN, preferFile=False ):
   
   #check if there is an mtc file 
   
-  mz = open(vindir+'MTC.dat','r')
+  mz = open(vindir+'MTC.DAT','r')
   mtclist = mz.read().split('\n')
   mz.close()
   for l in mtclist:
     if l.startswith(vindata.split(';')[1]):
       mtcdata = l
 
-  rz = open(vindir+'REF.dat','r')
+  rz = open(vindir+'REF.DAT','r')
   reflist = rz.read().split('\n')
   rz.close()
   for l in reflist:
