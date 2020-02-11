@@ -515,7 +515,7 @@ def run( elm, ecu, command, data ):
         return
       if key == 1:
         resetInjetorsData(functions[key][0],functions[key][1])
-      elif key ==6:
+      elif key == 6:
         afterEcuChange(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       elif key == 8:
         setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
