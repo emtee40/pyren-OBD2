@@ -92,7 +92,7 @@ def find_DBs():
             # if the cache has old version then we should clear it
             for root, dirs, files in os.walk("./cache"):
                 for sfile in files:
-                    if sfile.startswith("FG") or sfile.startswith("SG") or sfile.startswith("DiagOnCan"):
+                    if sfile.startswith("FG") or sfile.startswith("SG") or sfile.startswith("DiagOnCAN"):
                         full_path = os.path.join("./cache", sfile)
                         os.remove(full_path)
         if verline[1]!=mod_globals.ddtroot:
