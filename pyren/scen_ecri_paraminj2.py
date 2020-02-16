@@ -57,7 +57,6 @@ def run( elm, ecu, command, data ):
   ecusList = []
   correctEcu = ''
   vdiagExists = False
-  ncalibExists = False
 
   def get_message( msg ):
     if msg in ScmParam.keys():
@@ -102,85 +101,28 @@ def run( elm, ecu, command, data ):
         
         ScmSet[setname]= value
         ScmParam[name] = value
-  
-  if "VDiag" in ScmParam.keys():
+ 
+  if "IdentVdiag" in ScmParam.keys():
     vdiagExists = True
-    if "Ncalib" in ScmParam.keys():
-      ncalibExists = True
   
-  # Get nested buttons with VDiag and Ncalib
+  # Get nested buttons with VDiag
   for vDiag in root:
-    if vDiag.attrib["name"] == "VDiag":
+    if vDiag.attrib["name"] == "ListVdiag":
       if len(vDiag.keys()) == 1:
         for vDiagName in vDiag:
-          if vDiagName:
-            for vDiagButtons in vDiagName:
-              buttons = OrderedDict()
-              if vDiagButtons.attrib["name"] == "Ncalib":
-                for ncalibName in vDiagButtons:
-                  for ncalibButtons in ncalibName:
-                    if ncalibButtons.attrib["name"] == "Buttons":
-                      for ncalibButton in ncalibButtons:
-                        buttons[ncalibButton.attrib["name"]] = ncalibButton.attrib["value"]
-                      ecusList.append(ecus(vDiagName.attrib["name"],ncalibName.attrib["name"], buttons))
-                      buttons = OrderedDict()
-              else:
-                if vDiagButtons.attrib["name"] == "Buttons":
-                  for vDiagButton in vDiagButtons:
-                    buttons[vDiagButton.attrib["name"]] = vDiagButton.attrib["value"]
-                ecusList.append(ecus(vDiagName.attrib["name"], '', buttons))
-
-# Get plain buttons with VDiag
-  if vdiagExists:
-    if not ncalibExists:
-      vdiag = ''
-      buttons = OrderedDict()
-      for name in ScmParam.keys():
-        if name.startswith("InjectorsButton"):
-          if buttons:
-            ecusList.append(ecus(vdiag, '', buttons))
           buttons = OrderedDict()
-          vdiag = name[-2:]
-          buttons[name[:-2]] = ScmParam[name]
-        if vdiag:
-          if name.endswith("Button" + vdiag):
-            buttons[name[:-2]] = ScmParam[name]
-      ecusList.append(ecus(vdiag, '', buttons))
-  else:                                         #Get buttons without VDiag
-    buttons = OrderedDict()
-    found = False
-    for name in ScmParam.keys():
-        if name == "InjectorsButton":
-          buttons[name] = ScmParam[name]
-          found = True
-        if found:
-          if name.endswith("Button"):
-            buttons[name] = ScmParam[name]
-          else:
-            found = False
-            break
-    ecusList.append(ecus('', '', buttons))
+          if vDiagName:
+            for vDiagButton in vDiagName:
+              buttons[vDiagButton.attrib["name"]] = vDiagButton.attrib["value"]
+              ecusList.append(ecus(vDiagName.attrib["name"], '', buttons))
 
 # Get correct buttons set
   if vdiagExists:
-    value1, datastr1 = ecu.get_id(ScmParam['VDiag'])
+    value1, datastr1 = ecu.get_id(ScmParam['IdentVdiag'])
     for ecuSet in ecusList:
       if ecuSet.vdiag == value1.upper():
-        if ncalibExists:
-          if ecuSet.ncalib:
-            value2, datastr2 = ecu.get_id(ScmParam['Ncalib'])
-            if ecuSet.ncalib == value2.upper():
-              correctEcu = ecuSet
-              break
-            elif ecuSet.ncalib == "Other":
-              correctEcu = ecuSet
-              break
-          else:
-            correctEcu = ecuSet
-            break
-        else:
-          correctEcu = ecuSet
-          break 
+        correctEcu = ecuSet
+        break 
   else:
     correctEcu = ecusList[0]
 
@@ -206,6 +148,9 @@ def run( elm, ecu, command, data ):
     if bt == 'InletFlapButton':
       if str(correctEcu.buttons[bt]) == 'true':
         buttons[3] = get_message("INLET_FLAP")
+    if bt == 'ParticleFilterButton':
+      if str(correctEcu.buttons[bt]) == 'true':
+        buttons[4] = get_message("PARTICLES_FILTER")
     if bt.startswith("Button"):
       if str(correctEcu.buttons[bt]) == 'true':
         buttons[int(bt.strip('Button'))] = get_message(bt[:-6] + "Text")
@@ -361,19 +306,16 @@ def run( elm, ecu, command, data ):
 
   def setGlowPlugsType(title, button, command, rangeKey):
     params = getValuesToChange(title)
-    currentType = ecu.get_id(identsList[params["IdentToBeDisplayed"].replace("Ident", "D")], 1)
-    slowTypeValue = get_message('ValueSlowParam')
-    fastTypeValue = get_message('ValueFastParam')
-    currentMessage = get_message_by_id('52676')
-    slowMessage = get_message('Slow')
-    fastMessage = get_message('Fast')
-    notDefinedMessage = get_message('NotDefined')
-    message2 = get_message('Message282')
+    value, datastr = ecu.get_st(ScmParam['State1'])
+
+    message = get_message('Message29')
+    currentTypeMessage = get_message_by_id('52676')
 
     typesButtons = OrderedDict()
 
-    typesButtons[slowMessage] = slowTypeValue
-    typesButtons[fastMessage] = fastTypeValue
+    typesButtons[get_message_by_id('54031')] = ScmParam['54031']
+    typesButtons[get_message_by_id('54030')] = ScmParam['54030']
+    typesButtons[get_message_by_id('54032')] = ScmParam['54032']
     typesButtons['<exit>'] = ""
 
     clearScreen()
@@ -381,15 +323,12 @@ def run( elm, ecu, command, data ):
     print '*'*80
     print buttons[button]
     print '*'*80
-    print message2
+    print message
     print '*'*80
     print
-    if currentType == slowTypeValue:
-      print currentMessage + ': ' + slowMessage
-    elif currentType == fastTypeValue:
-      print currentMessage + ': ' + fastMessage
-    else:
-      print currentMessage + ': ' + notDefinedMessage
+    print currentTypeMessage + ':'
+    print
+    print datastr
     print
 
     choice = Choice(typesButtons.keys(), "Choose :")
@@ -399,7 +338,9 @@ def run( elm, ecu, command, data ):
     print
     print inProgressMessage
 
-    identsList[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
+    glowPlugType =  "{0:0{1}X}".format((int(ScmParam['Mask1']) + int(typesButtons[choice[0]])),2)
+
+    identsList[params.keys()[0]] = glowPlugType
 
     paramToSend = getValuesFromEcu(rangeKey)
     
@@ -478,7 +419,7 @@ def run( elm, ecu, command, data ):
 
   functions = OrderedDict()
   for cmdKey in commands.keys():
-    if cmdKey == 'Cmd1':
+    if cmdKey == 'Cmd1' and "Cmd5" in commands.keys():
       injectorsDict = OrderedDict()
       injectorsDict[get_message('Cylinder1')] = commands['Cmd1']
       injectorsDict[get_message('Cylinder2')] = commands['Cmd2']
@@ -494,8 +435,8 @@ def run( elm, ecu, command, data ):
       functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
       functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
       functions[6] = ["Button6ChangeData", 6, commands['Cmd7'], 2]
-    if cmdKey == 'Cmd9':
-      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsRangeKeys) - 1]
+    if len(commands) == 1 and cmdKey == 'Cmd1':
+      functions[7] = ["Button7ChangeData", 7, commands["Cmd1"], len(identsRangeKeys) - 1]
 
   infoMessage = get_message('Message1')
   
@@ -504,21 +445,16 @@ def run( elm, ecu, command, data ):
   print infoMessage
   print
 
-  notSupported = [7]
-
   choice = Choice(buttons.values(), "Choose :")
 
   for key, value in buttons.iteritems():
     if choice[0]=='<exit>': return
     if value == choice[0]:
-      if key in notSupported:
-        ch = raw_input("\nNot Supported yet. Press ENTER to exit")
-        return
       if key == 1:
         resetInjetorsData(functions[key][0],functions[key][1])
       elif key == 6:
         afterEcuChange(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
-      elif key == 8:
+      elif key == 7:
         setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
       else:
         resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
