@@ -18,6 +18,7 @@ import string
 import mod_globals
 import mod_utils
 import mod_ecu
+import mod_db_manager
 from   mod_utils     import pyren_encode
 from   mod_utils     import clearScreen
 from   mod_utils     import ASCIITOHEX
@@ -75,10 +76,10 @@ def run( elm, ecu, command, data ):
   #
   #      Data file parsing
   #  
-  DOMTree = xml.dom.minidom.parse(data)
+  DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(data))
   ScmRoom = DOMTree.documentElement
 
-  root = et.parse(data).getroot()
+  root = et.parse(mod_db_manager.get_file_from_clip(data)).getroot()
   
   ScmParams = ScmRoom.getElementsByTagName("ScmParam")
  
@@ -253,20 +254,20 @@ def run( elm, ecu, command, data ):
     print '*'*80
     print get_message("MessageBox2")
     print 
-    ch = raw_input(confirm + ' <YES/NO>: ')
+    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
     if ch.upper()!='YES':
         return
-    mileage = raw_input(mileageText + ' (' + mileageUnit + ')' + ': ')
+    mileage = raw_input(pyren_encode(mileageText + ' (' + mileageUnit + ')' + ': '))
     while not (mileage.isdigit() and 2 <= len(mileage) <= 6 and int(mileage) >= 10):
       print get_message("MessageBox1")
       print
-      mileage = raw_input(mileageText + ' (' + mileageUnit + ')' + ': ')
+      mileage = raw_input(pyren_encode(mileageText + ' (' + mileageUnit + ')' + ': '))
 
     clearScreen()
 
     print mileageText + ': ' + mileage + ' ' + mileageUnit
     print
-    ch = raw_input(confirm + ' <YES/NO>: ')
+    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
       ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
@@ -393,7 +394,7 @@ def run( elm, ecu, command, data ):
       print get_message_by_id('55663')
       print '*'*80
     print
-    ch = raw_input(confirm + ' <YES/NO>: ')
+    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
       ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
