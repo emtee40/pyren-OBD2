@@ -26,7 +26,7 @@ def playScenario(command, ecu, elm):
     
   if os.path.isfile('./'+scenarioName+'.py'):
     scen = __import__( scenarioName )
-    scen.run( elm, ecu, command, '../'+path+scenarioData )
+    scen.run( elm, ecu, command, './'+path+scenarioData )
     return
     
   print "\nThere is scenarium. I do not support them!!!\n"
