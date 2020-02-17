@@ -60,18 +60,24 @@ def run( elm, ecu, command, data ):
   vdiagExists = False
   ncalibExists = False
 
-  def get_message( msg ):
+  def get_message( msg, encode = 1 ):
     if msg in ScmParam.keys():
       value = ScmParam[msg]
     else:
       value = msg
     if value.isdigit() and value in mod_globals.language_dict.keys():
-      value = mod_globals.language_dict[value]
+      if encode:
+        value = pyren_encode(mod_globals.language_dict[value])
+      else:
+        value = mod_globals.language_dict[value]
     return value
 
-  def get_message_by_id( id ):
+  def get_message_by_id( id, encode = 1 ):
     if id.isdigit() and id in mod_globals.language_dict.keys():
-      value = mod_globals.language_dict[id]
+      if encode:
+        value = pyren_encode(mod_globals.language_dict[id])
+      else:
+        value = mod_globals.language_dict[id]
     return value
   
   #
@@ -200,16 +206,16 @@ def run( elm, ecu, command, data ):
   for bt in correctEcu.buttons.keys():
     if bt == 'InjectorsButton':
       if str(correctEcu.buttons[bt]) == 'true':
-        buttons[1] = get_message("Injectors")
+        buttons[1] = get_message("Injectors", 0)
     if bt == 'EGRValveButton':
       if str(correctEcu.buttons[bt]) == 'true':
-        buttons[2] = get_message("EGR_VALVE")
+        buttons[2] = get_message("EGR_VALVE", 0)
     if bt == 'InletFlapButton':
       if str(correctEcu.buttons[bt]) == 'true':
-        buttons[3] = get_message("INLET_FLAP")
+        buttons[3] = get_message("INLET_FLAP", 0)
     if bt.startswith("Button"):
       if str(correctEcu.buttons[bt]) == 'true':
-        buttons[int(bt.strip('Button'))] = get_message(bt[:-6] + "Text")
+        buttons[int(bt.strip('Button'))] = get_message(bt[:-6] + "Text", 0)
   buttons["exit"] = '<exit>'
 
   #Get commands
@@ -309,22 +315,22 @@ def run( elm, ecu, command, data ):
     print '*'*80
     print get_message("MessageBox2")
     print 
-    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
+    ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
         return
-    mileage = raw_input(pyren_encode(mileageText + ' (' + mileageUnit + ')' + ': '))
+    mileage = raw_input(mileageText + ' (' + mileageUnit + ')' + ': ')
     while not (mileage.isdigit() and 2 <= len(mileage) <= 6 and int(mileage) >= 10):
       print get_message("MessageBox1")
       print
-      mileage = raw_input(pyren_encode(mileageText + ' (' + mileageUnit + ')' + ': '))
+      mileage = raw_input(mileageText + ' (' + mileageUnit + ')' + ': ')
 
     clearScreen()
 
     print mileageText + ': ' + mileage + ' ' + mileageUnit
     print
-    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
+    ch = raw_input(confirm + ' <YES/NO>: ')
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
-      ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
+      ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
         return
 
@@ -366,8 +372,8 @@ def run( elm, ecu, command, data ):
     slowTypeValue = get_message('ValueSlowParam')
     fastTypeValue = get_message('ValueFastParam')
     currentMessage = get_message_by_id('52676')
-    slowMessage = get_message('Slow')
-    fastMessage = get_message('Fast')
+    slowMessage = get_message('Slow', 0)
+    fastMessage = get_message('Fast', 0)
     notDefinedMessage = get_message('NotDefined')
     message2 = get_message('Message282')
 
@@ -453,9 +459,9 @@ def run( elm, ecu, command, data ):
       print get_message_by_id('55663')
       print '*'*80
     print
-    ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
+    ch = raw_input(confirm + ' <YES/NO>: ')
     while (ch.upper()!='YES') and (ch.upper()!='NO'):
-      ch = raw_input(pyren_encode(confirm + ' <YES/NO>: '))
+      ch = raw_input(confirm + ' <YES/NO>: ')
     if ch.upper()!='YES':
         return
 
@@ -481,10 +487,10 @@ def run( elm, ecu, command, data ):
   for cmdKey in commands.keys():
     if cmdKey == 'Cmd1':
       injectorsDict = OrderedDict()
-      injectorsDict[get_message('Cylinder1')] = commands['Cmd1']
-      injectorsDict[get_message('Cylinder2')] = commands['Cmd2']
-      injectorsDict[get_message('Cylinder3')] = commands['Cmd3']
-      injectorsDict[get_message('Cylinder4')] = commands['Cmd4']
+      injectorsDict[get_message('Cylinder1', 0)] = commands['Cmd1']
+      injectorsDict[get_message('Cylinder2', 0)] = commands['Cmd2']
+      injectorsDict[get_message('Cylinder3', 0)] = commands['Cmd3']
+      injectorsDict[get_message('Cylinder4', 0)] = commands['Cmd4']
       injectorsDict['<exit>'] = ""
       functions[1] = [1, injectorsDict]
     if cmdKey == 'Cmd5':
