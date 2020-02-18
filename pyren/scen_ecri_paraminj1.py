@@ -219,13 +219,19 @@ def run( elm, ecu, command, data ):
   buttons["exit"] = '<exit>'
 
   #Get commands
-  commands = {}
+  commands = OrderedDict()
   
   for child in root:
     if child.attrib["name"] == "Commands":
       if len(child.keys()) == 1:
         for param in child:
-          commands[param.attrib["name"]] = param.attrib["value"]
+          serviceIDs = ecu.get_ref_cmd(param.attrib["value"]).serviceID
+          startReq = ""
+          for sid in serviceIDs:
+            if ecu.Services[sid].params:
+              startReq = ecu.Services[sid].startReq
+              break
+          commands[param.attrib["name"]] = {"command": param.attrib["value"], "startReq": startReq}
   
   #Get identifications
   identsList = OrderedDict()
@@ -236,7 +242,6 @@ def run( elm, ecu, command, data ):
       key = param[6:-5]
       begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
-      identsRangeKeys[key] = {"begin": begin, "end": end}
       try:  #10099 trap
         identsList['D'+str(begin)] = ScmParam['Ident'+str(begin)]
       except:
@@ -244,6 +249,8 @@ def run( elm, ecu, command, data ):
       else:
         for idnum in range(begin ,end + 1):
           identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
+        frame = ecu.Mnemonics[ecu.get_ref_id(identsList['D'+str(begin)]).mnemolist[0]].request
+        identsRangeKeys[key] = {"begin": begin, "end": end, "frame": frame}
 
   def getValuesToChange(resetItem):
     params = {}
@@ -253,16 +260,41 @@ def run( elm, ecu, command, data ):
           for param in child:
             params[param.attrib["name"].replace("D0", "D")] = param.attrib["value"]
     return params
-  
-  def getValuesFromEcu(rangeKey):
-    paramToSend = ""
-    idRangeKey = identsRangeKeys[identsRangeKeys.keys()[rangeKey]]
 
-    for idKey in range(idRangeKey['begin'], idRangeKey['end'] + 1):
-      if identsList["D" + str(idKey)].startswith("ID"):
-        identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
-      paramToSend += identsList["D" + str(idKey)]
-    return paramToSend
+  def takesParams(request):
+    for cmd in commands.values():
+      if cmd['startReq'] == request:
+        commandToRun = cmd['command']
+        return commandToRun
+  
+  def getValuesFromEcu(params):
+    paramToSend = ""
+    commandToRun = ""
+    requestToFindInCommandsRequests = ""
+
+    try:
+      idKeyToFindInRange = int((params.keys()[0]).replace("D",""))
+    except:
+      return commandToRun, paramToSend
+    else:
+      for rangeK in identsRangeKeys.keys():
+        if identsRangeKeys[rangeK]['begin'] <= idKeyToFindInRange <= identsRangeKeys[rangeK]['end']:
+          requestToFindInCommandsRequests = "3B" + identsRangeKeys[rangeK]['frame'][-2:]
+          isTakingParams = takesParams(requestToFindInCommandsRequests)
+          if isTakingParams:
+            for k,v in params.iteritems():
+              if v in identsList.keys():
+                identsList[k] = ecu.get_id(identsList[v], 1)
+              else:
+                identsList[k] = v
+            for idKey in range(identsRangeKeys[rangeK]['begin'], identsRangeKeys[rangeK]['end'] + 1):
+              if identsList["D" + str(idKey)].startswith("ID"):
+                identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+              paramToSend += identsList["D" + str(idKey)]
+            commandToRun = isTakingParams
+            break
+        
+      return commandToRun, paramToSend
 
   confirm = get_message_by_id('19800')
   successMessage = get_message('Message32')
@@ -300,7 +332,7 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
-  def afterEcuChange(title, button, command, rangeKey):
+  def afterEcuChange(title, button):
     params = getValuesToChange(title)
     infoMessage = get_message("Message262")
     mileageText = get_message_by_id('2110')
@@ -341,16 +373,12 @@ def run( elm, ecu, command, data ):
 
     mileage = int(mileage)
 
-    for k,v in params.iteritems():
-      if v in identsList.keys():
-        identsList[k] = ecu.get_id(identsList[v], 1)
-      elif v == "Mileage":
-        identValue = ecu.get_id(identsList[k], 1)
-        identsList[k] = "{0:0{1}X}".format(mileage,len(identValue))
-      else:
-        identsList[k] = v
+    for paramkey in params.keys():
+      if params[paramkey] == "Mileage":
+        identValue = ecu.get_id(identsList[paramkey], 1)
+        params[paramkey] = "{0:0{1}X}".format(mileage,len(identValue))
     
-    paramToSend = getValuesFromEcu(rangeKey)
+    command, paramToSend = getValuesFromEcu(params)
     
     clearScreen()
       
@@ -366,7 +394,7 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
-  def setGlowPlugsType(title, button, command, rangeKey):
+  def setGlowPlugsType(title, button):
     params = getValuesToChange(title)
     currentType = ecu.get_id(identsList[params["IdentToBeDisplayed"].replace("Ident", "D")], 1)
     slowTypeValue = get_message('ValueSlowParam')
@@ -406,9 +434,10 @@ def run( elm, ecu, command, data ):
     print
     print inProgressMessage
 
-    identsList[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
+    params[params["IdentToBeDisplayed"].replace("Ident", "D")] = typesButtons[choice[0]]
+    params.pop("IdentToBeDisplayed")
 
-    paramToSend = getValuesFromEcu(rangeKey)
+    command, paramToSend = getValuesFromEcu(params)
     
     clearScreen()
       
@@ -424,27 +453,10 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
-  def resetValues(title, button, command, rangeKey):
+  def resetValues(title, button, defaultCommand):
     paramToSend = ""
     commandTakesParams = True
     params = getValuesToChange(title)
-    
-    commandServices = ecu.Commands[command.replace("VP", "V")].serviceID  
-    for sid in commandServices:
-      if not ecu.Services[sid].params:  #For INLET_FLAP VP042 in 10959 or VP018 EGR_VALVE in 10527
-        commandTakesParams = False
-      else:
-        commandTakesParams = True
-        break
-    
-    if commandTakesParams:
-      for k,v in params.iteritems():
-        if v in identsList.keys():
-          identsList[k] = ecu.get_id(identsList[v], 1)
-        else:
-          identsList[k] = v
-      
-      paramToSend = getValuesFromEcu(rangeKey)
     
     clearScreen()
 
@@ -466,12 +478,18 @@ def run( elm, ecu, command, data ):
         return
 
     clearScreen()
+    print
+    print inProgressMessage
+      
+    command, paramToSend = getValuesFromEcu(params)
+
+    clearScreen()
       
     print
-    if commandTakesParams:
+    if command:
       response = ecu.run_cmd(command,paramToSend)
     else:
-      response = ecu.run_cmd(command)
+      response = ecu.run_cmd(defaultCommand)
     print
 
     if "NR" in response:
@@ -487,22 +505,22 @@ def run( elm, ecu, command, data ):
   for cmdKey in commands.keys():
     if cmdKey == 'Cmd1':
       injectorsDict = OrderedDict()
-      injectorsDict[get_message('Cylinder1', 0)] = commands['Cmd1']
-      injectorsDict[get_message('Cylinder2', 0)] = commands['Cmd2']
-      injectorsDict[get_message('Cylinder3', 0)] = commands['Cmd3']
-      injectorsDict[get_message('Cylinder4', 0)] = commands['Cmd4']
+      injectorsDict[get_message('Cylinder1', 0)] = commands['Cmd1']['command']
+      injectorsDict[get_message('Cylinder2', 0)] = commands['Cmd2']['command']
+      injectorsDict[get_message('Cylinder3', 0)] = commands['Cmd3']['command']
+      injectorsDict[get_message('Cylinder4', 0)] = commands['Cmd4']['command']
       injectorsDict['<exit>'] = ""
       functions[1] = [1, injectorsDict]
     if cmdKey == 'Cmd5':
-      functions[2] = ["EGR_VALVE", 2, commands['Cmd5'], 0]
+      functions[2] = ["EGR_VALVE", 2, commands['Cmd5']['command']]
     if cmdKey == 'Cmd6':
-      functions[3] = ["INLET_FLAP", 3, commands['Cmd6'], 1]
+      functions[3] = ["INLET_FLAP", 3, commands['Cmd6']['command']]
     if cmdKey == 'Cmd7':
-      functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7'], 2]
-      functions[5] = ["Button5ChangeData", 5, commands['Cmd7'], 2]
-      functions[6] = ["Button6ChangeData", 6, commands['Cmd7'], 2]
+      functions[4] = ["PARTICLE_FILTER", 4, commands['Cmd7']['command']]
+      functions[5] = ["Button5ChangeData", 5, commands['Cmd7']['command']]
+      functions[6] = ["Button6ChangeData", 6, commands['Cmd7']['command']]
     if cmdKey == 'Cmd9':
-      functions[8] = ["Button8DisplayData", 8, commands["Cmd9"], len(identsRangeKeys) - 1]
+      functions[8] = ["Button8DisplayData", 8]
 
   infoMessage = get_message('Message1')
   
@@ -524,9 +542,9 @@ def run( elm, ecu, command, data ):
       if key == 1:
         resetInjetorsData(functions[key][0],functions[key][1])
       elif key == 6:
-        afterEcuChange(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+        afterEcuChange(functions[key][0],functions[key][1])
       elif key == 8:
-        setGlowPlugsType(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+        setGlowPlugsType(functions[key][0],functions[key][1])
       else:
-        resetValues(functions[key][0],functions[key][1],functions[key][2],functions[key][3])
+        resetValues(functions[key][0],functions[key][1],functions[key][2])
       return
