@@ -375,10 +375,23 @@ def run( elm, ecu, command, data ):
 
     for paramkey in params.keys():
       if params[paramkey] == "Mileage":
+        mnemonics = ecu.get_ref_id(identsList[paramkey]).mnemolist[0]
         identValue = ecu.get_id(identsList[paramkey], 1)
-        params[paramkey] = "{0:0{1}X}".format(mileage,len(identValue))
+        hexval = "{0:0{1}X}".format(mileage,len(identValue))
+        if ecu.Mnemonics[mnemonics].littleEndian == '1':
+          a = hexval
+          b = ''
+          if not len(a) % 2:
+            for i in range(0,len(a),2):
+              b = a[i:i+2]+b
+            hexval = b
+        params[paramkey] = hexval
     
     command, paramToSend = getValuesFromEcu(params)
+
+    if "ERROR" in paramToSend:
+      raw_input("Data downloading went wrong. Aborting.")
+      return
     
     clearScreen()
       
@@ -438,6 +451,10 @@ def run( elm, ecu, command, data ):
     params.pop("IdentToBeDisplayed")
 
     command, paramToSend = getValuesFromEcu(params)
+
+    if "ERROR" in paramToSend:
+      raw_input("Data downloading went wrong. Aborting.")
+      return
     
     clearScreen()
       
@@ -482,6 +499,10 @@ def run( elm, ecu, command, data ):
     print inProgressMessage
       
     command, paramToSend = getValuesFromEcu(params)
+
+    if "ERROR" in paramToSend:
+      raw_input("Data downloading went wrong. Aborting.")
+      return
 
     clearScreen()
       

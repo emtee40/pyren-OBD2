@@ -65,7 +65,10 @@ def get_mnemonic( m, se, elm, raw = 0 ):
   hexval = hexval.replace(" ","")
 
   if raw:
-    return hexval
+    if resp.startswith(m.positive):
+      return hexval
+    else:
+      return 'ERROR'
 
   #shift and mask
   val = (int(hexval,16)>>rshift)&(2**bits-1)
