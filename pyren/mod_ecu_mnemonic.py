@@ -102,6 +102,8 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         snapshotService = se[sid]
   
   resp = executeService( snapshotService, elm, [], "", True )
+  if mod_globals.opt_demo and not resp:
+    return "00"
   resp = resp.strip().replace(' ','')
   if not all(c in string.hexdigits for c in resp): resp = ''
   resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
