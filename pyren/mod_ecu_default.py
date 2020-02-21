@@ -384,6 +384,14 @@ class ecu_default:
           for dr in DataRef:
             dataref = ecu_screen_dataref( dr ) 
             self.datarefs.append( dataref )
+    MemorisedInfo = df.getElementsByTagName("MemorisedInfo")
+    if MemorisedInfo:
+      for mi in MemorisedInfo:
+        DataRef = mi.getElementsByTagName("DataRef")
+        if DataRef:
+          for dr in DataRef:
+            dataref = ecu_screen_dataref( dr ) 
+            self.datarefs.append( dataref )
           
     self.helps = []
     Helps = df.getElementsByTagName("Helps")
