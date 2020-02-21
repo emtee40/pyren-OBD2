@@ -7,7 +7,7 @@ from xml.dom.minidom    import parseString
 import xml.dom.minidom
 import mod_globals
 
-def get_parameter( pr, mn, se, elm, calc ):
+def get_parameter( pr, mn, se, elm, calc, dataids = {} ):
 
   comp = pr.computation
   comp = comp.replace("&amp;","&")
@@ -15,7 +15,10 @@ def get_parameter( pr, mn, se, elm, calc ):
 
   for m in sorted(pr.mnemolist, key=len, reverse=True):
     
-    val = get_mnemonic( mn[m], se, elm )
+    if dataids:
+      val = get_SnapShotMnemonic(mn[m], se, elm, dataids )
+    else:
+      val = get_mnemonic( mn[m], se, elm )
     if mn[m].type=="SNUM8" and int(val,16)>0x7f:
       val = str(int(val,16)-0x100)
     elif mn[m].type=="SNUM16" and int(val,16)>0x7fff:

@@ -431,7 +431,10 @@ class ECU:
         if dr.type=='State':
           datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Parameter':
-          datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if self.DataIds and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].datarefs:
+            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+          else:
+            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Identification':
           datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
         if dr.type=='Command':
@@ -748,7 +751,7 @@ class ECU:
 
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
       
-      tmp_dtrf = self.Defaults[dtchex[:4]].datarefs + self.ext_de
+      tmp_dtrf = self.Defaults[dtchex[:4]].datarefs + self.Defaults[dtchex[:4]].ssdatarefs + self.ext_de
       
       #self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path) 
       self.show_datarefs(tmp_dtrf, path) 

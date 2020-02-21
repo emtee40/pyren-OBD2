@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from mod_ecu_service    import *
+from mod_globals        import curPosInSnapshotResp
 
 from mod_utils          import Choice
 from xml.dom.minidom    import parse
@@ -69,6 +70,74 @@ def get_mnemonic( m, se, elm, raw = 0 ):
       return hexval
     else:
       return 'ERROR'
+
+  #shift and mask
+  val = (int(hexval,16)>>rshift)&(2**bits-1)
+  
+  #format result
+  hexval = hex(val)[2:]
+  #remove 'L'
+  if hexval[-1:].upper()=='L':
+    hexval = hexval[:-1]
+  #add left zero if need
+  if len(hexval)%2:
+    hexval = '0'+hexval
+
+  #revert byte order if little endian
+  if m.littleEndian == '1':
+    a = hexval
+    b = ''
+    if not len(a) % 2:
+      for i in range(0,len(a),2):
+        b = a[i:i+2]+b
+      hexval = b
+  
+  return hexval
+
+def get_SnapShotMnemonic(m, se, elm, dataids):
+  snapshotService = ""
+  for sid in se:
+    if len(se[sid].params) > 1:
+      if se[sid].params[1]['type'] == 'Snapshot':
+        snapshotService = se[sid]
+  
+  resp = executeService( snapshotService, elm, [], "", True )
+  resp = resp.strip().replace(' ','')
+  if not all(c in string.hexdigits for c in resp): resp = ''
+  resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
+  resp = resp[8*3:]
+
+  if mod_globals.curPosInSnapshotResp >= len(resp):
+    mod_globals.curPosInSnapshotResp = 0
+
+  dataId = resp[mod_globals.curPosInSnapshotResp:mod_globals.curPosInSnapshotResp + 2*3].replace(" ", "")
+  
+  didDataLength = int(dataids[dataId].dataBitLength)/8
+  didData = resp[mod_globals.curPosInSnapshotResp + 2*3: mod_globals.curPosInSnapshotResp + 2*3 + didDataLength*3]
+  mod_globals.curPosInSnapshotResp += 2*3 + didDataLength * 3
+
+  startByte = ""
+  startBit = ""
+
+  for mn in dataids[dataId].mnemolocations.keys():
+    if mn == m.name:
+      startByte = dataids[dataId].mnemolocations[m.name].startByte
+      startBit = dataids[dataId].mnemolocations[m.name].startBit
+
+  #prepare local variables  
+  sb     = int(startByte) - 1
+  bits   = int(m.bitsLength)
+  sbit   = int(startBit)
+  bytes  = (bits+sbit-1)/8+1
+  rshift = ((bytes+1)*8 - (bits+sbit))%8
+
+  #check length of responce
+  if (sb*3+bytes*3-1)>(len(didData)):
+    return '00'
+  
+  #extract hex
+  hexval = didData[sb*3:(sb+bytes)*3-1]
+  hexval = hexval.replace(" ","")
 
   #shift and mask
   val = (int(hexval,16)>>rshift)&(2**bits-1)

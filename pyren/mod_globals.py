@@ -40,6 +40,7 @@ state_scan    = False
 currentDDTscreen = None
 
 ext_cur_DTC = "000000"
+curPosInSnapshotResp = 0
 
 none_val = "None"
 
