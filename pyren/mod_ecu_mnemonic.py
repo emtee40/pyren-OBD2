@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from mod_ecu_service    import *
-from mod_globals        import curPosInSnapshotResp
 
 from mod_utils          import Choice
 from xml.dom.minidom    import parse
@@ -96,6 +95,7 @@ def get_mnemonic( m, se, elm, raw = 0 ):
 
 def get_SnapShotMnemonic(m, se, elm, dataids):
   snapshotService = ""
+  posInResp = 0
   for sid in se:
     if len(se[sid].params) > 1:
       if se[sid].params[1]['type'] == 'Snapshot':
@@ -107,24 +107,27 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   resp = resp.strip().replace(' ','')
   if not all(c in string.hexdigits for c in resp): resp = ''
   resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
+  numberOfIdentifiers = int("0x" + resp[7*3:8*3-1],16)
   resp = resp[8*3:]
 
-  if mod_globals.curPosInSnapshotResp >= len(resp):
-    mod_globals.curPosInSnapshotResp = 0
-
-  dataId = resp[mod_globals.curPosInSnapshotResp:mod_globals.curPosInSnapshotResp + 2*3].replace(" ", "")
-  
-  didDataLength = int(dataids[dataId].dataBitLength)/8
-  didData = resp[mod_globals.curPosInSnapshotResp + 2*3: mod_globals.curPosInSnapshotResp + 2*3 + didDataLength*3]
-  mod_globals.curPosInSnapshotResp += 2*3 + didDataLength * 3
+  didDict = {}
+  for x in range(numberOfIdentifiers):
+    dataId = resp[posInResp:posInResp + 2*3].replace(" ", "")
+    posInResp += 2*3
+    didDataLength = int(dataids[dataId].dataBitLength)/8
+    didData = resp[posInResp: posInResp + didDataLength*3]
+    posInResp += didDataLength*3
+    didDict[dataId] = didData
 
   startByte = ""
   startBit = ""
-
-  for mn in dataids[dataId].mnemolocations.keys():
-    if mn == m.name:
-      startByte = dataids[dataId].mnemolocations[m.name].startByte
-      startBit = dataids[dataId].mnemolocations[m.name].startBit
+  dataId = ""
+  for did in dataids.keys():
+    for mn in dataids[did].mnemolocations.keys():
+      if mn == m.name:
+        dataId = did
+        startByte = dataids[dataId].mnemolocations[m.name].startByte
+        startBit = dataids[dataId].mnemolocations[m.name].startBit
 
   #prepare local variables  
   sb     = int(startByte) - 1
@@ -134,11 +137,11 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   rshift = ((bytes+1)*8 - (bits+sbit))%8
 
   #check length of responce
-  if (sb*3+bytes*3-1)>(len(didData)):
+  if (sb*3+bytes*3-1)>(len(didDict[dataId])):
     return '00'
   
   #extract hex
-  hexval = didData[sb*3:(sb+bytes)*3-1]
+  hexval = didDict[dataId][sb*3:(sb+bytes)*3-1]
   hexval = hexval.replace(" ","")
 
   #shift and mask

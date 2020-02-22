@@ -7,11 +7,14 @@ from xml.dom.minidom    import parseString
 import xml.dom.minidom
 import mod_globals
 
-def get_state( st, mn, se, elm, calc ):
+def get_state( st, mn, se, elm, calc, dataids = {} ):
   comp = st.computation
   comp = comp.replace("&amp;","&")
   for m in sorted(st.mnemolist, key=len, reverse=True):
-    hex_val = get_mnemonic( mn[m], se, elm )
+    if dataids:
+      hex_val = get_SnapShotMnemonic(mn[m], se, elm, dataids )
+    else:
+      hex_val = get_mnemonic( mn[m], se, elm )
     comp = comp.replace(m, "0x"+hex_val) 
   tmp_val = calc.calculate(comp)
   

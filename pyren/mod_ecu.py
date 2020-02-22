@@ -426,12 +426,15 @@ class ECU:
         print "Press any key to exit"
 
       for dr in datarefs:
-        datastr = dr.name;
+        datastr = dr.name
         help    = dr.type
         if dr.type=='State':
-          datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].ssdatarefs:
+            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+          else:
+            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Parameter':
-          if self.DataIds and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].datarefs:
+          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].ssdatarefs:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
           else:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
@@ -439,6 +442,8 @@ class ECU:
           datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
         if dr.type=='Command':
           datastr = dr.name + " [Command] " + self.Commands[dr.name].label
+        if dr.type=="Text":
+          datastr = dr.name
           
         if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
           csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
@@ -751,7 +756,13 @@ class ECU:
 
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
       
-      tmp_dtrf = self.Defaults[dtchex[:4]].datarefs + self.Defaults[dtchex[:4]].ssdatarefs + self.ext_de
+      mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+
+      cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].ssdatarefs
+      ext_info_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['1691'] + "\n", 'Text')] + self.ext_de
+      
+      tmp_dtrf = mem_dtrf + cur_dtrf + ext_info_dtrf
       
       #self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path) 
       self.show_datarefs(tmp_dtrf, path) 
