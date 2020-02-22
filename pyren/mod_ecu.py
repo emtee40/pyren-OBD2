@@ -714,10 +714,18 @@ class ECU:
       
       index = int(choice[1])-1
       dtchex = listkeys[index] if len(listkeys) > index else listkeys[0]
+      mod_globals.ext_cur_DTC = dtchex
       
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
+
+      mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+
+      cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].ssdatarefs
       
-      self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path)
+      tmp_dtrf = mem_dtrf + cur_dtrf
+
+      self.show_datarefs(tmp_dtrf, path)
     
   def show_defaults_std_b(self):
     while(1):
