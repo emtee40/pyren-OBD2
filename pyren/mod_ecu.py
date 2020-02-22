@@ -429,12 +429,12 @@ class ECU:
         datastr = dr.name
         help    = dr.type
         if dr.type=='State':
-          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].ssdatarefs:
+          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
             datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
           else:
             datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Parameter':
-          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].ssdatarefs:
+          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
           else:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
@@ -721,7 +721,7 @@ class ECU:
       mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
 
       cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
-      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].ssdatarefs
+      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
       
       tmp_dtrf = mem_dtrf + cur_dtrf
 
@@ -767,7 +767,7 @@ class ECU:
       mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
 
       cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
-      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].ssdatarefs
+      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
       ext_info_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['1691'] + "\n", 'Text')] + self.ext_de
       
       tmp_dtrf = mem_dtrf + cur_dtrf + ext_info_dtrf

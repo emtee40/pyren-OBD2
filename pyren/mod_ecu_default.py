@@ -350,7 +350,7 @@ class ecu_default:
   label   = ""
   status  = 0
   datarefs         = []
-  ssdatarefs       = []
+  memDatarefs      = []
   helps            = []
   caracter         = {}
   interpInfoPeri   = ""
@@ -385,7 +385,8 @@ class ecu_default:
           for dr in DataRef:
             dataref = ecu_screen_dataref( dr ) 
             self.datarefs.append( dataref )
-    self.ssdatarefs = []
+    
+    self.memDatarefs = []
     MemorisedInfo = df.getElementsByTagName("MemorisedInfo")
     if MemorisedInfo:
       for mi in MemorisedInfo:
@@ -393,7 +394,7 @@ class ecu_default:
         if DataRef:
           for dr in DataRef:
             dataref = ecu_screen_dataref( dr ) 
-            self.ssdatarefs.append( dataref )
+            self.memDatarefs.append( dataref )
           
     self.helps = []
     Helps = df.getElementsByTagName("Helps")
