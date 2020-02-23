@@ -540,6 +540,8 @@ class ECU:
           kb.set_normal_term()
           if mod_globals.opt_csv and csvf!=0:
             csvf.close()
+          if "DTC" in path:
+            mod_globals.ext_cur_DTC = "000000"
           return
 
   def add_favourite(self):
