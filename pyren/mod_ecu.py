@@ -444,7 +444,7 @@ class ECU:
           datastr = dr.name + " [Command] " + self.Commands[dr.name].label
         if dr.type=="Text":
           datastr = dr.name
-          
+          help = ""
         if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
           csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
 

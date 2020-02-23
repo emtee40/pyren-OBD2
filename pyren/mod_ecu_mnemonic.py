@@ -111,7 +111,7 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         snapshotService = se[sid]
   
   resp = executeService( snapshotService, elm, [], "", True )
-  if mod_globals.opt_demo and not resp:
+  if mod_globals.opt_demo and not resp or not resp.startswith(snapshotService.simpleRsp):
     return "00"
   resp = resp.strip().replace(' ','')
   if not all(c in string.hexdigits for c in resp): resp = ''
