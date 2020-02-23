@@ -429,12 +429,12 @@ class ECU:
         datastr = dr.name
         help    = dr.type
         if dr.type=='State':
-          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
             datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
           else:
             datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Parameter':
-          if self.DataIds and DTCpos and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
           else:
             datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
