@@ -42,6 +42,7 @@ def get_mnemonic( m, se, elm, raw = 0 ):
         m.startBit = se[sid].responces[se[sid].responces.keys()[0]].mnemolocations[m.name].startBit
         m.request = se[sid].startReq
         m.positive = se[sid].simpleRsp
+        m.delay = '100' #don't know how much it should be
 
   #get responce
   if len(m.sids)>0:
