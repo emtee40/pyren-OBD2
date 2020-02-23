@@ -58,7 +58,7 @@ def get_mnemonic( m, se, elm, raw = 0 ):
   resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
   if len(m.startByte)==0: m.startByte = u'01'
   
-  hexval = getHexVal(m.startByte, m.bitsLength, m.startBit, m.littleEndian, resp, raw)
+  hexval = getHexVal(m, m.startByte, m.startBit, resp, raw)
   return hexval
 
 def get_SnapShotMnemonic(m, se, elm, dataids):
@@ -97,13 +97,13 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         startByte = dataids[dataId].mnemolocations[m.name].startByte
         startBit = dataids[dataId].mnemolocations[m.name].startBit
  
-  hexval = getHexVal(startByte, m.bitsLength, startBit, m.littleEndian, didDict[dataId])
+  hexval = getHexVal(m, startByte, startBit, didDict[dataId])
   return hexval
 
-def getHexVal(startByte, bitsLength, startBit, littleEndian, resp, raw = 0):
+def getHexVal(m, startByte, startBit, resp, raw = 0):
   #prepare local variables  
   sb     = int(startByte) - 1
-  bits   = int(bitsLength)
+  bits   = int(m.bitsLength)
   sbit   = int(startBit)
   bytes  = (bits+sbit-1)/8+1
   rshift = ((bytes+1)*8 - (bits+sbit))%8
@@ -135,7 +135,7 @@ def getHexVal(startByte, bitsLength, startBit, littleEndian, resp, raw = 0):
     hexval = '0'+hexval
 
   #revert byte order if little endian
-  if littleEndian == '1':
+  if m.littleEndian == '1':
     a = hexval
     b = ''
     if not len(a) % 2:
