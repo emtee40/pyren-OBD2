@@ -602,7 +602,7 @@ class DDTScreen (tk.Frame):
         saveDumpName = mod_globals.dumpName
         self.decu.loadDump(fname)
 
-        (conf_1, cv_1) = self.decu.makeConf(indump=True)
+        (conf_1, cv_1) = self.decu.makeConf(indump=True, annotate=True)
 
         #restore state
         mod_globals.dumpName = saveDumpName
@@ -1052,7 +1052,7 @@ class DDTScreen (tk.Frame):
         
         self.viewmenu = tk.Menu (self.menubar, tearoff=0)
         self.viewmenu.add_command (label="Font Increse  (+)", command=self.fontUp)
-        self.viewmenu.add_command (label="Font Decrease (-)", command=self.fontDown)
+        self.viewmenu.add_command (label="Font Decrease (_)", command=self.fontDown)
         self.menubar.add_cascade (label="View", menu=self.viewmenu)
         
         self.toolsmenu = tk.Menu (self.menubar, tearoff=0)
@@ -1255,13 +1255,13 @@ class DDTScreen (tk.Frame):
 
         # reset Expert mode with every screen changing
         # mod_globals.opt_exp = False
-        self.expertmode.set(False)
+        # self.expertmode.set(False)
         self.changeMode()
 
         self.currentscreen = scr
 
         # check if it synthetic screen
-        if type(scr) is str:
+        if type(scr) is str or type(scr) is unicode:
             self.loadSyntheticScreen(scr)
             return
 

@@ -151,7 +151,16 @@ def get_file_from_clip( filename ):
     if mod_globals.clip_arc=='':
         return open(os.path.join(mod_globals.cliproot, filename), mode)
     else:
-        return mod_globals.clip_arc.open(filename, mode)
+        if filename.startswith('../'):
+            filename = filename[3:]
+        try:
+            f = mod_globals.clip_arc.open(filename, mode)
+            return f
+        except:
+            fn = filename.split('/')[-1]
+            lfn = fn.lower()
+            filename = filename.replace(fn,lfn)
+            return mod_globals.clip_arc.open(filename, mode)
 
 def file_in_clip( pattern ):
     if mod_globals.clip_arc=='':

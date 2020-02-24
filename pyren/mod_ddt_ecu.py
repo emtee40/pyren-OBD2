@@ -913,26 +913,32 @@ class DDTECU():
 
     return res
 
-  def makeConf( self, indump = False ):
+  def makeConf( self, indump = False, annotate = False ):
     """ try to make config (3B,2E) from current values
         return string list"""
     
     config = []
     conf_v = {}
+    config_ann = []
     
     sentValues = {}
-    for r in self.requests.values ():
+    #for r in self.requests.values ():
+    for r in sorted( self.requests.values(), key = lambda x: x.SentBytes):
       if not (r.SentBytes[0:2].upper () == '3B'
            or r.SentBytes[0:2].upper () == '2E') \
               or len (r.SentDI) == 0:
         continue
-      
+
+      if annotate:
+          config_ann.append('#'*60)
+          config_ann.append('# '+r.Name)
+
       #debug
       #print '\n','#'*10,r.SentBytes, r.Name
       
       # update all variables from SentDI
       sentValues.clear ()
-      for di in r.SentDI.values ():
+      for di in sorted(r.SentDI.values(), key = lambda x: x.FirstByte*8+x.BitOffset):
         d = di.Name
         
         if indump:
@@ -954,9 +960,6 @@ class DDTECU():
                   
         val = self.getValueForConfig( d )
 
-        #debug
-        #print '>', d,'=',val
-
         if 'ERROR' in val:
           continue
           
@@ -964,10 +967,10 @@ class DDTECU():
         sentValues[d].set(val)
         conf_v[d] = val
         
-      
-      #debug
-      #print '\t', d, val
-        
+        if annotate: # and mod_globals.opt_verbose:
+            val_ann = self.getValue(d)
+            config_ann.append('#     '+d + ' = ' + val_ann)
+
       if len (sentValues) != len (r.SentDI):
         # check that there is two params and the first argument is a list
         if len (r.SentDI) == 2 and r.SentBytes[0:2].upper () == '3B':
@@ -994,12 +997,18 @@ class DDTECU():
                 conf_v[SDIs[1].Name] = self.getValueForConfig( fdk )
                 sendCmd = self.packValues (r.Name, sentValues)
                 config.append(sendCmd)
+                if annotate:
+                  config_ann.append(sendCmd)
+                  config_ann.append('')
         continue
       else:
         sendCmd = self.packValues (r.Name, sentValues)
         if 'ERROR' in sendCmd:
           continue
         config.append (sendCmd)
+        if annotate:
+          config_ann.append(sendCmd)
+          config_ann.append('')
 
     sentValues.clear ()
 
@@ -1009,7 +1018,10 @@ class DDTECU():
     #print conf_v
     #print '*'*50
 
-    return config, conf_v
+    if annotate:
+      return config_ann, conf_v
+    else:
+      return config, conf_v
 
   def bukva( self, bt, l, sign=False):
     S1 = chr ((bt - l) % 26 + ord ('A'))

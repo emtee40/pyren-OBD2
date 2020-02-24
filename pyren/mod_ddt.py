@@ -827,9 +827,9 @@ class DDTLauncher():
             line = self.ecutree.item(item)['values']
         except:
             if len(self.ecutree.get_children(""))==0:
-                tkMessageBox.showinfo("INFO", "Please select the project in the left list and then ECU in the buttom")
+                tkMessageBox.showinfo("INFO", "Please select the project in the left list and then ECU in the bottom")
             else:
-                tkMessageBox.showinfo("INFO", "Please select an ECU in the buttom list")
+                tkMessageBox.showinfo("INFO", "Please select an ECU in the bottom list")
             return None
 
         ecu = ast.literal_eval(line[8])
