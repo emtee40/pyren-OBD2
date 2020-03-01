@@ -82,6 +82,8 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   for x in range(numberOfIdentifiers):
     dataId = resp[posInResp:posInResp + 2*3].replace(" ", "")
     posInResp += 2*3
+    if dataId not in dataids.keys():
+        continue
     didDataLength = int(dataids[dataId].dataBitLength)/8
     didData = resp[posInResp: posInResp + didDataLength*3]
     posInResp += didDataLength*3
