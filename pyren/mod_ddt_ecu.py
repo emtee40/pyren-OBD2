@@ -969,7 +969,7 @@ class DDTECU():
         
         if annotate: # and mod_globals.opt_verbose:
             val_ann = self.getValue(d)
-            config_ann.append('#     '+d + ' = ' + val_ann)
+            config_ann.append('##     '+d + ' = ' + val_ann)
 
       if len (sentValues) != len (r.SentDI):
         # check that there is two params and the first argument is a list
