@@ -216,6 +216,7 @@ def run( elm, ecu, command, data ):
     if bt.startswith("Button"):
       if str(correctEcu.buttons[bt]) == 'true':
         buttons[int(bt.strip('Button'))] = get_message(bt[:-6] + "Text", 0)
+  buttons["loadDump"] = get_message_by_id('19802', 0)
   buttons["exit"] = '<exit>'
 
   #Get commands
@@ -242,10 +243,10 @@ def run( elm, ecu, command, data ):
       key = param[6:-5]
       begin = int(ScmParam['Idents'+key+'Begin'])
       end = int(ScmParam['Idents'+key+'End'])
-      try:  #10099 trap
-        identsList['D'+str(begin)] = ScmParam['Ident'+str(begin)]
+      try:
+        ecu.get_ref_id(ScmParam['Ident' + str(begin)]).mnemolist[0]   #10529 ID114 doesn't exist
       except:
-        break
+        continue
       else:
         for idnum in range(begin ,end + 1):
           identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
@@ -271,6 +272,7 @@ def run( elm, ecu, command, data ):
     paramToSend = ""
     commandToRun = ""
     requestToFindInCommandsRequests = ""
+    backupDict = {}
 
     try:
       idKeyToFindInRange = int((params.keys()[0]).replace("D",""))
@@ -283,6 +285,7 @@ def run( elm, ecu, command, data ):
           isTakingParams = takesParams(requestToFindInCommandsRequests)
           if isTakingParams:
             for k,v in params.iteritems():
+              backupDict[k] = ecu.get_id(identsList[k], 1)
               if v in identsList.keys():
                 identsList[k] = ecu.get_id(identsList[v], 1)
               else:
@@ -290,10 +293,12 @@ def run( elm, ecu, command, data ):
             for idKey in range(identsRangeKeys[rangeK]['begin'], identsRangeKeys[rangeK]['end'] + 1):
               if identsList["D" + str(idKey)].startswith("ID"):
                 identsList["D" + str(idKey)] = ecu.get_id(identsList["D" + str(idKey)], 1)
+                backupDict["D" + str(idKey)] = identsList["D" + str(idKey)]
               paramToSend += identsList["D" + str(idKey)]
             commandToRun = isTakingParams
             break
-        
+      
+      makeDump(commandToRun, backupDict)
       return commandToRun, paramToSend
 
   confirm = get_message_by_id('19800')
@@ -377,6 +382,8 @@ def run( elm, ecu, command, data ):
       if params[paramkey] == "Mileage":
         mnemonics = ecu.get_ref_id(identsList[paramkey]).mnemolist[0]
         identValue = ecu.get_id(identsList[paramkey], 1)
+        if identValue == 'ERROR':
+          identValue = '00000000'
         hexval = "{0:0{1}X}".format(mileage,len(identValue))
         if ecu.Mnemonics[mnemonics].littleEndian == '1':
           a = hexval
@@ -413,15 +420,15 @@ def run( elm, ecu, command, data ):
     slowTypeValue = get_message('ValueSlowParam')
     fastTypeValue = get_message('ValueFastParam')
     currentMessage = get_message_by_id('52676')
-    slowMessage = get_message('Slow', 0)
-    fastMessage = get_message('Fast', 0)
+    slowMessage = get_message('Slow')
+    fastMessage = get_message('Fast')
     notDefinedMessage = get_message('NotDefined')
     message2 = get_message('Message282')
 
     typesButtons = OrderedDict()
 
-    typesButtons[slowMessage] = slowTypeValue
-    typesButtons[fastMessage] = fastTypeValue
+    typesButtons[get_message('Slow', 0)] = slowTypeValue
+    typesButtons[get_message('Fast', 0)] = fastTypeValue
     typesButtons['<exit>'] = ""
 
     clearScreen()
@@ -521,6 +528,77 @@ def run( elm, ecu, command, data ):
     print
     ch = raw_input('Press ENTER to exit')
 
+  def makeDump(cmd, idents):
+    fileRoot = et.Element("ScmRoot")
+    fileRoot.text = "\n    "
+
+    cmdElement = et.Element("ScmParam", name="Command", value=cmd)
+    cmdElement.tail = "\n    "
+    fileRoot.insert(1,cmdElement)
+    
+    for k in idents:
+      el = et.Element("ScmParam", name='D'+ '{:0>2}'.format(k[1:]), value=idents[k])
+      el.tail = "\n    "
+      fileRoot.insert(1,el)
+
+    tree = et.ElementTree(fileRoot)
+    tree.write('./cache/' + ScmParam['FileName'])
+
+  def loadDump():
+    clearScreen()
+
+    paramToSend = ""
+    dumpScmParam = {}
+    try:
+      dumpData = open('./cache/' + ScmParam['FileName'], 'r')
+    except:
+      print get_message_by_id('2194')
+      raw_input()
+      return
+    
+    dumpDOMTree = xml.dom.minidom.parse(dumpData)
+    dumpScmRoot = dumpDOMTree.documentElement
+    dumpScmParams = dumpScmRoot.getElementsByTagName("ScmParam")
+
+    for Param in dumpScmParams:
+      name  = pyren_encode( Param.getAttribute("name") )
+      value = pyren_encode( Param.getAttribute("value") )
+
+      dumpScmParam[name] = value
+    
+    for k in sorted(dumpScmParam):
+      if k != "Command":
+        paramToSend += dumpScmParam[k]
+
+    if "ERROR" in paramToSend:
+      raw_input("Data downloading went wrong. Aborting.")
+      return
+
+    print '*'*80
+    print get_message_by_id('19802')
+    print '*'*80
+    print
+
+    ch = raw_input(confirm + ' <YES/NO>: ')
+    while (ch.upper()!='YES') and (ch.upper()!='NO'):
+      ch = raw_input(confirm + ' <YES/NO>: ')
+    if ch.upper()!='YES':
+        return
+
+    clearScreen()
+      
+    print
+    response = ecu.run_cmd(dumpScmParam['Command'],paramToSend)
+    print
+
+    if "NR" in response:
+      print failMessage
+    else:
+      print successMessage
+
+    print
+    ch = raw_input('Press ENTER to exit')
+
 
   functions = OrderedDict()
   for cmdKey in commands.keys():
@@ -555,12 +633,13 @@ def run( elm, ecu, command, data ):
   choice = Choice(buttons.values(), "Choose :")
 
   for key, value in buttons.iteritems():
-    if choice[0]=='<exit>': return
+    if choice[0] =='<exit>': return
     if value == choice[0]:
       if key in notSupported:
         ch = raw_input("\nNot Supported yet. Press ENTER to exit")
-        return
-      if key == 1:
+      elif key == 'loadDump':
+        loadDump()
+      elif key == 1:
         resetInjetorsData(functions[key][0],functions[key][1])
       elif key == 6:
         afterEcuChange(functions[key][0],functions[key][1])
