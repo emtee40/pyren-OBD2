@@ -542,7 +542,7 @@ def run( elm, ecu, command, data ):
       fileRoot.insert(1,el)
 
     tree = et.ElementTree(fileRoot)
-    tree.write('./cache/' + ScmParam['FileName'])
+    tree.write(mod_globals.dumps_dir + ScmParam['FileName'])
 
   def loadDump():
     clearScreen()
@@ -550,7 +550,7 @@ def run( elm, ecu, command, data ):
     paramToSend = ""
     dumpScmParam = {}
     try:
-      dumpData = open('./cache/' + ScmParam['FileName'], 'r')
+      dumpData = open(mod_globals.dumps_dir + ScmParam['FileName'], 'r')
     except:
       print get_message_by_id('2194')
       raw_input()
