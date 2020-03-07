@@ -33,7 +33,7 @@ if mod_globals.os != 'android':
 DevList = ['27', '28', '2E', '30', '31', '32', '34', '35', '36', '37', '3B', '3D']
 
 # List of commands allowed in any mode
-AllowedList = ['12', '1A', '21', '22', '23']
+AllowedList = ['12', '19', '1A', '21', '22', '23']
 
 # Max frame burst for Flow Control
 MaxBurst = 0x7
