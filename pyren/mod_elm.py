@@ -1834,7 +1834,7 @@ class ELM:
 
     def set_can_500(self, addr='XXX'):
         if mod_globals.opt_can2 and mod_globals.opt_stn:
-            tmp = self.cmd("STPBR 500000")
+            tmp = self.cmd("STP 33")
             if '?' not in tmp: return
         if len(addr)==3:
             self.cmd("at sp 6")
@@ -1843,7 +1843,7 @@ class ELM:
 
     def set_can_250(self, addr='XXX'):
         if mod_globals.opt_can2 and mod_globals.opt_stn:
-            tmp = self.cmd("STPBR 250000")
+            tmp = self.cmd("STP 35")
             if '?' not in tmp: return
         if len(addr)==3:
             self.cmd("at sp 8")
