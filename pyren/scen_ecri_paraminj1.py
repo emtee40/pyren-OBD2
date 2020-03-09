@@ -220,7 +220,7 @@ def run( elm, ecu, command, data ):
   buttons["exit"] = '<exit>'
 
   #Get commands
-  commands = OrderedDict()
+  commands = {}
   
   for child in root:
     if child.attrib["name"] == "Commands":

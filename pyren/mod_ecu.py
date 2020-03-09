@@ -189,7 +189,7 @@ class ECU:
       flist = []
       for root, dirs, files in os.walk("./dumps"):
         for f in files:
-          if (self.ecudata['ecuname']+'.') in f:
+          if (self.ecudata['ecuname']+'.txt') in f:
             flist.append(f)
       
       if len(flist)==0: return
@@ -720,10 +720,14 @@ class ECU:
       
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
 
-      mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+      cur_dtrf = []
+      mem_dtrf = []
 
-      cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
-      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
+      if self.Defaults[dtchex[:4]].datarefs:
+        cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      if self.Defaults[dtchex[:4]].memDatarefs:
+        mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+        mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
       
       tmp_dtrf = mem_dtrf + cur_dtrf
 
@@ -765,13 +769,19 @@ class ECU:
       mod_globals.ext_cur_DTC = dtchex
 
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
-      
-      mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
 
-      cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
-      mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
-      ext_info_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['1691'] + "\n", 'Text')] + self.ext_de
-      
+      cur_dtrf = []
+      mem_dtrf = []
+      ext_info_dtrf = []
+
+      if self.Defaults[dtchex[:4]].datarefs:
+        cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      if self.Defaults[dtchex[:4]].memDatarefs:
+        mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+        mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
+      if self.ext_de:
+        ext_info_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['1691'] + "\n", 'Text')] + self.ext_de
+
       tmp_dtrf = mem_dtrf + cur_dtrf + ext_info_dtrf
       
       #self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path) 

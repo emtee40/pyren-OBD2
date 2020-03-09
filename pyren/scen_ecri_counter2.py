@@ -89,7 +89,6 @@ def run( elm, ecu, command, data ):
 
 	paramsToSend = mnemo1Data + resetBytes + mnemo2Data
 	
-	print mod_ecu_mnemonic.get_mnemonicDTC(ecu.Mnemonics["_CSF_UPSTREAM_TEMPERATURE"], "62 24 42 0F 44 00 00")
 	print title
 	print '*'*80
 	print messageInfo
