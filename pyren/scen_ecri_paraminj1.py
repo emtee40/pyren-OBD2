@@ -314,7 +314,7 @@ def run( elm, ecu, command, data ):
 
     print mainText
     print '*'*80
-    print buttons[button]
+    print pyren_encode(buttons[button])
     print '*'*80
     print injectorsInfoMessage
     print '*'*80
@@ -346,7 +346,7 @@ def run( elm, ecu, command, data ):
     clearScreen()
     print mainText
     print '*'*80
-    print buttons[button]
+    print pyren_encode(buttons[button])
     print '*'*80
     print infoMessage
     print '*'*80
@@ -434,7 +434,7 @@ def run( elm, ecu, command, data ):
     clearScreen()
     print mainText
     print '*'*80
-    print buttons[button]
+    print pyren_encode(buttons[button])
     print '*'*80
     print message2
     print '*'*80
@@ -486,7 +486,7 @@ def run( elm, ecu, command, data ):
 
     print mainText
     print '*'*80
-    print buttons[button]
+    print pyren_encode(buttons[button])
     print '*'*80
     if button == 4:
       print get_message_by_id('55662')
