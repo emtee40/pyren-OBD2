@@ -358,7 +358,7 @@ def loadDumpToELM( ecuname, elm ):
   flist = []
   for root, dirs, files in os.walk("./dumps"):
     for f in files:
-      if (ecuname+'.') in f:
+      if (ecuname+'.txt') in f:
         flist.append(f)
   
   if len(flist)==0: return

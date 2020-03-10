@@ -33,7 +33,16 @@ def get_mnemonicDTC( m, resp ):
   return hexval
 
 
-def get_mnemonic( m, se, elm ):
+def get_mnemonic( m, se, elm, raw = 0 ):
+
+  if not m.serviceID and mod_globals.ext_cur_DTC != "000000":
+    for sid in se.keys():
+      if se[sid].startReq == "120004"+ mod_globals.ext_cur_DTC[:4]:
+        m.startByte = se[sid].responces[se[sid].responces.keys()[0]].mnemolocations[m.name].startByte
+        m.startBit = se[sid].responces[se[sid].responces.keys()[0]].mnemolocations[m.name].startBit
+        m.request = se[sid].startReq
+        m.positive = se[sid].simpleRsp
+        m.delay = '100' #don't know how much it should be
 
   #get responce
   if len(m.sids)>0:
@@ -48,14 +57,59 @@ def get_mnemonic( m, se, elm ):
   if not all(c in string.hexdigits for c in resp): resp = ''
   resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
   if len(m.startByte)==0: m.startByte = u'01'
+  
+  hexval = getHexVal(m, m.startByte, m.startBit, resp, raw)
+  return hexval
 
+def get_SnapShotMnemonic(m, se, elm, dataids):
+  snapshotService = ""
+  posInResp = 0
+  for sid in se:
+    if len(se[sid].params) > 1:
+      if se[sid].params[1]['type'] == 'Snapshot':
+        snapshotService = se[sid]
+  
+  resp = executeService( snapshotService, elm, [], "", True )
+  if mod_globals.opt_demo and not resp or not resp.startswith(snapshotService.simpleRsp):
+    return "00"
+  resp = resp.strip().replace(' ','')
+  if not all(c in string.hexdigits for c in resp): resp = ''
+  resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
+  numberOfIdentifiers = int("0x" + resp[7*3:8*3-1],16)
+  resp = resp[8*3:]
+
+  didDict = {}
+  for x in range(numberOfIdentifiers):
+    dataId = resp[posInResp:posInResp + 2*3].replace(" ", "")
+    posInResp += 2*3
+    if dataId not in dataids.keys():
+        continue
+    didDataLength = int(dataids[dataId].dataBitLength)/8
+    didData = resp[posInResp: posInResp + didDataLength*3]
+    posInResp += didDataLength*3
+    didDict[dataId] = didData
+
+  startByte = ""
+  startBit = ""
+  dataId = ""
+  for did in dataids.keys():
+    for mn in dataids[did].mnemolocations.keys():
+      if mn == m.name:
+        dataId = did
+        startByte = dataids[dataId].mnemolocations[m.name].startByte
+        startBit = dataids[dataId].mnemolocations[m.name].startBit
+ 
+  hexval = getHexVal(m, startByte, startBit, didDict[dataId])
+  return hexval
+
+def getHexVal(m, startByte, startBit, resp, raw = 0):
   #prepare local variables  
-  sb     = int(m.startByte) - 1
+  sb     = int(startByte) - 1
   bits   = int(m.bitsLength)
-  sbit   = int(m.startBit)
+  sbit   = int(startBit)
   bytes  = (bits+sbit-1)/8+1
   rshift = ((bytes+1)*8 - (bits+sbit))%8
-  
+
   #check length of responce
   if (sb*3+bytes*3-1)>(len(resp)):
     return '00'
@@ -63,6 +117,12 @@ def get_mnemonic( m, se, elm ):
   #extract hex
   hexval = resp[sb*3:(sb+bytes)*3-1]
   hexval = hexval.replace(" ","")
+
+  if raw:
+    if resp.startswith(m.positive):
+      return hexval
+    else:
+      return 'ERROR'
 
   #shift and mask
   val = (int(hexval,16)>>rshift)&(2**bits-1)

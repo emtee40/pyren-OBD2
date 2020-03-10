@@ -189,7 +189,7 @@ class ECU:
       flist = []
       for root, dirs, files in os.walk("./dumps"):
         for f in files:
-          if (self.ecudata['ecuname']+'.') in f:
+          if (self.ecudata['ecuname']+'.txt') in f:
             flist.append(f)
       
       if len(flist)==0: return
@@ -255,7 +255,7 @@ class ECU:
       return None      
     return self.Parameters[name]
       
-  def get_id( self, name ):
+  def get_id( self, name, raw = 0):
     if name not in self.Identifications.keys():
       for i in self.Identifications.keys():
         if name==self.Identifications[i].codeMR:
@@ -264,6 +264,8 @@ class ECU:
     if name not in self.Identifications.keys():
       return 'none','unknown identification'      
     self.elm.clear_cache()
+    if raw:
+      return get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc, raw)
     datastr, help, csvd = get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc )
     return csvd, datastr
 
@@ -424,17 +426,25 @@ class ECU:
         print "Press any key to exit"
 
       for dr in datarefs:
-        datastr = dr.name;
+        datastr = dr.name
         help    = dr.type
         if dr.type=='State':
-          datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+          else:
+            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Parameter':
-          datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+          else:
+            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
         if dr.type=='Identification':
           datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
         if dr.type=='Command':
           datastr = dr.name + " [Command] " + self.Commands[dr.name].label
-          
+        if dr.type=="Text":
+          datastr = dr.name
+          help = ""
         if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
           csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
 
@@ -530,6 +540,8 @@ class ECU:
           kb.set_normal_term()
           if mod_globals.opt_csv and csvf!=0:
             csvf.close()
+          if "DTC" in path:
+            mod_globals.ext_cur_DTC = "000000"
           return
 
   def add_favourite(self):
@@ -704,10 +716,22 @@ class ECU:
       
       index = int(choice[1])-1
       dtchex = listkeys[index] if len(listkeys) > index else listkeys[0]
+      mod_globals.ext_cur_DTC = dtchex
       
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
+
+      cur_dtrf = []
+      mem_dtrf = []
+
+      if self.Defaults[dtchex[:4]].datarefs:
+        cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      if self.Defaults[dtchex[:4]].memDatarefs:
+        mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+        mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
       
-      self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path)
+      tmp_dtrf = mem_dtrf + cur_dtrf
+
+      self.show_datarefs(tmp_dtrf, path)
     
   def show_defaults_std_b(self):
     while(1):
@@ -745,8 +769,20 @@ class ECU:
       mod_globals.ext_cur_DTC = dtchex
 
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
-      
-      tmp_dtrf = self.Defaults[dtchex[:4]].datarefs + self.ext_de
+
+      cur_dtrf = []
+      mem_dtrf = []
+      ext_info_dtrf = []
+
+      if self.Defaults[dtchex[:4]].datarefs:
+        cur_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['300'] + "\n", 'Text')] + self.Defaults[dtchex[:4]].datarefs
+      if self.Defaults[dtchex[:4]].memDatarefs:
+        mem_dtrf_txt = mod_globals.language_dict['299'] + " DTC" + mod_globals.ext_cur_DTC + "\n"
+        mem_dtrf = [ecu_screen_dataref(0, mem_dtrf_txt, 'Text')] + self.Defaults[dtchex[:4]].memDatarefs
+      if self.ext_de:
+        ext_info_dtrf = [ecu_screen_dataref(0, "\n" + mod_globals.language_dict['1691'] + "\n", 'Text')] + self.ext_de
+
+      tmp_dtrf = mem_dtrf + cur_dtrf + ext_info_dtrf
       
       #self.show_datarefs(self.Defaults[dtchex[:4]].datarefs, path) 
       self.show_datarefs(tmp_dtrf, path) 
