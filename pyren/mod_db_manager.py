@@ -75,7 +75,7 @@ def find_DBs():
             mod_globals.opt_ddt = True
 
     #check cache version
-    verfilename = "./cache/version09q.txt"
+    verfilename = "./cache/version09r.txt"
     if not os.path.isfile(verfilename):
         #if the cache has old version then we should clear it
         for root, dirs, files in os.walk("./cache"):
