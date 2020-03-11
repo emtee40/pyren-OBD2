@@ -8,6 +8,7 @@ import string
 import mod_globals
 import mod_utils
 import mod_ecu
+import mod_db_manager
 from mod_utils import clearScreen
 from mod_utils import pyren_encode
 from mod_utils import KBHit
@@ -36,7 +37,7 @@ def run( elm, ecu, command, data ):
 		return value
 
 
-	DOMTree = xml.dom.minidom.parse(data)
+	DOMTree = xml.dom.minidom.parse(mod_db_manager.get_file_from_clip(data))
 	ScmRoom = DOMTree.documentElement
   
 	ScmParams = ScmRoom.getElementsByTagName("ScmParam")
