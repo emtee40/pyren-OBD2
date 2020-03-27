@@ -195,6 +195,9 @@ def run( elm, ecu, command, data ):
       else:
         for idnum in range(begin ,end + 1):
           identsList['D'+str(idnum)] = ScmParam['Ident'+str(idnum)]
+          if len(ecu.get_ref_id(ScmParam['Ident' + str(idnum)]).mnemolist) > 1:
+            mnemonicsLen = map(lambda bitsLen: int(ecu.Mnemonics[bitsLen].bitsLength), ecu.get_ref_id(ScmParam['Ident' + str(idnum)]).mnemolist)
+            ecu.get_ref_id(ScmParam['Ident' + str(idnum)]).mnemolist = [ecu.get_ref_id(ScmParam['Ident' + str(idnum)]).mnemolist[mnemonicsLen.index(max(mnemonicsLen))]]
         frame = ecu.Mnemonics[ecu.get_ref_id(identsList['D'+str(begin)]).mnemolist[0]].request
         identsRangeKeys[key] = {"begin": begin, "end": end, "frame": frame}
 
