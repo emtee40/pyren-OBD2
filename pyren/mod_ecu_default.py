@@ -81,8 +81,8 @@ def get_default_std_a( df, mn, se, elm, calc, getDTCmnemo ):
       continue 
           
     isAlive = ""
-    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']
-    else:                 isAlive = mod_globals.language_dict['646']
+    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
+    else:                 isAlive = mod_globals.language_dict['646']    #MEMORISED
     if df[dtc].status==0: 		     #it is not a problem
       DTCs = DTCs[9:]
       continue        
@@ -191,8 +191,8 @@ def get_default_std_b( df, mn, se, elm, calc, getDTCmnemo ):
       continue
 
     isAlive = ""
-    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']
-    else:                 isAlive = mod_globals.language_dict['646'] 
+    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
+    else:                 isAlive = mod_globals.language_dict['646']    #MEMORISED
     if df[dtc].status==0:      #it is not a problem
       DTCs = DTCs[12:]
       continue     
@@ -299,8 +299,8 @@ def get_default_failflag( df, mn, se, elm, calc ):
     if df[dtc].status==0: 		     #it is not a problem
       continue     
     isAlive = ""
-    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']
-    else:                 isAlive = mod_globals.language_dict['646']
+    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
+    else:                 isAlive = mod_globals.language_dict['646']    #MEMORISED
        
     # Now get the interpretation
     

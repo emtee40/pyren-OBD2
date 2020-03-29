@@ -263,9 +263,9 @@ class ECU:
           break
     if name not in self.Identifications.keys():
       return 'none','unknown identification'      
-    self.elm.clear_cache()
     if raw:
       return get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc, raw)
+    self.elm.clear_cache()
     datastr, help, csvd = get_identification( self.Identifications[name], self.Mnemonics, self.Services, self.elm, self.calc )
     return csvd, datastr
 
