@@ -6,7 +6,7 @@
 ##################################
 #                                #
 #                                #
-#    Version: 2.3 (30-Mar-2019)  #
+#    Version: 2.4 (05-Apr-2020)  #
 #    Author: Shr-Lnm             #
 #                                #
 #                                #
@@ -99,7 +99,9 @@ def update_from_gitlab():
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
 
-        filedata = urllib2.urlopen('http://gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip', context=ctx, timeout = 10)
+        h_user_agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+        req = urllib2.Request('https://gitlab.com/py_ren/pyren/-/archive/master/pyren-master.zip', headers=h_user_agent)
+        filedata = urllib2.urlopen(req, context=ctx, timeout = 10)
         datatowrite = filedata.read()
 
         with open('./pyren_master.zip', 'wb') as f:
