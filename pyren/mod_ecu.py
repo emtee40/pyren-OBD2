@@ -355,7 +355,7 @@ class ECU:
         self.show_commands(datarefs, path)
         return
 
-    if mod_globals.opt_csv:
+    if mod_globals.opt_csv and mod_globals.ext_cur_DTC == '000000':
       # prepare to csv save
       self.minimumrefreshrate = 0
       csvline = "sep=\\t\n"
