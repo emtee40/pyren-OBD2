@@ -62,6 +62,7 @@ if __name__ == "__main__":
             zf.writestr (os.path.join ("EcuRenault", os.path.basename (vf)), str (data))
 
         for vf in fbsessionfiles:
+            vf = vf[:-4] + vf[-4:].lower()
             print "Processing file ", vf
             f = open (vf, "r")
             data = f.read ()
@@ -81,6 +82,7 @@ if __name__ == "__main__":
                                        os.path.basename (vf).replace (".bqm", ".p")), str (data))
         
         for vf in fgsessionfiles:
+            vf = vf[:-4] + vf[-4:].lower()
             print "Processing file ", vf
             try:
                 while len(vf) and vf[0] in ['.', '/', '\\']:

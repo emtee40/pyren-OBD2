@@ -602,7 +602,7 @@ class ScanEcus:
             
   def chooseModel(self, num):
 
-    orderBy = 1    # 0 = vehiclename
+    orderBy = 0    # 0 = vehiclename
                    # 1 = file
                    # 2 = vehTypeCode
                    # 3 = vehTCOM

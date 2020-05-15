@@ -336,7 +336,7 @@ if __name__ == "__main__":
 def ASCIITOHEX( ATH ):
       
       ATH = ATH.upper()
-      hexATH = ''.join("{:02x}".format(ord(c)) for c in ATH)
+      hexATH = ''.join("{:02X}".format(ord(c)) for c in ATH)
       
   #Result
       return hexATH

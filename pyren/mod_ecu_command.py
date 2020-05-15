@@ -87,7 +87,7 @@ def runCommand( command, ecu, elm, param = '', cmdt = 'HEX' ):
           #  continue
           if parsize>0 and len(chosenParameter)<parsize*2:
               chosenParameter = '0'*(parsize*2 - len(chosenParameter)) + chosenParameter
-      if cmdt=='ASCII' and ('0' not in ch) and ('9' not in ch) and ('J' not in ch):
+      if cmdt=='ASCII':
           chosenParameter = ASCIITOHEX( ch )
           #if parsize > 0 and len(chosenParameter) > parsize * 2:
           #  print 'Too long value'
@@ -346,7 +346,7 @@ def executeCommand( command, ecu, elm, path ):
           if parsize > 0 and len(chosenParameter)<parsize*2:
               chosenParameter = '0'*(parsize*2 - len(chosenParameter)) + chosenParameter
           break
-        if cmdt=='ASCII' and ('0' not in ch) and ('9' not in ch) and ('J' not in ch):
+        if cmdt=='ASCII':
           chosenParameter = ASCIITOHEX( ch )
           if parsize > 0 and len(chosenParameter) > parsize * 2:
             print 'Too long value'
