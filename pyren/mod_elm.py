@@ -284,8 +284,12 @@ class Port:
             elif self.portType == 2:
                 byte = self.droid.bluetoothRead (1).result
             else:
-                if self.hdr.inWaiting ():
-                    byte = self.hdr.read ()
+                inInputBuffer = self.hdr.inWaiting()
+                if inInputBuffer:
+                    if mod_globals.opt_stn:
+                        byte = self.hdr.read(inInputBuffer)
+                    else:
+                        byte = self.hdr.read(1)
         except:
             print '*' * 40
             print '*       Connection to ELM was lost'
@@ -332,8 +336,7 @@ class Port:
                 else:
                     byte = '>'
                 
-                if byte == '\r': byte = '\n'
-                
+                if '\r' in byte: byte = byte.replace('\r', '\n')
                 self.buff += byte
                 tc = time.time ()
                 if pattern in self.buff:
@@ -1263,7 +1266,7 @@ class ELM:
         
         # populate L1 cache
         if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
-            self.l1_cache[command] = str (nframes)
+            self.l1_cache[command] = str(hex(nframes))[2:].upper()
         
         if len (result) / 2 >= nbytes and noerrors:
             # split by bytes and return
@@ -1814,10 +1817,6 @@ class ELM:
         st_rsp = self.cmd("STPR")
         if '?' not in st_rsp:
             mod_globals.opt_stn = True
-        if mod_globals.opt_can2 and mod_globals.opt_stn:
-            tmp = self.cmd("STP 53")
-            if 'OK' not in tmp:
-                mod_globals.opt_stn = False
 
         self.check_answer(self.cmd("at e1"))
         self.check_answer(self.cmd("at s0"))
@@ -1833,21 +1832,35 @@ class ELM:
         self.lastCMDtime = 0
 
     def set_can_500(self, addr='XXX'):
-        if mod_globals.opt_can2 and mod_globals.opt_stn:
-            tmp = self.cmd("STP 33")
-            if '?' not in tmp: return
         if len(addr)==3:
+            if mod_globals.opt_can2 and mod_globals.opt_stn: #for STN with FORD MS-CAN support and pinout changed by soldering 
+                self.cmd("STP 53")
+                self.cmd("STPBR 500000")
+                tmprsp = self.send_raw("0210C0")    #send anything
+                if not 'CAN ERROR' in tmprsp: return
             self.cmd("at sp 6")
         else:
+            if mod_globals.opt_can2 and mod_globals.opt_stn:
+                self.cmd("STP 54")
+                self.cmd("STPBR 500000")
+                tmprsp = self.send_raw("0210C0")
+                if not 'CAN ERROR' in tmprsp: return
             self.cmd("at sp 7")
 
     def set_can_250(self, addr='XXX'):
-        if mod_globals.opt_can2 and mod_globals.opt_stn:
-            tmp = self.cmd("STP 35")
-            if '?' not in tmp: return
         if len(addr)==3:
+            if mod_globals.opt_can2 and mod_globals.opt_stn:
+                self.cmd("STP 53")
+                self.cmd("STPBR 250000")
+                tmprsp = self.send_raw("0210C0")
+                if not 'CAN ERROR' in tmprsp: return
             self.cmd("at sp 8")
         else:
+            if mod_globals.opt_can2 and mod_globals.opt_stn:
+                self.cmd("STP 54")
+                self.cmd("STPBR 250000")
+                tmprsp = self.send_raw("0210C0")
+                if not 'CAN ERROR' in tmprsp: return
             self.cmd("at sp 9")
 
     def set_can_addr(self, addr, ecu):
