@@ -30,6 +30,7 @@ class ecu_identification:
   name    = ""
   agcdRef = ""
   codeMR  = ""
+  mask    = ""
   label   = ""
   value   = ""
   type    = ""
@@ -42,6 +43,10 @@ class ecu_identification:
     self.name = st.getAttribute("name")
     self.agcdRef = st.getAttribute("agcdRef")
     self.codeMR  = st.getAttribute("codeMR")
+
+    Mask = st.getElementsByTagName("Mask")
+    if Mask:
+      self.mask = Mask.item(0).getAttribute("value")
     
     Label = st.getElementsByTagName("Label")
     codetext = Label.item(0).getAttribute("codetext")

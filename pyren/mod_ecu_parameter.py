@@ -52,6 +52,7 @@ class ecu_parameter:
   name    = ""
   agcdRef = ""
   codeMR  = ""
+  mask    = ""
   label   = ""
   unit    = ""
   type    = ""
@@ -72,6 +73,7 @@ class ecu_parameter:
   name    = %s
   agcdRef = %s
   codeMR  = %s
+  mask    = %s
   label   = %s
   unit    = %s
   type    = %s
@@ -83,7 +85,7 @@ class ecu_parameter:
   helps       = %s
   computation = %s
   mnemolist   = %s
-    ''' % (self.name, self.agcdRef, self.codeMR, self.label, self.unit, self.type, 
+    ''' % (self.name, self.agcdRef, self.codeMR, self.mask, self.label, self.unit, self.type, 
            self.min, self.value, self.max, self.format, str(self.domains), hlps,
            self.computation, str(self.mnemolist))
     return pyren_encode(out)  
@@ -92,6 +94,10 @@ class ecu_parameter:
     self.name = pr.getAttribute("name")
     self.agcdRef = pr.getAttribute("agcdRef")
     self.codeMR  = pr.getAttribute("codeMR")
+
+    Mask = pr.getElementsByTagName("Mask")
+    if Mask:
+      self.mask = Mask.item(0).getAttribute("value")
     
     Label = pr.getElementsByTagName("Label")
     codetext = Label.item(0).getAttribute("codetext")

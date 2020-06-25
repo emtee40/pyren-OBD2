@@ -348,7 +348,34 @@ class ECU:
 
   
     csvf = 0
-  
+    mask = False
+    masks = []
+    datarefsToRemove = []
+
+    for st in self.States:
+      if st.startswith('MAS'):
+        mask = True
+        get_state( self.States[st], self.Mnemonics, self.Services, self.elm, self.calc )
+        if int(self.States[st].value):
+          masks.append(self.States[st].name)
+    
+    if mask:
+      for dr in datarefs:
+        if dr.type=='State':
+          if self.States[dr.name].mask and self.States[dr.name].mask not in masks:
+            datarefsToRemove.append(dr)
+        if dr.type=='Parameter':
+          if self.Parameters[dr.name].mask and self.Parameters[dr.name].mask not in masks:
+            datarefsToRemove.append(dr)
+        if dr.type=='Identification':
+          if self.Identifications[dr.name].mask and self.Identifications[dr.name].mask not in masks:
+            datarefsToRemove.append(dr)
+        if dr.type=='Command':
+          if self.Commands[dr.name].mask and self.Commands[dr.name].mask not in masks:
+            datarefsToRemove.append(dr)
+      for dr in datarefsToRemove:
+        datarefs.remove(dr)
+    
     #Check if datarefs contains any commands
     for dr in datarefs:
       if dr.type=='Command':
@@ -363,10 +390,10 @@ class ECU:
       nparams = 0
       for dr in datarefs:
         if dr.type=='State':
-          csvline += ";" + (self.States[dr.name].label + ":" if mod_globals.opt_csv_human else "") + self.States[dr.name].codeMR
+          csvline += ";" + self.States[dr.name].codeMR + (":" + self.States[dr.name].label  if mod_globals.opt_csv_human else "")
           nparams += 1
         if dr.type=='Parameter':
-          csvline += ";" + (self.Parameters[dr.name].label + ":" if mod_globals.opt_csv_human else "") + self.Parameters[dr.name].codeMR
+          csvline += ";" + self.Parameters[dr.name].codeMR + (":" +self.Parameters[dr.name].label if mod_globals.opt_csv_human else "") 
           nparams += 1
       if mod_globals.opt_usrkey: csvline += ";User events"
       csvline = pyren_encode(csvline)
@@ -406,10 +433,10 @@ class ECU:
       
       if mod_globals.opt_csv and csvf!=0:
         csvline = csvline + "\n"
-        csvline = csvline.replace('.',',')
+        #csvline = csvline.replace('.',',')
         #csvline = csvline.replace(',','.')
         csvline = csvline.replace(';','\t')
-        csvf.write(pyren_decode(csvline).encode('cp1251')  if mod_globals.opt_csv_human else csvline)
+        csvf.write(pyren_decode(csvline).encode('utf8') if mod_globals.opt_csv_human else csvline)
         #if mod_globals.os == 'nt' or mod_globals.os == 'android':
         #  csvf.write(pyren_decode(csvline).encode('cp1251')  if mod_globals.opt_csv_human else csvline)
         #else:

@@ -347,6 +347,7 @@ class ecu_default:
   code    = ""
   agcdRef = ""
   codeMR  = ""
+  mask    = ""
   label   = ""
   status  = 0
   datarefs         = []
@@ -365,6 +366,10 @@ class ecu_default:
     self.name = df.getAttribute("name")
     self.agcdRef = df.getAttribute("agcdRef")
     self.codeMR  = df.getAttribute("codeMR")
+
+    Mask = df.getElementsByTagName("Mask")
+    if Mask:
+      self.mask = Mask.item(0).getAttribute("value")
     
     Label = df.getElementsByTagName("Label")
     codetext = Label.item(0).getAttribute("codetext")

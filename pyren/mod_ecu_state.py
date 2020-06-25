@@ -21,7 +21,7 @@ def get_state( st, mn, se, elm, calc, dataids = {} ):
   if str(tmp_val).encode("utf-8") in st.caracter.keys():
     st.value = st.caracter[str(tmp_val).encode("utf-8")]
   else:
-    st.value = ""
+    st.value = str(tmp_val).encode("utf-8")
 
   csv_val = unicode(st.value) if mod_globals.opt_csv_human else tmp_val
   if mod_globals.os=='android':
@@ -36,6 +36,7 @@ class ecu_state:
   name        = ""
   agcdRef     = ""
   codeMR      = ""
+  mask        = ""
   label       = ""
   value       = ""
   type        = ""
@@ -57,6 +58,7 @@ class ecu_state:
   name        = %s
   agcdRef     = %s
   codeMR      = %s
+  mask        = %s
   label       = %s
   value       = %s
   type        = %s
@@ -65,7 +67,7 @@ class ecu_state:
   computation = %s
   mnemolist   = %s
     ''' % (
-           self.name, self.agcdRef, self.codeMR, self.label, self.value, self.type,
+           self.name, self.agcdRef, self.codeMR, self.mask, self.label, self.value, self.type,
            hlps, chrc, self.computation, self.mnemolist)
     return pyren_encode(out)  
 
@@ -73,6 +75,10 @@ class ecu_state:
     self.name = st.getAttribute("name")
     self.agcdRef = st.getAttribute("agcdRef")
     self.codeMR  = st.getAttribute("codeMR")
+
+    Mask = st.getElementsByTagName("Mask")
+    if Mask:
+      self.mask = Mask.item(0).getAttribute("value")
     
     Label = st.getElementsByTagName("Label")
     codetext = Label.item(0).getAttribute("codetext")
@@ -148,4 +154,18 @@ class ecu_states:
       for st in States:
         state = ecu_state( st, opt, tran )
         state_list[state.name] = state
+    
+    Masks = mdoc.getElementsByTagName("MaskList")
+    if Masks:
+      for ms in Masks:
+        DataRef = ms.getElementsByTagName("DataRef")
+        for dr in DataRef:
+          if dr.getAttribute("type") == 'State':
+            name =  dr.getAttribute("name")
+            tempStateXml = """<State name="{}" agcdRef="{}" codeMR="{}">
+                              <Label codetext="51354" defaultText="FAULT FINDING VERSION"/></State>""".format(name, name, name)
+            mdom = xml.dom.minidom.parseString(tempStateXml)
+            mdocElem = mdom.documentElement
+            state = ecu_state( mdocElem, opt, tran )
+            state_list[state.name] = state
         

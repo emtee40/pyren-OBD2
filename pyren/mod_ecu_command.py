@@ -382,6 +382,7 @@ class ecu_command:
   agcdRef = ""
   codeMR  = ""
   type    = ""
+  mask    = ""
   label   = ""
   prerequisite = ""
   datarefs    = []
@@ -398,6 +399,10 @@ class ecu_command:
     if not self.codeMR:
       self.codeMR = self.name
     self.type  = co.getAttribute("type")
+
+    Mask = co.getElementsByTagName("Mask")
+    if Mask:
+      self.mask = Mask.item(0).getAttribute("value")
       
     Label = co.getElementsByTagName("Label")
     codetext = Label.item(0).getAttribute("codetext")

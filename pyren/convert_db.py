@@ -56,6 +56,7 @@ if __name__ == "__main__":
             zf.writestr(os.path.join("Vehicles", "DFG", os.path.basename(vf)), str(data))
 
         for vf in ecufiles:
+            vf = vf[:-4] + vf[-4:].lower()
             print "Processing file ", vf
             f = open (vf, "r")
             data = f.read ()
