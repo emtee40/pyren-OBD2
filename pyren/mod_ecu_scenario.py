@@ -22,7 +22,11 @@ def playScenario(command, ecu, elm):
   showable = False
   if scenarioName.lower().startswith('scm'):
     showable = True
-    scenarioName = scenarioName.split(':')[1].lower()
+  
+  if showable:
+    ecuNumberPattern = re.compile(r'\d{5}')
+    ecuNumberIndex = ecuNumberPattern.search(scenarioData)
+    scenarioName = scenarioData[:scenarioData.find(ecuNumberIndex.group(0)) - 1].lower()
     
   if os.path.isfile('./'+scenarioName+'.py'):
     scen = __import__( scenarioName )
