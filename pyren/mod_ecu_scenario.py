@@ -27,7 +27,7 @@ def playScenario(command, ecu, elm):
     ecuNumberPattern = re.compile(r'\d{5}')
     ecuNumberIndex = ecuNumberPattern.search(scenarioData)
     scenarioName = scenarioData[:scenarioData.find(ecuNumberIndex.group(0)) - 1].lower()
-    
+  
   if os.path.isfile('./'+scenarioName+'.py'):
     scen = __import__( scenarioName )
     if mod_globals.clip_arc:

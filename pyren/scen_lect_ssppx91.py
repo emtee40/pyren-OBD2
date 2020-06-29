@@ -261,7 +261,7 @@ def run( elm, ecu, command, data ):
     clearScreen()
     print screen
     print
-    choice = Choice(valveLabelsDict.values(), get_message_by_id('14127', False).replace('.',':'))
+    choice = Choice(valveLabelsDict.values(), get_message_by_id('14127').replace('.',':'))
 
     clearScreen()
     print screen
@@ -282,13 +282,17 @@ def run( elm, ecu, command, data ):
 
     paramToSend = ''
     if summerTyresSet:
-      for code in summerTyreCodes:
-        paramToSend +=  code
-      paramToSend = paramToSend.replace(summerTyreCodes[selectedValveKey], userCode)
+      for code in range(len(summerTyreCodes)):
+        if code == selectedValveKey:
+          paramToSend +=  userCode
+        else:
+          paramToSend +=  summerTyreCodes[code]
     else:
-      for code in winterTyreCodes:
-        paramToSend +=  code
-      paramToSend = paramToSend.replace(winterTyreCodes[selectedValveKey], userCode)
+      for code in range(len(winterTyreCodes)):
+        if code == selectedValveKey:
+          paramToSend +=  userCode
+        else:
+          paramToSend +=  winterTyreCodes[code]
 
     clearScreen()
     print screen
