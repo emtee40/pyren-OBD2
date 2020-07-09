@@ -649,6 +649,10 @@ class ScanEcus:
       if row[base]!=req:
         req = row[base]
         rrsp = self.elm.cmd(req)[3:]
+
+        ttrrsp = rrsp.replace(' ','')
+        if not all(c in string.hexdigits for c in ttrrsp): return False
+        
         if len( req )/2==3: rrsp = rrsp[3:]
 
       byte = int(rrsp[int(row[base+3])*3:int(row[base+3])*3+2],16)
