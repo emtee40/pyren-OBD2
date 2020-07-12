@@ -88,13 +88,33 @@ class ecu_identification:
       for cmpt in Computation:
         self.type = cmpt.getAttribute("type")
         tmp = cmpt.getElementsByTagName("Value").item(0).firstChild.nodeValue
-        self.computation = tmp.replace(" ","").replace("&amp;","&")
+        tmp = tmp.replace(" ","").replace("&amp;","&")
+
+        questionMarkCount = tmp.count('?"')
+        if questionMarkCount:
+          tmp = self.changeHwNumberComputation(tmp, questionMarkCount)
+        
+        self.computation = tmp
         
         self.mnemolist = []
         Mnemo = cmpt.getElementsByTagName("Mnemo")
         if Mnemo:
           for mn in Mnemo:
             self.mnemolist.append(mn.getAttribute("name"))
+  
+  def changeHwNumberComputation(self, comp, counter):
+    firstPos = 0
+    lastPos = 0
+    for num in range(counter):
+      firstPos = comp.find('?"', lastPos + 1)
+      if(comp[firstPos-1] != ')'):
+        mnemonicBegin = comp.rfind('(', lastPos ,firstPos)
+        mnemonicSubstring = comp[mnemonicBegin:firstPos]
+        if mnemonicSubstring.count('(') > 1: 
+          return comp
+        comp = comp.replace(mnemonicSubstring, '('+ mnemonicSubstring + ')')
+        lastPos = firstPos + 2
+    return comp
 
 class ecu_identifications:
  
