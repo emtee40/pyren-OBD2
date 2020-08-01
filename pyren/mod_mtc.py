@@ -71,12 +71,14 @@ def acf_buildFull( platf ):
   mtcf = open(plDIR+'/MTC.dat', 'rb')
   mtc_list = csv.reader(mtcf, delimiter=';')
   for i in mtc_list:
+    if i:
       mtc[int(i[0][:-4])] = i[1:]
 
   ref = {}
   reff = open(plDIR+'/REF.dat', 'rb')
   ref_list = csv.reader(reff, delimiter=';')
   for i in ref_list:
+    if i:
       ref[int(i[0][:10])] = [i[0][11:]] + i[1:]
 
   all_vin = open(plDIR+'/all_vin.csv', 'w')
@@ -111,9 +113,9 @@ def acf_buildFull( platf ):
                   try:
                     d = vr[4].split(':')[1].split('.')
                     data = d[2] + d[1] + d[0]
+                    outl = data+'#'+VIN+'#'+' '.join(vr[1:])+'#'+' '.join(mtc[int(vr[1])])+'#'+'_'.join(ref[int(vr[2])])
                   except:
                       pass
-                  outl = data+'#'+VIN+'#'+' '.join(vr[1:])+'#'+' '.join(mtc[int(vr[1])])+'#'+'_'.join(ref[int(vr[2])])
                   all_vin.write(outl+'\n')
   all_vin.close()
   print "\n\n File: "+plDIR+"/all_vin.csv is build\n\n"

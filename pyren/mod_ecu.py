@@ -393,7 +393,8 @@ class ECU:
           csvline += ";" + self.States[dr.name].codeMR + (":" + self.States[dr.name].label  if mod_globals.opt_csv_human else "")
           nparams += 1
         if dr.type=='Parameter':
-          csvline += ";" + self.Parameters[dr.name].codeMR + (":" +self.Parameters[dr.name].label if mod_globals.opt_csv_human else "") 
+          csvline += (";" + self.Parameters[dr.name].codeMR + (":" +self.Parameters[dr.name].label if mod_globals.opt_csv_human else "") + 
+            " [" + self.Parameters[dr.name].unit + "]")
           nparams += 1
       if mod_globals.opt_usrkey: csvline += ";User events"
       csvline = pyren_encode(csvline)
