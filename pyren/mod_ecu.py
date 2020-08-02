@@ -881,6 +881,9 @@ class ECU:
           continue
         menu.append(l.name)
       if mod_globals.opt_cmd : menu.append("ECM : Extended command set")
+      if self.Parameters : menu.append("PRA : Parameters list")
+      if self.States : menu.append("ETA : States list")
+      if self.Identifications : menu.append("IDA : Identifications list")
       if mod_globals.opt_ddt : menu.append("DDT : DDT screens")
       menu.append("<Up>")
       choice = Choice(menu, "Choose :")
@@ -905,6 +908,44 @@ class ECU:
         self.show_screen(scrn)
         continue
 
+      if choice[0][:3]=="PRA":  
+        scrn = ecu_screen( "PRA" ) 
+        scrn.datarefs = []
+        tempDict = {}
+        for pr in self.Parameters:
+          if not self.Parameters[pr].agcdRef.endswith('FF'):
+            tempDict[pr] = self.Parameters[pr].codeMR
+        sortedParams = sorted(tempDict.items(), key=lambda x:int(x[1][2:]))
+        for pr in sortedParams:
+          if self.Parameters[pr[0]].mnemolist:
+            if self.Mnemonics[self.Parameters[pr[0]].mnemolist[0]].serviceID:
+              scrn.datarefs.append( ecu_screen_dataref("",pr[0],"Parameter")) 
+        self.show_screen(scrn)
+        continue
+      
+      if choice[0][:3]=="ETA":  
+        scrn = ecu_screen( "ETA" ) 
+        scrn.datarefs = []
+        tempDict = {}
+        for st in self.States:
+          if not self.States[st].agcdRef.endswith('FF') and len(self.States[st].agcdRef) > 4:
+            tempDict[st] = self.States[st].codeMR
+        sortedStates = sorted(tempDict.items(), key=lambda x:[int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', x[1])])
+        for st in sortedStates:
+          if self.States[st[0]].mnemolist:
+            if self.Mnemonics[self.States[st[0]].mnemolist[0]].serviceID:
+              scrn.datarefs.append( ecu_screen_dataref("",st[0],"State")) 
+        self.show_screen(scrn)
+        continue
+
+      if choice[0][:3]=="IDA":  
+        scrn = ecu_screen( "IDA" ) 
+        scrn.datarefs = []
+        for idk in sorted(self.Identifications):
+          scrn.datarefs.append( ecu_screen_dataref("",idk,"Identification")) 
+        self.show_screen(scrn)
+        continue
+      
       if choice[0][:3]=="DDT":
         langmap = self.getLanguageMap()  
         ddt = DDT(self.elm, self.ecudata, langmap)
