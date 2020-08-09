@@ -928,7 +928,7 @@ class ECU:
         scrn.datarefs = []
         tempDict = {}
         for st in self.States:
-          if not self.States[st].agcdRef.endswith('FF') and len(self.States[st].agcdRef) > 4:
+          if not self.States[st].agcdRef.endswith('FF') and self.States[st].agcdRef.startswith('ET'):
             tempDict[st] = self.States[st].codeMR
         sortedStates = sorted(tempDict.items(), key=lambda x:[int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', x[1])])
         for st in sortedStates:

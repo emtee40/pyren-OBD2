@@ -26,7 +26,7 @@ This mode allows you:
 Getting started video
 https://www.youtube.com/watch?v=DazsvlnLCoA
 
-## Supported cars with CLIP DB v193
+## Supported cars with CLIP DB v200
 
 | id  | ISO   | CAN1  | CAN2  | Vehicle               | Platform | PyRen | DocDB |
 |-----|-------|-------|-------|-----------------------|----------|-------|-------|
@@ -120,8 +120,11 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 184 | ----  | 6-14  | ----  | ESPACE V ph2          | XFC      | yes   | yes   |
 | 185 | ----  | 6-14  | ----  | TALISMAN ph2          | XFD      | yes   | yes   |
 | 186 | ----  | 6-14  | ----  | NOUVELLE ZOE          | X10      | yes   | yes   |
+| 187 | ----  | 6-14  | ----  | ARKANA CN             | XJH      | yes   | yes   |
 | 188 | ----  | 6-14  | ----  | SAMSUNG XM3           | XJL      | yes   | yes   |
 | 189 | ----  | 6-14  | 13-12 | CITY K-ZE             | XBG      | yes   | yes   |
+| 190 | ----  | 6-14  | 13-12 | NEW KANGOO LS         | XJK      | yes   | yes   |
+| 191 | ----  | 6-14  | ----  | NEW SANDERO/LOGAN     | XJF      | yes   | yes   |
 
 &ast; Only Siemens Sirius 32N supported
 
