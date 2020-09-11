@@ -32,6 +32,7 @@ import sys
 import os
 import time
 import gc
+import re
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -536,7 +537,7 @@ class ECU:
             kb.set_getch_term()
           else:
             if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
-              csvline += ";" + c
+              csvline += ";" + pyren_encode(c)
               continue
             kb.set_normal_term()
             if mod_globals.opt_csv and csvf!=0:
@@ -563,7 +564,7 @@ class ECU:
             clearScreen()
             continue
           if mod_globals.opt_csv and (c in mod_globals.opt_usrkey):
-            csvline += ";" + c
+            csvline += ";" + pyren_encode(c)
             continue
           kb.set_normal_term()
           if mod_globals.opt_csv and csvf!=0:

@@ -98,6 +98,9 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
         dataId = did
         startByte = dataids[dataId].mnemolocations[m.name].startByte
         startBit = dataids[dataId].mnemolocations[m.name].startBit
+  
+  if dataId not in didDict:
+    didDict[dataId] = '0' * (int(dataids[dataId].dataBitLength)/8)
  
   hexval = getHexVal(m, startByte, startBit, didDict[dataId])
   return hexval
