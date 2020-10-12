@@ -32,6 +32,7 @@ opt_can2      = False    #can connected to pins 13 and 12
 opt_ddtxml    = ""
 opt_stn       = False
 opt_sd        = False    #separate doc files
+opt_perform   = False
 
 dumpName = ""
 

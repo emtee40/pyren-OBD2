@@ -237,7 +237,9 @@ def optParser():
     else:
       print "Development MODE"
       mod_globals.opt_dev       = True
-      mod_globals.opt_devses    = options.dev   
+      mod_globals.opt_devses    = options.dev 
+    if mod_globals.os == 'android':
+      mod_globals.opt_perform = True
     
 def main():
   '''Main function'''

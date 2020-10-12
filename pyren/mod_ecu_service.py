@@ -58,8 +58,14 @@ def executeService( service, elm, status = [], param = "", cache = False ):
   #tb = time.time()   #start time 
   #tc = tb
 
+  sentDataIdentifires = [] #dataids sent in one 22 request, nedded for a response parse
+  performanceMode = mod_globals.opt_perform and elm.performanceModeLevel > 1 
+
   commandToSend = service.startReq
-  
+
+  if performanceMode and elm.currentScreenDataIds:
+    commandToSend, sentDataIdentifires = prepareComplexRequest(service.startReq, elm.currentScreenDataIds)
+    
   if len(service.params)>0:  # but I support only one and do not support SnapShot
     if service.params[0]['type']=='DTC':
       param = mod_globals.ext_cur_DTC
@@ -77,6 +83,9 @@ def executeService( service, elm, status = [], param = "", cache = False ):
   rsp = elm.request( commandToSend, '', cache, localDelay )
   rsp = rspStrip( rsp, commandToSend )
   first_rsp = rsp
+
+  if performanceMode and sentDataIdentifires:
+    first_rsp = parseComplexResponse(elm, service.simpleRsp, rsp, sentDataIdentifires)
 
   #print "Status:", status
   #print "Delay:",localDelay,
@@ -151,6 +160,43 @@ def executeService( service, elm, status = [], param = "", cache = False ):
   print "\nSomething went wrong. Counter reached maximum value.\n"
   return ""  
 
+def prepareComplexRequest(request, screenDataIds):
+  commandToSend = request
+  sentDataIdentifires = []
+  screenDataIdsNumber = len(screenDataIds[0])
+
+  if screenDataIdsNumber > 1:
+    firstDataId = screenDataIds[0][0].id
+    if firstDataId == request[2:]:
+      commandToSend = request[:2]
+      for did in screenDataIds[0]:
+        commandToSend += did.id
+      
+      sentDataIdentifires = screenDataIds.pop(0) 
+   
+  return commandToSend, sentDataIdentifires
+
+def parseComplexResponse(elm, positiveRsp, response, sentDataIds):
+  first_rsp = ''
+  posInResp = 2
+  byteLength = 2
+  sentDataIdsLength = len(sentDataIds)
+  
+  for i in range(sentDataIdsLength):
+    dataId = response[posInResp:posInResp + 2 * byteLength]
+    posInResp += 2 * byteLength
+    didDataLength = int(sentDataIds[i].dataBitLength)/8
+    didData = response[posInResp: posInResp + didDataLength * byteLength]
+    posInResp += didDataLength * byteLength
+    if i == 0:
+      first_rsp = positiveRsp + dataId + didData
+    
+    resp = positiveRsp + dataId + didData
+    resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
+
+    elm.rsp_cache['22' + dataId] = resp
+
+  return first_rsp
 
 class ecu_service:
 

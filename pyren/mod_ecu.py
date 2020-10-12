@@ -150,6 +150,9 @@ class ECU:
     
     self.elm.start_session( self.ecudata['startDiagReq'] )
 
+    if self.ecudata['pin'].lower()=='can' and self.DataIds:
+      self.elm.checkPerformaceLevel(self.DataIds)
+
     print "Done"  
     
     global ecudump
@@ -347,8 +350,9 @@ class ECU:
     else:
       initScreen = chr(27)+"[2J"+chr(27)+"[;H"
 
-  
     csvf = 0
+    self.elm.currentScreenDataIds = []
+
     mask = False
     masks = []
     datarefsToRemove = []
@@ -386,6 +390,7 @@ class ECU:
     if mod_globals.opt_csv and mod_globals.ext_cur_DTC == '000000':
       # prepare to csv save
       self.minimumrefreshrate = 0
+      mod_globals.opt_perform = True
       csvline = "sep=\\t\n"
       csvline += u"Time"
       nparams = 0
@@ -526,6 +531,8 @@ class ECU:
         if ((tc - tb) < self.minimumrefreshrate):
           time.sleep(tb + self.minimumrefreshrate - tc)
         tb = tc
+
+      self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache.keys(), self.DataIds)
 
       if kb.kbhit():
         c = kb.getch()
@@ -1026,6 +1033,23 @@ class ECU:
       map[key] = label
     
     return map
+  
+  def getDataIds(self, cache, dataids):
+    dataIdsList = []
+    if self.elm.performanceModeLevel == 1:
+      return dataIdsList
+    
+    for key in cache:
+      if key.startswith('22'):
+        if key[2:] in dataids.keys():
+          dataIdsList.append(dataids[key[2:]])
+
+    chunk_size = self.elm.performanceModeLevel
+    if dataIdsList: 
+      # split dataIdsList into chunks based on the performace level
+      return [dataIdsList[offset:offset+chunk_size] for offset in range(0, len(dataIdsList), chunk_size)]
+    
+    return dataIdsList
 
 def bukva( bt, l, sign = False ):
   S1 = chr((bt-l) % 26 + ord('A'))

@@ -12,6 +12,7 @@ import string
 import threading
 import socket
 from datetime import datetime
+from collections import OrderedDict
 
 try:
     import androidhelper as android
@@ -517,6 +518,7 @@ class ELM:
     lastCMDtime = 0  # time when last command was sent to bus
     portTimeout = 5  # timeout of port (com or tcp)
     elmTimeout = 0  # timeout set by ATST
+    performanceModeLevel = 1 # number of dataids, that can be sent in one 22 request
     
     # error counters
     error_frame = 0
@@ -536,7 +538,8 @@ class ELM:
     startSession = ""
     lastinitrsp = ""
     
-    rsp_cache = {}  # cashes responses for current screen
+    currentScreenDataIds = [] #dataids displayed on current screen
+    rsp_cache = OrderedDict()  # cashes responses for current screen
     l1_cache = {}  # save number of frames in responces
     notSupportedCommands = {} # save them to not slow down polling
     ecudump = {}  # for demo only. contains responses for all 21xx and 22xxxx requests
@@ -620,7 +623,7 @@ class ELM:
         """ Clear L2 cache before screen update
         """
         #print 'Clearing L2 cache'
-        self.rsp_cache = {}
+        self.rsp_cache = OrderedDict()
 
         # if not mod_globals.opt_demo:
         #  self.rsp_cache = {}
@@ -1926,7 +1929,7 @@ class ELM:
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
         self.check_answer (self.cmd ("at cra " + RXa))
-        
+
         self.check_adapter ()
     
     def init_iso(self):
@@ -2006,6 +2009,24 @@ class ELM:
         self.check_answer(self.cmd("81"))  # start session
 
         self.check_adapter ()
+
+    #check if ELM uderstand full Single Frame with desired response length
+    def checkPerformaceLevel(self, dataids):
+        performanceLevels = [3, 2]
+
+        for level in performanceLevels:
+            if len(dataids) >= level:
+                paramToSend = ''
+                frameLength = '{:02X}'.format(1 + level * 2)
+
+                for i in range(level):
+                    paramToSend += dataids.keys()[i]
+                cmd = frameLength + '22' + paramToSend + '1'
+
+                resp = self.send_raw(cmd)
+                if not '?' in resp and resp[2:4] != '7F':
+                    self.performanceModeLevel = level
+                    return
     
     def reset_elm(self):
         self.cmd ("at z")
