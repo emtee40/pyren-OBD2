@@ -185,11 +185,11 @@ class settings():
     lang = 'RU'
     speed = '38400'
     logName = 'log.txt'
-    log = False
+    log = True
     cfc = False
     n1c = False
     si = False
-    dump = False
+    dump = True
     can2 = False
     options = ''
 

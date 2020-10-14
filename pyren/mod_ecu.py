@@ -502,7 +502,10 @@ class ECU:
 
       if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
         newScreen = initScreen
-        header =  'ECU : '+self.ecudata['ecuname']+'   (RT:'+'{0:.4f}'.format(self.elm.response_time)+')   '+self.ecudata['doc']+'\n'
+        connectionData = ('   (RT:'+'{0:.4f}'.format(self.elm.response_time)+ ' ' 
+                            + 'RR:' + '{:>5.1f}'.format(self.elm.getRefreshRate()) +')   ')
+        
+        header =  'ECU : '+self.ecudata['ecuname']+ connectionData +self.ecudata['doc']+'\n'
         header = header + "Screen : "+path
         newScreen = newScreen + pyren_encode( header ) + '\n'
       

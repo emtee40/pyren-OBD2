@@ -530,6 +530,7 @@ class ELM:
     error_can = 0
     
     response_time = 0
+    screenRefreshTime = 0
 
     buff = ""
     currentprotocol = ""
@@ -1758,6 +1759,8 @@ class ELM:
 
         roundtrip = tc - tb
 
+        self.screenRefreshTime += roundtrip
+
         self.response_time = ((self.response_time * 9) + roundtrip) / 10
 
         # save responce to log
@@ -2027,6 +2030,16 @@ class ELM:
                 if not '?' in resp and resp[2:4] != '7F':
                     self.performanceModeLevel = level
                     return
+
+    def getRefreshRate(self):
+        refreshRate = 0
+
+        if not self.screenRefreshTime:
+            return refreshRate
+        
+        refreshRate = 1 / self.screenRefreshTime
+        self.screenRefreshTime = 0
+        return refreshRate
     
     def reset_elm(self):
         self.cmd ("at z")
