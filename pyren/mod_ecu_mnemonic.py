@@ -63,7 +63,9 @@ def get_mnemonic( m, se, elm, raw = 0 ):
 
 def get_SnapShotMnemonic(m, se, elm, dataids):
   snapshotService = ""
-  posInResp = 0
+  byteLength = 3
+  dataIdByteLength = 2
+
   for sid in se:
     if len(se[sid].params) > 1:
       if se[sid].params[1]['type'] == 'Snapshot':
@@ -75,18 +77,34 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   resp = resp.strip().replace(' ','')
   if not all(c in string.hexdigits for c in resp): resp = ''
   resp = ' '.join(a+b for a,b in zip(resp[::2], resp[1::2]))
-  numberOfIdentifiers = int("0x" + resp[7*3:8*3-1],16)
-  resp = resp[8*3:]
+  numberOfIdentifiers = int("0x" + resp[7*byteLength:8*byteLength-1],16)
+  resp = resp[8*byteLength:]
 
   didDict = {}
+  posInResp = 0
+  dataIdLength = dataIdByteLength * byteLength
+  
   for x in range(numberOfIdentifiers):
-    dataId = resp[posInResp:posInResp + 2*3].replace(" ", "")
-    posInResp += 2*3
+    dataId = resp[posInResp:posInResp + dataIdLength].replace(" ", "")
+    posInResp += dataIdLength
     if dataId not in dataids.keys():
-        continue
+      bytePos = 1
+      restOfResp = resp[posInResp:]
+
+      while True:
+        posInRestResp = bytePos*byteLength
+        if len(restOfResp) > posInRestResp + dataIdLength and restOfResp[posInRestResp] == '2':
+          possibleDataId = restOfResp[posInRestResp:posInRestResp + dataIdLength].replace(" ", "")
+          if possibleDataId in dataids.keys():
+            posInResp += posInRestResp
+            break
+        else:
+          bytePos += 1
+      continue
+
     didDataLength = int(dataids[dataId].dataBitLength)/8
-    didData = resp[posInResp: posInResp + didDataLength*3]
-    posInResp += didDataLength*3
+    didData = resp[posInResp: posInResp + didDataLength*byteLength]
+    posInResp += didDataLength*byteLength
     didDict[dataId] = didData
 
   startByte = ""
