@@ -1820,7 +1820,7 @@ class ELM:
         self.check_answer(elm_ver)
 
         # check STN
-        st_rsp = self.cmd("STPR")
+        st_rsp = self.cmd("STP 53")
         if '?' not in st_rsp:
             mod_globals.opt_stn = True
 
