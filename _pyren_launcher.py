@@ -25,6 +25,8 @@ try:
 except:
     import pickle
 
+csvOptions = ['csv', 'csv_human', 'csv_only']
+
 osname = os.name
 
 currenPath = os.path.dirname(os.path.abspath(__file__))
@@ -185,10 +187,12 @@ class settings():
     lang = 'RU'
     speed = '38400'
     logName = 'log.txt'
+    csvOption = 'csv'
     log = True
     cfc = False
     n1c = False
     si = False
+    csv = False
     dump = True
     can2 = False
     options = ''
@@ -249,6 +253,8 @@ def run(s, cmd):
         sys.argv.append('--n1c')
     if s.si:
         sys.argv.append('--si')
+    if s.csv:
+        sys.argv.append('--' + s.csvOption)
     if s.dump and cmd != 'term':
         sys.argv.append('--dump')
     if s.can2 and cmd != 'term':
@@ -343,10 +349,7 @@ if osname != 'android':
                 tkMessageBox.showerror("Error", "UnZip error")
 
         def saveSettings(self):
-            if len(self.var_entryPath.get()) > 0:
-                self.save.path = self.var_entryPath.get()
-            else:
-                self.save.path = self.var_path.get()
+            self.save.path = self.var_path.get()
             self.save.port = self.var_port.get().split(';')[0]
             self.save.lang = self.var_lang.get()
             self.save.speed = self.var_speed.get()
@@ -355,6 +358,8 @@ if osname != 'android':
             self.save.cfc = self.var_cfc.get()
             self.save.n1c = self.var_n1c.get()
             self.save.si = self.var_si.get()
+            self.save.csv = self.var_csv.get()
+            self.save.csvOption = self.var_csvOption.get()
             self.save.dump = self.var_dump.get()
             self.save.can2 = self.var_can2.get()
             self.save.options = self.var_otherOptions.get()
@@ -365,13 +370,14 @@ if osname != 'android':
             self.var_si.set(self.save.si)
             self.var_cfc.set(self.save.cfc)
             self.var_n1c.set(self.save.n1c)
+            self.var_csv.set(self.save.csv)
+            self.var_csvOption.set(self.save.csvOption)
             self.var_can2.set(self.save.can2)
             self.var_dump.set(self.save.dump)
             self.var_lang.set(self.save.lang)
             self.var_path.set(self.save.path)
             self.var_port.set(self.save.port)
             self.var_speed.set(self.save.speed)
-            self.var_entryPath.set('')
             self.var_otherOptions.set(self.save.options)
             self.var_log.set(self.save.log)
             self.var_logName.set(self.save.logName)
@@ -380,6 +386,7 @@ if osname != 'android':
             self.var_langList = getLangList()
             self.var_pathList = getPathList()
             self.var_portList = getPortList()
+            self.var_csvOptions = csvOptions
 
             if len(self.var_path.get()) == 0:
                 self.var_path.set(self.var_pathList[0])
@@ -408,6 +415,7 @@ if osname != 'android':
             self.var_can2 = tk.BooleanVar()
             self.var_dump = tk.BooleanVar()
             self.var_log = tk.BooleanVar()
+            self.var_csv = tk.BooleanVar()
 
             self.var_cfc = tk.BooleanVar()
             self.var_n1c = tk.BooleanVar()
@@ -422,9 +430,9 @@ if osname != 'android':
             self.var_path = tk.StringVar()
             self.var_port = tk.StringVar()
             self.var_speed = tk.StringVar()
+            self.var_csvOption = tk.StringVar()
 
             self.var_logName = tk.StringVar()
-            self.var_entryPath = tk.StringVar()
             self.var_otherOptions = tk.StringVar()
 
             self.loadSettings()
@@ -446,7 +454,7 @@ if osname != 'android':
             self.root.configure(highlightcolor="black")
 
             self.lPathSelector = tk.LabelFrame(self.root)
-            self.lPathSelector.place(relx=0.02, rely=0.0, relheight=0.27, relwidth=0.46)
+            self.lPathSelector.place(relx=0.02, rely=0.0, relheight=0.13, relwidth=0.46)
             self.lPathSelector.configure(relief=tk.GROOVE)
             self.lPathSelector.configure(foreground="black")
             self.lPathSelector.configure(text='''Version''')
@@ -474,16 +482,6 @@ if osname != 'android':
             self.lPortSpeed.configure(highlightbackground="#d9d9d9")
             self.lPortSpeed.configure(highlightcolor="black")
             self.lPortSpeed.configure(width=220)
-
-            self.lOtherPath = tk.LabelFrame(self.root)
-            self.lOtherPath.place(relx=0.04, rely=0.12, relheight=0.13, relwidth=0.42)
-            self.lOtherPath.configure(relief=tk.GROOVE)
-            self.lOtherPath.configure(foreground="black")
-            self.lOtherPath.configure(text='''Other path to script''')
-            self.lOtherPath.configure(background="#d9d9d9")
-            self.lOtherPath.configure(highlightbackground="#d9d9d9")
-            self.lOtherPath.configure(highlightcolor="black")
-            self.lOtherPath.configure(width=210)
 
             self.lDBLanguage = tk.LabelFrame(self.root)
             self.lDBLanguage.place(relx=0.02, rely=0.29, relheight=0.13, relwidth=0.3)
@@ -525,8 +523,18 @@ if osname != 'android':
             self.lCAN.configure(highlightcolor="black")
             self.lCAN.configure(width=230)
 
+            self.lCSV = tk.LabelFrame(self.root)
+            self.lCSV.place(relx=0.5, rely=0.555, relheight=0.125, relwidth=0.48)
+            self.lCSV.configure(relief=tk.GROOVE)
+            self.lCSV.configure(foreground="black")
+            self.lCSV.configure(text='''Data logging''')
+            self.lCSV.configure(background="#d9d9d9")
+            self.lCSV.configure(highlightbackground="#d9d9d9")
+            self.lCSV.configure(highlightcolor="black")
+            self.lCSV.configure(width=240)
+            
             self.lKWP = tk.LabelFrame(self.root)
-            self.lKWP.place(relx=0.5, rely=0.43, relheight=0.25, relwidth=0.48)
+            self.lKWP.place(relx=0.5, rely=0.43, relheight=0.125, relwidth=0.48)
             self.lKWP.configure(relief=tk.GROOVE)
             self.lKWP.configure(foreground="black")
             self.lKWP.configure(text='''K-Line''')
@@ -554,7 +562,7 @@ if osname != 'android':
             self.mN1C.configure(width=40)
 
             self.mSI = tk.Message(self.root)
-            self.mSI.place(relx=0.56, rely=0.50, relheight=0.07, relwidth=0.1)
+            self.mSI.place(relx=0.56, rely=0.48, relheight=0.03, relwidth=0.08)
             self.mSI.configure(background="#d9d9d9")
             self.mSI.configure(foreground="#000000")
             self.mSI.configure(highlightbackground="#d9d9d9")
@@ -573,25 +581,13 @@ if osname != 'android':
             self.mCAN.configure(width=142)
 
             self.mKWP = tk.Message(self.root)
-            self.mKWP.place(relx=0.64, rely=0.48, relheight=0.13, relwidth=0.3)
+            self.mKWP.place(relx=0.64, rely=0.46, relheight=0.08, relwidth=0.3)
             self.mKWP.configure(background="#d9d9d9")
             self.mKWP.configure(foreground="#000000")
             self.mKWP.configure(highlightbackground="#d9d9d9")
             self.mKWP.configure(highlightcolor="black")
             self.mKWP.configure(text='''Try Slow Init before Fast Init. It may helps with old ECUs''')
             self.mKWP.configure(width=152)
-
-            self.otherPath = tk.Entry(self.root)
-            self.otherPath.place(relx=0.06, rely=0.17, relheight=0.06, relwidth=0.38)
-            self.otherPath.configure(background="white")
-            self.otherPath.configure(font="TkFixedFont")
-            self.otherPath.configure(foreground="#000000")
-            self.otherPath.configure(highlightbackground="#d9d9d9")
-            self.otherPath.configure(highlightcolor="black")
-            self.otherPath.configure(insertbackground="black")
-            self.otherPath.configure(selectbackground="#c4c4c4")
-            self.otherPath.configure(selectforeground="black")
-            self.otherPath.configure(textvariable=self.var_entryPath)
 
             self.logName = tk.Entry(self.root)
             self.logName.place(relx=0.42, rely=0.33, relheight=0.06, relwidth=0.26)
@@ -642,7 +638,7 @@ if osname != 'android':
             # self.cbN1C.configure(variable=self.che44)
 
             self.cbSI = tk.Checkbutton(self.lKWP)
-            self.cbSI.place(relx=0.04, rely=0.18, relheight=0.29, relwidth=0.13)
+            self.cbSI.place(relx=0.04, rely=0.15, relheight=0.43, relwidth=0.13)
             self.cbSI.configure(activebackground="#d9d9d9")
             self.cbSI.configure(activeforeground="#000000")
             self.cbSI.configure(background="#d9d9d9")
@@ -652,6 +648,17 @@ if osname != 'android':
             self.cbSI.configure(justify=tk.LEFT)
             self.cbSI.configure(variable=self.var_si)
             # self.cbSI.configure(variable=self.che45)
+
+            self.cbCSV = tk.Checkbutton(self.lCSV)
+            self.cbCSV.place(relx=0.05, rely=0.2, relheight=0.4, relwidth=0.1)
+            self.cbCSV.configure(activebackground="#d9d9d9")
+            self.cbCSV.configure(activeforeground="#000000")
+            self.cbCSV.configure(background="#d9d9d9")
+            self.cbCSV.configure(foreground="#000000")
+            self.cbCSV.configure(highlightbackground="#d9d9d9")
+            self.cbCSV.configure(highlightcolor="black")
+            self.cbCSV.configure(justify=tk.LEFT)
+            self.cbCSV.configure(variable=self.var_csv)
 
             self.lDump = tk.LabelFrame(self.root)
             self.lDump.place(relx=0.72, rely=0.29, relheight=0.13, relwidth=0.12)
@@ -820,6 +827,12 @@ if osname != 'android':
             self.speedList.configure(textvariable=self.var_speed)
             self.speedList.configure(takefocus="")
 
+            self.csvList = ttk.Combobox(self.root)
+            self.csvList.place(relx=0.60, rely=0.60, relheight=0.06, relwidth=0.35)
+            self.csvList.configure(values=self.var_csvOptions)
+            self.csvList.configure(textvariable=self.var_csvOption)
+            self.csvList.configure(takefocus="")
+
             self.langList = ttk.Combobox(self.root)
             self.langList.place(relx=0.04, rely=0.33, relheight=0.06, relwidth=0.25)
             self.langList.configure(values=self.var_langList)
@@ -848,6 +861,7 @@ else:
         save = None
         pl = []
         ll = []
+        csvl = []
 
         def cmd_Mon(self):
             self.saveSettings()
@@ -891,6 +905,7 @@ else:
         def saveSettings(self):
             self.save.path = self.pl[int(self.droid.fullQueryDetail("sp_version").result['selectedItemPosition'])]
             self.save.lang = self.ll[int(self.droid.fullQueryDetail("sp_language").result['selectedItemPosition'])]
+            self.save.csvOption = self.csvl[int(self.droid.fullQueryDetail("sp_csv").result['selectedItemPosition'])]
 
             if self.droid.fullQueryDetail("rb_bt").result['checked'] == 'false':
                 self.save.port = self.droid.fullQueryDetail("in_wifi").result['text']
@@ -921,6 +936,11 @@ else:
             else:
                 self.save.si = True
 
+            if self.droid.fullQueryDetail("cb_csv").result['checked'] == 'false':
+                self.save.csv = False
+            else:
+                self.save.csv = True
+
             if self.droid.fullQueryDetail("cb_dump").result['checked'] == 'false':
                 self.save.dump = False
             else:
@@ -946,6 +966,11 @@ else:
             if self.save.lang in ll: ll.insert(0, ll.pop(ll.index(self.save.lang)))
             self.droid.fullSetList("sp_language", ll)
             self.ll = ll
+
+            csvl = csvOptions
+            if self.save.csvOption in csvl: csvl.insert(0, csvl.pop(csvl.index(self.save.csvOption)))
+            self.droid.fullSetList("sp_csv", csvl)
+            self.csvl = csvl
 
             if self.save.port == '':
                 self.save.port = "192.168.0.10:35000"
@@ -978,6 +1003,11 @@ else:
                 self.droid.fullSetProperty("cb_si", "checked", "true")
             else:
                 self.droid.fullSetProperty("cb_si", "checked", "false")
+
+            if self.save.csv:
+                self.droid.fullSetProperty("cb_csv", "checked", "true")
+            else:
+                self.droid.fullSetProperty("cb_csv", "checked", "false")
 
             if self.save.dump:
                 self.droid.fullSetProperty("cb_dump", "checked", "true")
@@ -1090,17 +1120,37 @@ else:
                 android:ems="10"
                 android:text="log.txt" />
             <TextView
+                android:id="@+id/tx_csv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/in_logname"
+                android:text="Data logging" />
+            <CheckBox
+                android:id="@+id/cb_csv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tx_csv"
+                android:layout_marginRight="20dp"
+                android:layout_alignLeft="@+id/cb_log" />
+            <Spinner
+                android:id="@+id/sp_csv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tx_csv"
+                android:layout_toRightOf="@+id/cb_csv" />
+            <TextView
                 android:id="@+id/tx_can"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/in_logname"
+                android:layout_below="@id/sp_csv"
                 android:text="CAN parameters" />
             <CheckBox
                 android:id="@+id/cb_cfc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/tx_can"
-                android:layout_alignLeft="@id/in_logname"
+                android:layout_toRightOf="@id/tx_can"
                 android:text="--cfc" />
             <CheckBox
                 android:id="@+id/cb_n1c"
