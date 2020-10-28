@@ -156,6 +156,8 @@ def getHexVal(m, startByte, startBit, resp, raw = 0):
   #add left zero if need
   if len(hexval)%2:
     hexval = '0'+hexval
+  if (len(hexval)/2)%bytes:
+    hexval = '00' * (bytes - len(hexval)/2) + hexval
 
   #revert byte order if little endian
   if m.littleEndian == '1':
