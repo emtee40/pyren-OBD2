@@ -463,6 +463,16 @@ if osname != 'android':
             self.lPathSelector.configure(highlightcolor="black")
             self.lPathSelector.configure(width=230)
 
+            self.lDBLanguage = tk.LabelFrame(self.root)
+            self.lDBLanguage.place(relx=0.02, rely=0.14, relheight=0.13, relwidth=0.46)
+            self.lDBLanguage.configure(relief=tk.GROOVE)
+            self.lDBLanguage.configure(foreground="black")
+            self.lDBLanguage.configure(text='''DB Language''')
+            self.lDBLanguage.configure(background="#d9d9d9")
+            self.lDBLanguage.configure(highlightbackground="#d9d9d9")
+            self.lDBLanguage.configure(highlightcolor="black")
+            self.lDBLanguage.configure(width=100)
+
             self.lPortSelector = tk.LabelFrame(self.root)
             self.lPortSelector.place(relx=0.5, rely=0.0, relheight=0.27, relwidth=0.48)
             self.lPortSelector.configure(relief=tk.GROOVE)
@@ -483,16 +493,6 @@ if osname != 'android':
             self.lPortSpeed.configure(highlightcolor="black")
             self.lPortSpeed.configure(width=220)
 
-            self.lDBLanguage = tk.LabelFrame(self.root)
-            self.lDBLanguage.place(relx=0.02, rely=0.29, relheight=0.13, relwidth=0.3)
-            self.lDBLanguage.configure(relief=tk.GROOVE)
-            self.lDBLanguage.configure(foreground="black")
-            self.lDBLanguage.configure(text='''DB Language''')
-            self.lDBLanguage.configure(background="#d9d9d9")
-            self.lDBLanguage.configure(highlightbackground="#d9d9d9")
-            self.lDBLanguage.configure(highlightcolor="black")
-            self.lDBLanguage.configure(width=100)
-
             self.lOptions = tk.LabelFrame(self.root)
             self.lOptions.place(relx=0.02, rely=0.69, relheight=0.13, relwidth=0.96)
             self.lOptions.configure(relief=tk.GROOVE)
@@ -504,10 +504,10 @@ if osname != 'android':
             self.lOptions.configure(width=480)
 
             self.lLog = tk.LabelFrame(self.root)
-            self.lLog.place(relx=0.34, rely=0.29, relheight=0.13, relwidth=0.36)
+            self.lLog.place(relx=0.5, rely=0.28, relheight=0.135, relwidth=0.48)
             self.lLog.configure(relief=tk.GROOVE)
             self.lLog.configure(foreground="black")
-            self.lLog.configure(text='''Log''')
+            self.lLog.configure(text='''ELM Log''')
             self.lLog.configure(background="#d9d9d9")
             self.lLog.configure(highlightbackground="#d9d9d9")
             self.lLog.configure(highlightcolor="black")
@@ -524,7 +524,7 @@ if osname != 'android':
             self.lCAN.configure(width=230)
 
             self.lCSV = tk.LabelFrame(self.root)
-            self.lCSV.place(relx=0.5, rely=0.555, relheight=0.125, relwidth=0.48)
+            self.lCSV.place(relx=0.02, rely=0.28, relheight=0.135, relwidth=0.46)
             self.lCSV.configure(relief=tk.GROOVE)
             self.lCSV.configure(foreground="black")
             self.lCSV.configure(text='''Data logging''')
@@ -590,7 +590,7 @@ if osname != 'android':
             self.mKWP.configure(width=152)
 
             self.logName = tk.Entry(self.root)
-            self.logName.place(relx=0.42, rely=0.33, relheight=0.06, relwidth=0.26)
+            self.logName.place(relx=0.58, rely=0.33, relheight=0.06, relwidth=0.37)
             self.logName.configure(background="white")
             self.logName.configure(font="TkFixedFont")
             self.logName.configure(foreground="#000000")
@@ -602,7 +602,7 @@ if osname != 'android':
             self.logName.configure(textvariable=self.var_logName)
 
             self.cbLog = tk.Checkbutton(self.root)
-            self.cbLog.place(relx=0.36, rely=0.33, relheight=0.07, relwidth=0.06)
+            self.cbLog.place(relx=0.52, rely=0.325, relheight=0.07, relwidth=0.06)
             self.cbLog.configure(activebackground="#d9d9d9")
             self.cbLog.configure(activeforeground="#000000")
             self.cbLog.configure(background="#d9d9d9")
@@ -650,7 +650,7 @@ if osname != 'android':
             # self.cbSI.configure(variable=self.che45)
 
             self.cbCSV = tk.Checkbutton(self.lCSV)
-            self.cbCSV.place(relx=0.05, rely=0.2, relheight=0.4, relwidth=0.1)
+            self.cbCSV.place(relx=0.05, rely=0.24, relheight=0.4, relwidth=0.1)
             self.cbCSV.configure(activebackground="#d9d9d9")
             self.cbCSV.configure(activeforeground="#000000")
             self.cbCSV.configure(background="#d9d9d9")
@@ -661,7 +661,7 @@ if osname != 'android':
             self.cbCSV.configure(variable=self.var_csv)
 
             self.lDump = tk.LabelFrame(self.root)
-            self.lDump.place(relx=0.72, rely=0.29, relheight=0.13, relwidth=0.12)
+            self.lDump.place(relx=0.5, rely=0.56, relheight=0.12, relwidth=0.10)
             self.lDump.configure(relief=tk.GROOVE)
             self.lDump.configure(foreground="black")
             self.lDump.configure(text='''Dump''')
@@ -671,7 +671,7 @@ if osname != 'android':
             self.lDump.configure(width=60)
 
             self.lCAN2 = tk.LabelFrame(self.root)
-            self.lCAN2.place(relx=0.86, rely=0.29, relheight=0.13, relwidth=0.12)
+            self.lCAN2.place(relx=0.62, rely=0.56, relheight=0.12, relwidth=0.10)
             self.lCAN2.configure(relief=tk.GROOVE)
             self.lCAN2.configure(foreground="black")
             self.lCAN2.configure(text='''CAN 2''')
@@ -681,7 +681,7 @@ if osname != 'android':
             self.lCAN2.configure(width=60)
 
             self.cbDump = tk.Checkbutton(self.lDump)
-            self.cbDump.place(relx=0.17, rely=0.18, relheight=0.55, relwidth=0.5)
+            self.cbDump.place(relx=0.265, rely=0.18, relheight=0.55, relwidth=0.5)
             self.cbDump.configure(activebackground="#d9d9d9")
             self.cbDump.configure(activeforeground="#000000")
             self.cbDump.configure(background="#d9d9d9")
@@ -693,7 +693,7 @@ if osname != 'android':
             self.cbDump.configure(width=34)
 
             self.cbCAN2 = tk.Checkbutton(self.lCAN2)
-            self.cbCAN2.place(relx=0.17, rely=0.18, relheight=0.55, relwidth=0.5)
+            self.cbCAN2.place(relx=0.28, rely=0.18, relheight=0.55, relwidth=0.5)
             self.cbCAN2.configure(activebackground="#d9d9d9")
             self.cbCAN2.configure(activeforeground="#000000")
             self.cbCAN2.configure(background="#d9d9d9")
@@ -828,13 +828,13 @@ if osname != 'android':
             self.speedList.configure(takefocus="")
 
             self.csvList = ttk.Combobox(self.root)
-            self.csvList.place(relx=0.60, rely=0.60, relheight=0.06, relwidth=0.35)
+            self.csvList.place(relx=0.10, rely=0.33, relheight=0.06, relwidth=0.35)
             self.csvList.configure(values=self.var_csvOptions)
             self.csvList.configure(textvariable=self.var_csvOption)
             self.csvList.configure(takefocus="")
 
             self.langList = ttk.Combobox(self.root)
-            self.langList.place(relx=0.04, rely=0.33, relheight=0.06, relwidth=0.25)
+            self.langList.place(relx=0.04, rely=0.185, relheight=0.06, relwidth=0.41)
             self.langList.configure(values=self.var_langList)
             self.langList.configure(textvariable=self.var_lang)
             self.langList.configure(takefocus="")
