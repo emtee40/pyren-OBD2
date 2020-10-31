@@ -19,6 +19,7 @@ from os import listdir
 from os.path import isdir
 from os.path import isfile
 import sys
+import webbrowser
 
 try:
     import cPickle as pickle
@@ -347,6 +348,9 @@ if osname != 'android':
                 tkMessageBox.showerror("Error", "No connection with gitlab.com")
             elif res == 2:
                 tkMessageBox.showerror("Error", "UnZip error")
+
+        def cmd_Info(self):
+            webbrowser.open_new('help.pdf')
 
         def saveSettings(self):
             self.save.path = self.var_path.get()
@@ -807,6 +811,17 @@ if osname != 'android':
             self.btnUpg.configure(highlightbackground="#d9d9d9")
             self.btnUpg.configure(highlightcolor="black")
             self.btnUpg.configure(text='''Update''')
+            
+            self.btnInfo = tk.Button(self.root)
+            self.btnInfo.place(relx=0.61, rely=0.91, height=22, width=100)
+            self.btnInfo.configure(activebackground="#d9d9d9")
+            self.btnInfo.configure(activeforeground="#000000")
+            self.btnInfo.configure(background="#d9d9d9")
+            self.btnInfo.configure(command=self.cmd_Info)
+            self.btnInfo.configure(foreground="#000000")
+            self.btnInfo.configure(highlightbackground="#d9d9d9")
+            self.btnInfo.configure(highlightcolor="black")
+            self.btnInfo.configure(text='''Info''')
 
             self.pathList = ttk.Combobox(self.root)
             self.pathList.place(relx=0.04, rely=0.05, relheight=0.06, relwidth=0.41)
