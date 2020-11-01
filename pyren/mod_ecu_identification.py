@@ -7,7 +7,7 @@ from xml.dom.minidom    import parseString
 import xml.dom.minidom
 import mod_globals
 
-def get_identification( id, mn, se, elm, calc, raw = 0 ):
+def get_identification( id, mn, se, elm, calc, raw = False ):
   comp = id.computation
   comp = comp.replace("&amp;","&")
   for m in sorted(id.mnemolist, key=len, reverse=True):

@@ -259,7 +259,7 @@ class ECU:
       return None      
     return self.Parameters[name]
       
-  def get_id( self, name, raw = 0):
+  def get_id( self, name, raw = False):
     if name not in self.Identifications.keys():
       for i in self.Identifications.keys():
         if name==self.Identifications[i].codeMR:
@@ -364,7 +364,7 @@ class ECU:
         if int(self.States[st].value):
           masks.append(self.States[st].name)
     
-    if mask:
+    if mask and not mod_globals.opt_demo:
       for dr in datarefs:
         if dr.type=='State':
           if self.States[dr.name].mask and self.States[dr.name].mask not in masks:

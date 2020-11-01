@@ -33,7 +33,7 @@ def get_mnemonicDTC( m, resp ):
   return hexval
 
 
-def get_mnemonic( m, se, elm, raw = 0 ):
+def get_mnemonic( m, se, elm, raw = False ):
 
   if not m.serviceID and mod_globals.ext_cur_DTC != "000000":
     for sid in se.keys():
@@ -123,7 +123,7 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   hexval = getHexVal(m, startByte, startBit, didDict[dataId])
   return hexval
 
-def getHexVal(m, startByte, startBit, resp, raw = 0):
+def getHexVal(m, startByte, startBit, resp, raw = False):
   #prepare local variables  
   sb     = int(startByte) - 1
   bits   = int(m.bitsLength)

@@ -14,6 +14,7 @@ GNU General Public License for more details.
 
 import sys
 import os
+import string
 import signal
 import atexit
 import subprocess
@@ -468,6 +469,9 @@ def DBG( tag, s ):
     if mod_globals.opt_debug and mod_globals.debug_file!=None:
         mod_globals.debug_file.write( '### ' + tag + '\n')
         mod_globals.debug_file.write( '"' + s + '"\n')
+
+def isHex(s):
+  return all(c in string.hexdigits for c in s)
 
 def kill_server():
     if mod_globals.doc_server_proc is None:
