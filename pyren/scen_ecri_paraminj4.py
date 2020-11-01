@@ -97,8 +97,8 @@ def run( elm, ecu, command, data ):
     ScmSet[setname]= scmParamsDict
 
   confirm = get_message_by_id('19800')
-  successMessage = get_message("EndScreenMessage3", False)
-  failMessage = get_message("EndScreenMessage4", False)
+  successMessage = get_message("EndScreenMessage3")
+  failMessage = get_message("EndScreenMessage4")
 
   #Prepare buttons
   buttons = OrderedDict()
@@ -206,7 +206,8 @@ def run( elm, ecu, command, data ):
     clearScreen()
 
     print inProgressMessage
-    makeDump()
+    if not mod_globals.opt_demo:
+      makeDump()
 
     responses = ''
 
