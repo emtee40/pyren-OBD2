@@ -151,9 +151,9 @@ def run( elm, ecu, command, data ):
     print '\tCHECK CONDITIONS'
     print 
     print '*'*90
-    print datastr7
-    print datastr5
-    print datastr6
+    print pyren_encode(datastr7)
+    print pyren_encode(datastr5)
+    print pyren_encode(datastr6)
     print '*'*90
     print get_message_by_id('1149')  
     print 
@@ -239,17 +239,17 @@ def run( elm, ecu, command, data ):
     print '\tPhase  - ', phase
     #print '\tResult - ', result
     print '*'*90
-    print datastr0
-    print datastr1 
-    print datastr2 
-    print datastr3 
-    print datastr4 
-    print datastr5 
-    print datastr6 
-    print datastr7 
-    print datastr8 
-    print datastr9 
-    print datastra 
+    print pyren_encode(datastr0)
+    print pyren_encode(datastr1) 
+    print pyren_encode(datastr2) 
+    print pyren_encode(datastr3) 
+    print pyren_encode(datastr4) 
+    print pyren_encode(datastr5) 
+    print pyren_encode(datastr6) 
+    print pyren_encode(datastr7) 
+    print pyren_encode(datastr8) 
+    print pyren_encode(datastr9) 
+    print pyren_encode(datastra) 
     print '*'*90
     if pfe: break
     print 'Press Q to emergency exit'
