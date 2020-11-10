@@ -246,6 +246,7 @@ optional arguments:
   -m CAR             number of car model
   -vv, --verbose     show parameter explanations
   -e ECUID           index of ECU, or comma separeted list for DEMO MODE
+  -e CAR             number of car model for DEMO MODE
   --si               try SlowInit first
   --cfc              turn off automatic FC and do it by script
   --n1c              turn off L1 cache
