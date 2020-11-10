@@ -81,7 +81,7 @@ class ScanEcus:
     for file in file_list:
       try: 
         model_n = file[-7:-4]
-        if model_n in ["005","010","026","035","054","064","066","069","073","088","107","110","114"]:
+        if model_n in ["005","010","026","035","054","064","066","069","088","107","110","114"]:
           continue
         #model_n = int(file[-7:-4])
         #if model_n<86: continue

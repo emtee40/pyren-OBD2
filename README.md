@@ -42,7 +42,7 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 066 | 7-15  | ----  | ----  | TRAFIC II             | X83      | no    | no    |
 | 067 | 7-15  | 6-14  | ----  | CLIO II ph2/3/4       | X65      | yes*  | no    |
 | 069 | 7-15  | ----  | ----  | AVANTIME              | X66      | no    | no    |
-| 073 | 7-15  | ----  | ----  | KANGOO MUX            | X76      | no    | no    |
+| 073 | 7-15  | 6-14  | ----  | KANGOO MUX            | X76      | yes*  | no    |
 | 077 | 7-15  | 6-14  | ----  | THALIA/SYMBOL         | X65      | yes*  | no    |
 | 086 | 7-15  | 6-14  | 13-12 | MEGANE II             | X84      | yes   | no    |
 | 088 | 7-15  | ----  | ----  | CLIO V6 ph2           | X65      | no    | no    |
@@ -80,7 +80,7 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 142 | ----  | 6-14  | 13-12 | FLUENCE/MEGANE        | X38      | yes   | yes   |
 | 143 | ----  | 6-14  | 13-12 | LATITUDE              | X43      | yes   | yes   |
 | 144 | 7-15  | 6-14  | 13-12 | MASTER III            | X62      | yes   | yes   |
-| 145 | ----  | 6-14  | 13-12 | WIND                  | W33      | yes   | no    |
+| 145 | 7-15  | 6-14  | 13-12 | WIND                  | W33      | yes   | no    |
 | 146 | 7-15  | 6-14  | 13-12 | DUSTER                | X79      | yes   | no    |
 | 147 | 7-15  | 6-14  | 13-12 | KANGOO ZE ph2         | X61      | yes   | yes   |
 | 148 | ----  | 6-14  | 13-12 | SAMSUNG SM7 L47       | X47      | yes   | yes   |
@@ -92,7 +92,7 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 155 | ----  | 6-14  | 13-12 | CLIO IV               | X98      | yes   | yes   |
 | 156 | ----  | 6-14  | 13-12 | CAPTUR                | X87      | yes   | yes   |
 | 157 | 7-15  | 6-14  | ----  | CLIO II ph6           | X65      | yes   | no    |
-| 158 | ----  | 6-14  | 13-12 | TRAFIC III            | X82      | yes   | yes   |
+| 158 | 7-15  | 6-14  | 13-12 | TRAFIC III            | X82      | yes   | yes   |
 | 159 | ----  | 6-14  | 13-12 | DUSTER ph2            | X79      | yes   | yes   |
 | 160 | ----  | 6-14  | 13-12 | TWINGO III            | X07      | yes   | yes   |
 | 161 | ----  | 6-14  | 13-12 | ESPACE V              | XFC      | yes   | yes   |
@@ -261,7 +261,7 @@ optional arguments:
                      you should define alternative command for opening the
                      session, like a 1086
   --exp              swith to Expert mode (allow to use buttons in DDT)
-  --can2             CAN network connected to pin 13 and pin 12
+  --can2             CAN network connected to pin 13 (H) and pin 12 (L)
 
 Available COM ports:
 COM3:              
