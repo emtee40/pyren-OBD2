@@ -26,7 +26,7 @@ This mode allows you:
 Getting started video
 https://www.youtube.com/watch?v=DazsvlnLCoA
 
-## Supported cars with CLIP DB v193
+## Supported cars with CLIP DB v202
 
 | id  | ISO   | CAN1  | CAN2  | Vehicle               | Platform | PyRen | DocDB |
 |-----|-------|-------|-------|-----------------------|----------|-------|-------|
@@ -120,12 +120,16 @@ https://www.youtube.com/watch?v=DazsvlnLCoA
 | 184 | ----  | 6-14  | ----  | ESPACE V ph2          | XFC      | yes   | yes   |
 | 185 | ----  | 6-14  | ----  | TALISMAN ph2          | XFD      | yes   | yes   |
 | 186 | ----  | 6-14  | ----  | NOUVELLE ZOE          | X10      | yes   | yes   |
+| 187 | ----  | 6-14  | ----  | ARKANA CN             | XJH      | yes   | yes   |
 | 188 | ----  | 6-14  | ----  | SAMSUNG XM3           | XJL      | yes   | yes   |
 | 189 | ----  | 6-14  | 13-12 | CITY K-ZE             | XBG      | yes   | yes   |
+| 190 | ----  | 6-14  | 13-12 | NEW KANGOO LS         | XJK      | yes   | yes   |
+| 191 | ----  | 6-14  | ----  | NEW SANDERO/LOGAN     | XJF      | yes   | yes   |
+| 192 | ----  | 6-14  | ----  | MEGANE IV SEDAN ph2   | XFF      | yes   | yes   |
 
 &ast; Only Siemens Sirius 32N supported
 
-&ast;&ast; CAN2 and ISO not supported 
+&ast;&ast; ISO2 Network pin 13 (K), pin 12 (L)
 
 ## Included tools
 * **doc_maker.py** - build diagnostic documentation for your car (require BVMEXTRACTION folder and extracted DocDB_xx.7ze)
@@ -225,9 +229,9 @@ Firs run pyren without options
 $cd c:\CLIP\Data\GenAppli\pyren
 $python.exe ./pyren.py 
 usage: pyren.py [-h] [-v] [-p PORT] [-s SPEED] [-r RATE] [-L LANG] [-m CAR]
-                [-vv] [-e ECUID] [--si] [--cfc] [--n1c] [--csv] [--csv_only]
-                [--csv_human] [--usr_key USR_KEY] [--log LOGFILE] [--scan]
-                [--demo] [--dump] [--dev DEV] [--exp] [--can2]
+                [-vv] [-e ECUID] [-e CAR] [--si] [--cfc] [--n1c] [--csv] 
+                [--csv_only] [--csv_human] [--usr_key USR_KEY] [--log LOGFILE] 
+                [--scan] [--demo] [--dump] [--dev DEV] [--exp] [--can2]
 
 pyRen - python program for diagnostic Renault cars
 
@@ -243,6 +247,7 @@ optional arguments:
   -m CAR             number of car model
   -vv, --verbose     show parameter explanations
   -e ECUID           index of ECU, or comma separeted list for DEMO MODE
+  -e CAR             number of car model for DEMO MODE
   --si               try SlowInit first
   --cfc              turn off automatic FC and do it by script
   --n1c              turn off L1 cache
