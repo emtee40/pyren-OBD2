@@ -432,6 +432,12 @@ class ECU:
 
     if len(datarefs)==0 and 'DE' not in path: return
 
+    
+    if mod_globals.opt_csv and mod_globals.opt_csv_only:
+      print "Data is sending directly to csv-file"
+      print ""
+      print "Press any key to exit"
+
     page = 0
     
     while(True):
@@ -452,12 +458,6 @@ class ECU:
         csvline = datetime.now().strftime("%H:%M:%S.%f")
       
       self.elm.clear_cache()
-
-      if mod_globals.opt_csv and mod_globals.opt_csv_only:
-        clearScreen()
-        print "Data is sending directly to csv-file"
-        print ""
-        print "Press any key to exit"
 
       for dr in datarefs:
         datastr = dr.name
