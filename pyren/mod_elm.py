@@ -2060,7 +2060,11 @@ class ELM:
                     paramToSend += dataids.keys()[lvl]
                 cmd = frameLength + '22' + paramToSend + '1'
                 resp = self.send_raw(cmd)
-            else: #send multiframe command for more than 3 dataids
+            else: # send multiframe command for more than 3 dataids
+                # Some modules can return NO DATA if multi frame command is sent after some no activity time
+                # Sending anything before main command usually helps that command to be accepted
+                self.send_raw ("0322" + dataids.keys()[0] + "1")  
+
                 for lvl in range(level):
                     paramToSend += dataids.keys()[lvl]
                 cmd = '22' + paramToSend
