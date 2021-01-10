@@ -150,8 +150,10 @@ class ECU:
     
     self.elm.start_session( self.ecudata['startDiagReq'] )
 
-    if self.ecudata['pin'].lower()=='can' and self.DataIds:
-      self.elm.checkPerformaceLevel(self.DataIds)
+    if mod_globals.os == 'android' or mod_globals.opt_csv:
+      if self.ecudata['pin'].lower()=='can' and self.DataIds:
+        mod_globals.opt_perform = True
+        self.elm.checkModulePerformaceLevel(self.DataIds)
 
     print "Done"  
     
@@ -390,7 +392,6 @@ class ECU:
     if mod_globals.opt_csv and mod_globals.ext_cur_DTC == '000000':
       # prepare to csv save
       self.minimumrefreshrate = 0
-      mod_globals.opt_perform = True
       csvline = "sep=\\t\n"
       csvline += u"Time"
       nparams = 0
@@ -534,8 +535,9 @@ class ECU:
         if ((tc - tb) < self.minimumrefreshrate):
           time.sleep(tb + self.minimumrefreshrate - tc)
         tb = tc
-
-      self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache.keys(), self.DataIds)
+      
+      if mod_globals.opt_perform:
+        self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache.keys(), self.DataIds)
 
       if kb.kbhit():
         c = kb.getch()

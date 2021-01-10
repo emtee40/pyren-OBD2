@@ -30,7 +30,8 @@ opt_exp       = False    #allow to use buttons in ddt
 opt_dump      = False    #dump responces from all 21xx and 22xxxx requests
 opt_can2      = False    #can connected to pins 13 and 12
 opt_ddtxml    = ""
-opt_stn       = False
+opt_obdlink   = False    #basically, STN(PIC24) based ELM327
+opt_stn       = False    #STN(PIC24) ELM327 which has ability to automatically switch beetween two CAN lines
 opt_sd        = False    #separate doc files
 opt_perform   = False
 

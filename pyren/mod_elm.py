@@ -287,7 +287,7 @@ class Port:
             else:
                 inInputBuffer = self.hdr.inWaiting()
                 if inInputBuffer:
-                    if mod_globals.opt_stn:
+                    if mod_globals.opt_obdlink:
                         byte = self.hdr.read(inInputBuffer)
                     else:
                         byte = self.hdr.read(1)
@@ -359,7 +359,7 @@ class Port:
         
         self.hdr.timeout = 2
         
-        for s in [38400, 115200, 230400, 57600, 9600, 500000]:
+        for s in [38400, 115200, 500000, 230400, 57600, 9600]:
             print "\r\t\t\t\t\rChecking port speed:", s,
             sys.stdout.flush ()
             
@@ -1174,6 +1174,8 @@ class ELM:
     
     def send_can(self, command):
         command = command.strip ().replace (' ', '').upper ()
+        isCommandInCache = command in self.l1_cache.keys()
+        commandString = command
 
         if len(command) == 0:
             return
@@ -1187,7 +1189,7 @@ class ELM:
         cmd_len = len (command) / 2
         if cmd_len < 8:  # single frame
             # check L1 cache here
-            if command in self.l1_cache.keys ():
+            if isCommandInCache and int('0x' + self.l1_cache[commandString], 16) < 16:
                 raw_command.append (("%0.2X" % cmd_len) + command + self.l1_cache[command])
             else:
                 raw_command.append (("%0.2X" % cmd_len) + command)
@@ -1201,6 +1203,19 @@ class ELM:
                 raw_command.append ("2" + ("%X" % frame_number)[-1:] + command[:14])
                 frame_number = frame_number + 1
                 command = command[14:]
+
+            # add response frames number to each frame to increase polling
+            if mod_globals.opt_obdlink and mod_globals.opt_perform:
+                if commandString[:2] in AllowedList and isCommandInCache:
+                    if int('0x' + self.l1_cache[commandString], 16) < 16:
+                        for index in range(len(raw_command) - 1):
+                            raw_command[index] = raw_command[index] + '1'
+                        raw_command[-1] = raw_command[-1] + self.l1_cache[commandString]
+                    else:
+                        readyFrame = ''
+                        for f in raw_command:
+                            readyFrame += f
+                        raw_command =  ["STPX D:" + readyFrame + ",R:" + self.l1_cache[commandString]]
         
         responses = []
         
@@ -1269,8 +1284,11 @@ class ELM:
         if result[:2] == '7F': noerrors = False
         
         # populate L1 cache
-        if noerrors and nframes < 16 and command[:1] == '2' and not mod_globals.opt_n1c:
-            self.l1_cache[command] = str(hex(nframes))[2:].upper()
+        if noerrors and commandString[:2] in AllowedList and not mod_globals.opt_n1c:
+            if nframes < 16:
+                self.l1_cache[commandString] = str(hex(nframes))[2:].upper()
+            else: #for OBDLink STPX command
+                self.l1_cache[commandString] = str(nframes)
         
         if len (result) / 2 >= nbytes and noerrors:
             # split by bytes and return
@@ -1819,10 +1837,14 @@ class ELM:
         elm_ver = self.cmd("at ws")
         self.check_answer(elm_ver)
 
-        # check STN
-        st_rsp = self.cmd("STP 53")
-        if '?' not in st_rsp:
-            mod_globals.opt_stn = True
+        # check OBDLink
+        elm_rsp = self.cmd("STPR")
+        if '?' not in elm_rsp:
+            mod_globals.opt_obdlink = True
+            # check STN
+            elm_rsp = self.cmd("STP 53")
+            if '?' not in elm_rsp:
+                mod_globals.opt_stn = True
 
         self.check_answer(self.cmd("at e1"))
         self.check_answer(self.cmd("at s0"))
@@ -2013,23 +2035,42 @@ class ELM:
 
         self.check_adapter ()
 
-    #check if ELM uderstand full Single Frame with desired response length
-    def checkPerformaceLevel(self, dataids):
+    #check what is the maximum number of parameters that module can handle in one request
+    def checkModulePerformaceLevel(self, dataids):
         performanceLevels = [3, 2]
 
         for level in performanceLevels:
-            if len(dataids) >= level:
-                paramToSend = ''
-                frameLength = '{:02X}'.format(1 + level * 2)
+            isLevelAccepted = self.checkPerformaceLevel(level, dataids)
+            if isLevelAccepted: 
+                break
 
-                for i in range(level):
-                    paramToSend += dataids.keys()[i]
-                cmd = frameLength + '22' + paramToSend + '1'
-
-                resp = self.send_raw(cmd)
-                if not '?' in resp and resp[2:4] != '7F':
-                    self.performanceModeLevel = level
+        if self.performanceModeLevel == 3 and mod_globals.opt_obdlink:
+            for level in reversed(range(4,26)): #26 - 1 = 25  parameters per page
+                isLevelAccepted = self.checkPerformaceLevel(level, dataids)
+                if isLevelAccepted: 
                     return
+
+    def checkPerformaceLevel(self, level, dataids):
+        if len(dataids) >= level:
+            paramToSend = ''
+
+            if level <= 3: # 3 dataids max can be send in single frame
+                frameLength = '{:02X}'.format(1 + level * 2)
+                for lvl in range(level):
+                    paramToSend += dataids.keys()[lvl]
+                cmd = frameLength + '22' + paramToSend + '1'
+                resp = self.send_raw(cmd)
+            else: #send multiframe command for more than 3 dataids
+                for lvl in range(level):
+                    paramToSend += dataids.keys()[lvl]
+                cmd = '22' + paramToSend
+                resp = self.send_cmd(cmd)
+            
+            if not '?' in resp and resp[2:4] != '7F':
+                self.performanceModeLevel = level
+                return True
+
+        return False
 
     def getRefreshRate(self):
         refreshRate = 0
