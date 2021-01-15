@@ -382,7 +382,7 @@ if osname != 'android':
             self.var_log.set(self.save.log)
             self.var_logName.set(self.save.logName)
 
-            self.var_speedList = ['38400', '115200', '230400', '500000', ]
+            self.var_speedList = ['38400', '115200', '230400', '500000', '1000000', '2000000' ]
             self.var_langList = getLangList()
             self.var_pathList = getPathList()
             self.var_portList = getPortList()

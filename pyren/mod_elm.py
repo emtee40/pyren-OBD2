@@ -359,7 +359,7 @@ class Port:
         
         self.hdr.timeout = 2
         
-        for s in [38400, 115200, 500000, 230400, 57600, 9600]:
+        for s in [38400, 115200, 230400, 500000, 1000000, 2000000]:
             print "\r\t\t\t\t\rChecking port speed:", s,
             sys.stdout.flush ()
             
@@ -2066,11 +2066,13 @@ class ELM:
                 self.send_raw ("0322" + dataids.keys()[0] + "1")  
 
                 for lvl in range(level):
+                    resp = self.request("22" + dataids.keys()[lvl])
+                    if any(s in resp for s in ['?', 'NR']):
+                        continue
                     paramToSend += dataids.keys()[lvl]
                 cmd = '22' + paramToSend
                 resp = self.send_cmd(cmd)
-            
-            if not '?' in resp and resp[2:4] != '7F':
+            if not any(s in resp for s in ['?', 'NR']):
                 self.performanceModeLevel = level
                 return True
 
