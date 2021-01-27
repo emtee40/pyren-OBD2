@@ -163,7 +163,7 @@ class ScanEcus:
     
     self.elm.init_can()
     #print self.allecus
-    for ecu, row in sorted(self.allecus.iteritems(),key = lambda (x,y) :y['idf']+y['protocol']):
+    for ecu, row in sorted(self.allecus.iteritems(),key = lambda (x,y) :y['idf']+y['protocol']+str(1/float(len(y['ids'])))):
       if (self.allecus[ecu]['pin']=='can' and
           self.allecus[ecu]['pin1']==canH  and
           self.allecus[ecu]['pin2']==canL):        
