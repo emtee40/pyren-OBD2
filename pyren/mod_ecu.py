@@ -220,7 +220,7 @@ class ECU:
   def get_st( self, name ):
     if name not in self.States.keys():
       for i in self.States.keys():
-        if name==self.States[i].codeMR:
+        if name==self.States[i].agcdRef:
           name = i
           break
     if name not in self.States.keys():
@@ -232,7 +232,7 @@ class ECU:
   def get_ref_st( self, name ):
     if name not in self.States.keys():
       for i in self.States.keys():
-        if name==self.States[i].codeMR:
+        if name==self.States[i].agcdRef:
           name = i
           break
     if name not in self.States.keys():
@@ -242,7 +242,7 @@ class ECU:
   def get_pr( self, name ):
     if name not in self.Parameters.keys():
       for i in self.Parameters.keys():
-        if name==self.Parameters[i].codeMR:
+        if name==self.Parameters[i].agcdRef:
           name = i
           break
     if name not in self.Parameters.keys():
@@ -254,7 +254,7 @@ class ECU:
   def get_ref_pr( self, name ):
     if name not in self.Parameters.keys():
       for i in self.Parameters.keys():
-        if name==self.Parameters[i].codeMR:
+        if name==self.Parameters[i].agcdRef:
           name = i
           break
     if name not in self.Parameters.keys():
@@ -521,9 +521,8 @@ class ECU:
           else:
             newScreen = newScreen+'\n'+"Press H for help or any key to exit"
         else:
-          newScreen = newScreen+'\n'+"Press ENTER to add or delete parameter/state or any other key to exit" 
+          newScreen = newScreen+'\n'+"Press ENTER to add or delete parameter or any other key to exit" 
 
-          
         print newScreen,
         sys.stdout.flush ()
         
@@ -588,7 +587,7 @@ class ECU:
   def add_favourite(self):
     H = 25
     if len(favouriteScreen.datarefs) < H:
-      userDataStr = raw_input("\nEnter parameter/state that you want to monitor: ").upper()
+      userDataStr = raw_input("\nEnter parameter that you want to monitor: ").upper()
       for userData in userDataStr.split(','):
         userData = userData.strip()
         if userData == "CLEAR":
@@ -861,6 +860,7 @@ class ECU:
         return
           
       dtchex = dtcs[int(choice[1])-1]
+      mod_globals.ext_cur_DTC = dtchex
       
       path = path+' -> '+defstr[dtchex]+'\n\n'+hlpstr[dtchex]+'\n'
       
