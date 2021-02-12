@@ -202,8 +202,7 @@ class Port:
                 mod_globals.opt_demo = True
                 exit (2)
             # print self.hdr.BAUDRATES
-            if mod_globals.opt_speed == 38400 and mod_globals.opt_rate != mod_globals.opt_speed:
-                self.check_elm ()
+            self.check_elm ()
         
         #self.elm_at_KeepAlive ()
     
@@ -404,16 +403,19 @@ class Port:
         
         print "Changing baud rate to:", boudrate,
         
-        if boudrate == 38400:
-            self.write ("at brd 68\r")
-        elif boudrate == 57600:
-            self.write ("at brd 45\r")
-        elif boudrate == 115200:
-            self.write ("at brd 23\r")
-        elif boudrate == 230400:
-            self.write ("at brd 11\r")
-        elif boudrate == 500000:
-            self.write ("at brd 8\r")
+        if mod_globals.opt_obdlink:
+            self.write("ST SBR " + str(boudrate) + "\r")
+        else:
+            if boudrate == 38400:
+                self.write ("at brd 68\r")
+            elif boudrate == 57600:
+                self.write ("at brd 45\r")
+            elif boudrate == 115200:
+                self.write ("at brd 23\r")
+            elif boudrate == 230400:
+                self.write ("at brd 11\r")
+            elif boudrate == 500000:
+                self.write ("at brd 8\r")
         
         # search OK
         tb = time.time ()  # start time
@@ -432,19 +434,10 @@ class Port:
                 break
             if (tc - tb) > 1:
                 print "ERROR - command not supported"
-                sys.exit ()
+                return
         
         self.hdr.timeout = 1
-        if boudrate == 38400:
-            self.hdr.baudrate = 38400
-        elif boudrate == 57600:
-            self.hdr.baudrate = 57600
-        elif boudrate == 115200:
-            self.hdr.baudrate = 115200
-        elif boudrate == 230400:
-            self.hdr.baudrate = 230400
-        elif boudrate == 500000:
-            self.hdr.baudrate = 500000
+        self.hdr.baudrate = boudrate
         
         # search ELM
         tb = time.time ()  # start time
@@ -459,7 +452,7 @@ class Port:
                 continue
             self.buff += byte
             tc = time.time ()
-            if 'ELM' in self.buff:
+            if 'ELM' or 'STN' in self.buff:
                 break
             if (tc - tb) > 1:
                 print "ERROR - rate not supported. Let's go back."
@@ -486,6 +479,7 @@ class Port:
             self.buff += byte
             tc = time.time ()
             if '>' in self.buff:
+                mod_globals.opt_rate = mod_globals.opt_speed
                 break
             if (tc - tb) > 1:
                 print "ERROR - something went wrong. Let's back."
@@ -588,7 +582,29 @@ class ELM:
 
         self.lastCMDtime = 0
         self.ATCFC0 = mod_globals.opt_cfc0
-    
+
+        if self.lf != 0:
+            tmstr = datetime.now ().strftime ("%x %H:%M:%S.%f")[:-3]
+            self.lf.write('#' * 60 + "\n#[" + tmstr + "] Check ELM type\n" + '#' * 60 + "\n")
+            self.lf.flush()
+
+        # check OBDLink
+        elm_rsp = self.cmd("STPR")
+        if '?' not in elm_rsp:
+            mod_globals.opt_obdlink = True
+
+            # check STN
+            elm_rsp = self.cmd("STP 53")
+            if '?' not in elm_rsp:
+                mod_globals.opt_stn = True
+        
+        # Max out the UART speed for the fastest polling rate
+        if mod_globals.opt_csv:
+            if mod_globals.opt_obdlink:
+                self.port.soft_boudrate(2000000)
+            else:
+                self.port.soft_boudrate(230400)
+
     def __del__(self):
         if not mod_globals.opt_demo:
             print '*' * 40
@@ -1156,7 +1172,7 @@ class ELM:
         
         # deal with exceptions
         # boudrate 38400 not enough to read full information about errors
-        if mod_globals.opt_rate < 50000 and len (command) == 6 and command[:4] == '1902':
+        if not mod_globals.opt_obdlink and len (command) == 6 and command[:4] == '1902':
             command = '1902AF'
         
         if command.upper()[:2] in ["AT","ST"] or self.currentprotocol != "can":
@@ -1830,21 +1846,12 @@ class ELM:
 
         if self.lf != 0:
             tmstr = datetime.now ().strftime ("%x %H:%M:%S.%f")[:-3]
-            self.lf.write('#' * 60 + "\n#[" + tmstr + "] Init CAN\n" + '#' * 60 + "\n")
+            self.lf.write('#' * 60 + "\n# Init CAN\n" + '#' * 60 + "\n")
             self.lf.flush()
 
         # reset ELM
         elm_ver = self.cmd("at ws")
         self.check_answer(elm_ver)
-
-        # check OBDLink
-        elm_rsp = self.cmd("STPR")
-        if '?' not in elm_rsp:
-            mod_globals.opt_obdlink = True
-            # check STN
-            elm_rsp = self.cmd("STP 53")
-            if '?' not in elm_rsp:
-                mod_globals.opt_stn = True
 
         self.check_answer(self.cmd("at e1"))
         self.check_answer(self.cmd("at s0"))
