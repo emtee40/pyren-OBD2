@@ -602,7 +602,7 @@ class ELM:
         if mod_globals.opt_csv:
             if mod_globals.opt_obdlink:
                 self.port.soft_boudrate(2000000)
-            else:
+            elif self.port.portType == 0:
                 self.port.soft_boudrate(230400)
 
     def __del__(self):
