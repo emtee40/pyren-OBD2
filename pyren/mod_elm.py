@@ -590,7 +590,7 @@ class ELM:
 
         # check OBDLink
         elm_rsp = self.cmd("STPR")
-        if '?' not in elm_rsp:
+        if elm_rsp and '?' not in elm_rsp:
             mod_globals.opt_obdlink = True
 
             # check STN
@@ -599,7 +599,7 @@ class ELM:
                 mod_globals.opt_stn = True
         
         # Max out the UART speed for the fastest polling rate
-        if mod_globals.opt_csv:
+        if mod_globals.opt_csv and not mod_globals.opt_demo:
             if mod_globals.opt_obdlink:
                 self.port.soft_boudrate(2000000)
             elif self.port.portType == 0:
