@@ -24,6 +24,7 @@ import mod_db_manager
 
 from xml.dom.minidom        import parse
 from datetime               import datetime
+from collections            import OrderedDict
 from mod_utils              import show_doc
 import xml.dom.minidom
 #import xml.etree.ElementTree as et
@@ -432,7 +433,8 @@ class ECU:
     tb = time.time()   #time of begining 
 
     if len(datarefs)==0 and 'DE' not in path: return
-
+    self.elm.clear_cache()
+    tmpArray = OrderedDict()
     
     if mod_globals.opt_csv and mod_globals.opt_csv_only:
       print "Data is sending directly to csv-file"
@@ -457,49 +459,60 @@ class ECU:
         #  csvf.write(pyren_decode(csvline).encode('utf8')  if mod_globals.opt_csv_human else csvline)
         csvf.flush() 
         csvline = datetime.now().strftime("%H:%M:%S.%f")
-      
+
+      if mod_globals.opt_perform:
+        if not tmpArray or tmpArray.keys()[-1].startswith('21') :
+          for x in self.elm.rsp_cache.keys():
+            if (x.startswith('22') and len(x) > 6) or x.startswith('21') or len(self.elm.rsp_cache) == 1:
+              tmpArray[x] = x
+              if len(self.elm.currentScreenDataIds) > 1:
+                tmpArray["22" + self.elm.currentScreenDataIds[-1][0].id] = "22" + self.elm.currentScreenDataIds[-1][0].id
+
       self.elm.clear_cache()
-
-      for dr in datarefs:
-        datastr = dr.name
-        help    = dr.type
-        if dr.type=='State':
-          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
-            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
-          else:
-            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
-        if dr.type=='Parameter':
-          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
-            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
-          else:
-            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
-        if dr.type=='Identification':
-          datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
-        if dr.type=='Command':
-          datastr = dr.name + " [Command] " + self.Commands[dr.name].label
-        if dr.type=="Text":
+      if not (tmpArray and mod_globals.opt_csv_only):
+        for dr in datarefs:
           datastr = dr.name
-          help = ""
-        if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
-          csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
+          help    = dr.type
+          if dr.type=='State':
+            if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+              datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+            else:
+              datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if dr.type=='Parameter':
+            if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+              datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+            else:
+              datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if dr.type=='Identification':
+            datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
+          if dr.type=='Command':
+            datastr = dr.name + " [Command] " + self.Commands[dr.name].label
+          if dr.type=="Text":
+            datastr = dr.name
+            help = ""
+          if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
+            csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
 
-        if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
-          strlst.append(datastr)
-          if mod_globals.opt_verbose and len(help)>0:
-            tmp_str = ''
-            for s in help:
-              #s = s.replace('\n','\n\t')
-              s = s.replace('\r','\n')
-              s = s.replace('&gt;','>')           
-              s = s.replace('&le;','<')           
-              tmp_str = tmp_str + s + '\n\n'
-            W = 50
-            for line in tmp_str.split('\n'):
-              i = 0
-              while i*W<len(line):
-                strlst.append('\t'+line[i*W:(i+1)*W])
-                i=i+1
-            strlst.append('')
+          if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
+            strlst.append(datastr)
+            if mod_globals.opt_verbose and len(help)>0:
+              tmp_str = ''
+              for s in help:
+                #s = s.replace('\n','\n\t')
+                s = s.replace('\r','\n')
+                s = s.replace('&gt;','>')           
+                s = s.replace('&le;','<')           
+                tmp_str = tmp_str + s + '\n\n'
+              W = 50
+              for line in tmp_str.split('\n'):
+                i = 0
+                while i*W<len(line):
+                  strlst.append('\t'+line[i*W:(i+1)*W])
+                  i=i+1
+              strlst.append('')
+      else:
+        for req in tmpArray:
+          self.elm.request(req)
 
       if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
         newScreen = initScreen
@@ -580,6 +593,15 @@ class ECU:
           kb.set_normal_term()
           if mod_globals.opt_csv and csvf!=0:
             csvf.close()
+            # self.elm.vf.read()
+            # with open ("./logs/ecu_" + mod_globals.opt_log, "r") as f:
+            #   for line in f:
+            #     print line
+            for line in self.elm.vf:
+              print line
+            raw_input()
+            # raw_input('2322232')
+            # self.elm.vf.read()
           if "DTC" in path:
             mod_globals.ext_cur_DTC = "000000"
           return
