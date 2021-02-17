@@ -575,7 +575,7 @@ class ELM:
         
         if len(mod_globals.opt_log)>0: # and mod_globals.opt_demo==False:
             self.lf = open ("./logs/elm_" + mod_globals.opt_log, "at")
-            self.vf = open ("./logs/ecu_" + mod_globals.opt_log, "at+")
+            self.vf = open ("./logs/ecu_" + mod_globals.opt_log, "at")
 
         if mod_globals.opt_debug and mod_globals.debug_file==None:
             mod_globals.debug_file = open ("./logs/debug.txt", "at")
@@ -602,7 +602,7 @@ class ELM:
         if mod_globals.opt_csv and not mod_globals.opt_demo:
             if mod_globals.opt_obdlink:
                 self.port.soft_boudrate(2000000)
-            else:
+            elif self.port.portType == 0:
                 self.port.soft_boudrate(230400)
 
     def __del__(self):
@@ -1205,9 +1205,8 @@ class ELM:
         cmd_len = len (command) / 2
         if cmd_len < 8:  # single frame
             # check L1 cache here
-            # if isCommandInCache and int('0x' + self.l1_cache[commandString], 16) < 16:
-            if isCommandInCache:
-                raw_command.append ("STPX D:" + ("%0.2X" % cmd_len) + command + ",R:" +self.l1_cache[command])
+            if isCommandInCache and int('0x' + self.l1_cache[commandString], 16) < 16:
+                raw_command.append (("%0.2X" % cmd_len) + command + self.l1_cache[command])
             else:
                 raw_command.append (("%0.2X" % cmd_len) + command)
         else:
@@ -1224,20 +1223,12 @@ class ELM:
             # add response frames number to each frame to increase polling
             if mod_globals.opt_obdlink and mod_globals.opt_perform:
                 if commandString[:2] in AllowedList and isCommandInCache:
-                    readyFrame = ''
-                    for f in raw_command:
-                        readyFrame += f
-                    raw_command =  ["STPX D:" + readyFrame + ",R:" + self.l1_cache[commandString]]
-
-                    # if int('0x' + self.l1_cache[commandString], 16) < 16:
-                    #     for index in range(len(raw_command) - 1):
-                    #         raw_command[index] = raw_command[index] + '1'
-                    #     raw_command[-1] = raw_command[-1] + self.l1_cache[commandString]
-                    # else:
-                    #     readyFrame = ''
-                    #     for f in raw_command:
-                    #         readyFrame += f
-                    #     raw_command =  ["STPX D:" + readyFrame + ",R:" + self.l1_cache[commandString]]
+                    for index in range(len(raw_command) - 1):
+                        raw_command[index] = raw_command[index] + '1'
+                    if int('0x' + self.l1_cache[commandString], 16) < 16:
+                        raw_command[-1] = raw_command[-1] + self.l1_cache[commandString]
+                    else:
+                        raw_command[-1] =  "STPX D:" +  raw_command[-1] + ",R:" + self.l1_cache[commandString]
         
         responses = []
         
@@ -1307,10 +1298,10 @@ class ELM:
         
         # populate L1 cache
         if noerrors and commandString[:2] in AllowedList and not mod_globals.opt_n1c:
-            # if nframes < 16:
-            #     self.l1_cache[commandString] = str(hex(nframes))[2:].upper()
-            # else: #for OBDLink STPX command
-            self.l1_cache[commandString] = str(nframes)
+            if nframes < 16:
+                self.l1_cache[commandString] = str(hex(nframes))[2:].upper()
+            else: #for OBDLink STPX command
+                self.l1_cache[commandString] = str(nframes)
         
         if len (result) / 2 >= nbytes and noerrors:
             # split by bytes and return
@@ -1967,11 +1958,6 @@ class ELM:
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
         self.check_answer (self.cmd ("at cra " + RXa))
-
-        
-        self.check_answer (self.cmd ("at sh 35C"))
-        self.send_raw ("FA 40 00 00 00 20 60 04")
-        self.check_answer (self.cmd ("at sh " + TXa))
 
         self.check_adapter ()
     

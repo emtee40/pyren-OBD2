@@ -23,7 +23,7 @@ def get_state( st, mn, se, elm, calc, dataids = {} ):
   else:
     st.value = str(tmp_val).encode("utf-8")
 
-  csv_val = unicode(st.value) if mod_globals.opt_csv_human else tmp_val
+  csv_val = unicode(st.value)
   if mod_globals.os=='android':
     st.value = " "*(8-len(st.value)/2) + st.value
     return "%-6s %-41s %-16s"%(st.codeMR,st.label,st.value), st.helps, csv_val
