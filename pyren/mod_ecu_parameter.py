@@ -31,9 +31,10 @@ def get_parameter( pr, mn, se, elm, calc, dataids = {} ):
     comp = comp.replace(m, val) 
     
   pr.value = calc.calculate(comp)
-  csv_data = unicode(pr.value) if mod_globals.opt_csv_human else pr.value
+  
   if '.' in str(pr.value):
     pr.value = "%10.2f"%float(pr.value)
+  csv_data = unicode(pr.value)
     
   tmpmin = str(pr.min)
   tmpmax = str(pr.max)

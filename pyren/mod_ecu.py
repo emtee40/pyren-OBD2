@@ -24,6 +24,7 @@ import mod_db_manager
 
 from xml.dom.minidom        import parse
 from datetime               import datetime
+from collections            import OrderedDict
 from mod_utils              import show_doc
 import xml.dom.minidom
 #import xml.etree.ElementTree as et
@@ -397,11 +398,10 @@ class ECU:
       nparams = 0
       for dr in datarefs:
         if dr.type=='State':
-          csvline += ";" + self.States[dr.name].codeMR + (":" + self.States[dr.name].label  if mod_globals.opt_csv_human else "")
+          csvline += ";" + self.States[dr.name].codeMR + ":" + self.States[dr.name].label
           nparams += 1
         if dr.type=='Parameter':
-          csvline += (";" + self.Parameters[dr.name].codeMR + (":" +self.Parameters[dr.name].label if mod_globals.opt_csv_human else "") + 
-            " [" + self.Parameters[dr.name].unit + "]")
+          csvline += (";" + self.Parameters[dr.name].codeMR + ":" +self.Parameters[dr.name].label + " [" + self.Parameters[dr.name].unit + "]")
           nparams += 1
       if mod_globals.opt_usrkey: csvline += ";User events"
       csvline = pyren_encode(csvline)
@@ -432,74 +432,96 @@ class ECU:
     tb = time.time()   #time of begining 
 
     if len(datarefs)==0 and 'DE' not in path: return
+    self.elm.clear_cache()
 
+    #csv_only mode workflow in performance mode
+    #1. Read all parameters from the current screen using defalut mode  
+    #2. Get all dataIds from the 22 service requests and create a list from them according to a module performance level
+    #3. Collect all 21 service requests and push them into requests list
+    #4. Create a complex requests from the all dataIds list and push them into requests list
+    #5. Send reqests from the requests list and save the responses in a responseHistory list
+    #6. On exit generate csv log file from the responseHistory
     
-    if mod_globals.opt_csv and mod_globals.opt_csv_only:
+    if mod_globals.opt_csv_only:
       print "Data is sending directly to csv-file"
       print ""
       print "Press any key to exit"
 
     page = 0
+
+    displayedDataIds = [] #Current screen dataIds list for csv_only mode
+    responseHistory = OrderedDict()
+    requests = OrderedDict() #list of requests to send in csv_only mode
     
     while(True):
       
       strlst = []
+      datarefsRequestTime = int(round(time.time() * 1000))
       
-      if mod_globals.opt_csv and csvf!=0:
+      if mod_globals.opt_csv_human and csvf!=0:
         csvline = csvline + "\n"
         #csvline = csvline.replace('.',',')
         #csvline = csvline.replace(',','.')
         csvline = csvline.replace(';','\t')
-        csvf.write(pyren_decode(csvline).encode('utf8') if mod_globals.opt_csv_human else csvline)
+        csvf.write(pyren_decode(csvline).encode('utf8'))
         #if mod_globals.os == 'nt' or mod_globals.os == 'android':
         #  csvf.write(pyren_decode(csvline).encode('cp1251')  if mod_globals.opt_csv_human else csvline)
         #else:
         #  csvf.write(pyren_decode(csvline).encode('utf8')  if mod_globals.opt_csv_human else csvline)
         csvf.flush() 
         csvline = datetime.now().strftime("%H:%M:%S.%f")
-      
+
+      #Collect all the requests from the current screen
+      if mod_globals.opt_perform and self.elm.performanceModeLevel > 1 and mod_globals.opt_csv_only:
+        if self.elm.rsp_cache:
+          if not requests:
+            requests = self.generateRequestsList()
+
       self.elm.clear_cache()
-
-      for dr in datarefs:
-        datastr = dr.name
-        help    = dr.type
-        if dr.type=='State':
-          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
-            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
-          else:
-            datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
-        if dr.type=='Parameter':
-          if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
-            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
-          else:
-            datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
-        if dr.type=='Identification':
-          datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
-        if dr.type=='Command':
-          datastr = dr.name + " [Command] " + self.Commands[dr.name].label
-        if dr.type=="Text":
+      if not (mod_globals.opt_csv_only and requests):
+        for dr in datarefs:
           datastr = dr.name
-          help = ""
-        if mod_globals.opt_csv and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
-          csvline += ";" + (pyren_encode(csvd) if mod_globals.opt_csv_human else str(csvd))
+          help    = dr.type
+          if dr.type=='State':
+            if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+              datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+            else:
+              datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if dr.type=='Parameter':
+            if self.DataIds and "DTC" in path and dr in self.Defaults[mod_globals.ext_cur_DTC[:4]].memDatarefs:
+              datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc, self.DataIds )
+            else:
+              datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+          if dr.type=='Identification':
+            datastr, help, csvd = get_identification( self.Identifications[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )       
+          if dr.type=='Command':
+            datastr = dr.name + " [Command] " + self.Commands[dr.name].label
+          if dr.type=="Text":
+            datastr = dr.name
+            help = ""
+          if mod_globals.opt_csv_human and csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
+            csvline += ";" + pyren_encode(csvd)
 
-        if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
-          strlst.append(datastr)
-          if mod_globals.opt_verbose and len(help)>0:
-            tmp_str = ''
-            for s in help:
-              #s = s.replace('\n','\n\t')
-              s = s.replace('\r','\n')
-              s = s.replace('&gt;','>')           
-              s = s.replace('&le;','<')           
-              tmp_str = tmp_str + s + '\n\n'
-            W = 50
-            for line in tmp_str.split('\n'):
-              i = 0
-              while i*W<len(line):
-                strlst.append('\t'+line[i*W:(i+1)*W])
-                i=i+1
-            strlst.append('')
+          if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
+            strlst.append(datastr)
+            if mod_globals.opt_verbose and len(help)>0:
+              tmp_str = ''
+              for s in help:
+                #s = s.replace('\n','\n\t')
+                s = s.replace('\r','\n')
+                s = s.replace('&gt;','>')           
+                s = s.replace('&le;','<')           
+                tmp_str = tmp_str + s + '\n\n'
+              W = 50
+              for line in tmp_str.split('\n'):
+                i = 0
+                while i*W<len(line):
+                  strlst.append('\t'+line[i*W:(i+1)*W])
+                  i=i+1
+              strlst.append('')
+      else: #Send requests, do not calculate data
+        for req in requests:
+          self.elm.request(req)
 
       if not (mod_globals.opt_csv and mod_globals.opt_csv_only):
         newScreen = initScreen
@@ -535,8 +557,13 @@ class ECU:
           time.sleep(tb + self.minimumrefreshrate - tc)
         tb = tc
       
-      if mod_globals.opt_perform:
-        self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache.keys(), self.DataIds)
+      if mod_globals.opt_csv_only:
+        responseHistory[datarefsRequestTime] = self.elm.rsp_cache #Collect data to generate a file
+
+      if mod_globals.opt_perform and self.elm.performanceModeLevel > 1:
+        self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache, self.DataIds)
+        if self.elm.currentScreenDataIds: #DataIds list is generated only at first data read pass in csv_only mode
+          displayedDataIds = self.elm.currentScreenDataIds #We save it for file generating function
 
       if kb.kbhit():
         c = kb.getch()
@@ -552,8 +579,11 @@ class ECU:
               continue
             kb.set_normal_term()
             if mod_globals.opt_csv and csvf!=0:
-              csvf.close()
-            self.saveFavList()
+              self.saveFavList()
+              if mod_globals.opt_csv_human:
+                csvf.close()
+                return
+              self.createFile(responseHistory, displayedDataIds, csvline, csvf, datarefs)
             return
         else:
           n = ord(c)-ord('0')
@@ -579,10 +609,58 @@ class ECU:
             continue
           kb.set_normal_term()
           if mod_globals.opt_csv and csvf!=0:
-            csvf.close()
+            if mod_globals.opt_csv_human:
+              csvf.close()
+              return
+            self.createFile(responseHistory, displayedDataIds, csvline, csvf, datarefs)
           if "DTC" in path:
             mod_globals.ext_cur_DTC = "000000"
           return
+  
+  def generateRequestsList(self):
+    requests = OrderedDict()
+
+    currentScreenDataIdsLength = len(self.elm.currentScreenDataIds)
+    for reqDidsIndex in range(currentScreenDataIdsLength): #Create complex requests from all 22 requests
+      firstRequest = '22' + self.elm.currentScreenDataIds[0][0].id
+      complexRequest, sentDataIdentifires = prepareComplexRequest(firstRequest, self.elm.currentScreenDataIds)
+      requests[complexRequest] = complexRequest
+    for req in self.elm.rsp_cache.keys(): #Get all the 21 requests
+      if req.startswith('21'):
+        requests[req] = req
+    
+    return requests
+
+  def createFile(self, responseHistory, displayedDataIds, csvline, csvf, datarefs):
+    clearScreen()
+    print 'Generating a file. Please wait...'
+    
+    for reqTime, reqCache in responseHistory.iteritems():
+      for req, rsp in reqCache.iteritems():
+        if req.startswith('22') and len(req) > 6:
+          for reqDids in displayedDataIds:
+            if reqDids[0].id == req[2:6]:
+              parseComplexResponse(self.elm, '62', rsp.replace(' ', ''), reqDids)
+        else:
+          self.elm.rsp_cache[req] = rsp
+
+      csvline = csvline + "\n"
+      csvline = csvline.replace(';','\t')
+      csvf.write(pyren_decode(csvline).encode('utf8'))
+      csvf.flush()
+      csvline = datetime.fromtimestamp(reqTime/1000.0).strftime("%H:%M:%S.%f")[:-3]
+
+      for dr in datarefs:
+        datastr = dr.name
+        help    = dr.type
+        if dr.type=='State':
+          datastr, help, csvd = get_state( self.States[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+        if dr.type=='Parameter':
+          datastr, help, csvd = get_parameter( self.Parameters[dr.name], self.Mnemonics, self.Services, self.elm, self.calc )
+        if csvf!=0 and (dr.type=='State' or dr.type=='Parameter'):
+          csvline += ";" + pyren_encode(csvd)
+    
+    csvf.close()
 
   def add_favourite(self):
     H = 25
@@ -1044,13 +1122,14 @@ class ECU:
     if self.elm.performanceModeLevel == 1:
       return dataIdsList
     
-    for key in cache:
-      if key.startswith('22'):
-        if key[2:] in dataids.keys():
-          dataIdsList.append(dataids[key[2:]])
+    for req in cache:
+      if req.startswith('22'):
+        if req[2:] in dataids.keys():
+          if req not in self.elm.notSupportedCommands:
+            dataIdsList.append(dataids[req[2:]])
 
     chunk_size = self.elm.performanceModeLevel
-    if dataIdsList: 
+    if dataIdsList:
       # split dataIdsList into chunks based on the performace level
       return [dataIdsList[offset:offset+chunk_size] for offset in range(0, len(dataIdsList), chunk_size)]
     

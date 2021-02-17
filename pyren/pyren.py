@@ -219,6 +219,7 @@ def optParser():
     mod_globals.opt_scan      = options.scan
     mod_globals.opt_csv       = options.csv
     mod_globals.opt_csv_only  = options.csv_only
+    if mod_globals.opt_csv  : mod_globals.opt_csv_human = True
     if mod_globals.opt_csv_only  : mod_globals.opt_csv = True
     mod_globals.opt_csv_human = options.csv_human
     if mod_globals.opt_csv_human : mod_globals.opt_csv = True

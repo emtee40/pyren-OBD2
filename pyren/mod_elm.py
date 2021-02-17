@@ -1223,15 +1223,12 @@ class ELM:
             # add response frames number to each frame to increase polling
             if mod_globals.opt_obdlink and mod_globals.opt_perform:
                 if commandString[:2] in AllowedList and isCommandInCache:
+                    for index in range(len(raw_command) - 1):
+                        raw_command[index] = raw_command[index] + '1'
                     if int('0x' + self.l1_cache[commandString], 16) < 16:
-                        for index in range(len(raw_command) - 1):
-                            raw_command[index] = raw_command[index] + '1'
                         raw_command[-1] = raw_command[-1] + self.l1_cache[commandString]
                     else:
-                        readyFrame = ''
-                        for f in raw_command:
-                            readyFrame += f
-                        raw_command =  ["STPX D:" + readyFrame + ",R:" + self.l1_cache[commandString]]
+                        raw_command[-1] =  "STPX D:" +  raw_command[-1] + ",R:" + self.l1_cache[commandString]
         
         responses = []
         
