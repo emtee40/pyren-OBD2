@@ -9,6 +9,13 @@ import shutil
 from subprocess import call
 import zipfile
 
+posix = False
+if os.name == 'posix':
+  posix = True
+  print "Please install 'wine' package first to be able to use a i12comp.exe"
+  print "'sudo apt install wine'"
+  print
+
 '''Check files'''
 if not os.path.exists('./i12comp.exe') or not os.path.exists('./data2.cab') or not os.path.exists('./data1.hdr'):
 
@@ -31,15 +38,25 @@ if not os.path.exists('./i12comp.exe') or not os.path.exists('./data2.cab') or n
  
 ''' call extract tool  '''
 print "Unpacking files. It may take some minutes"
-call('i12comp.exe x -o -d -f data2.cab DiagOnCa*'.split(' '))  
-call('i12comp.exe x -o -d -f data2.cab *.xml'.split(' '))  
-call('i12comp.exe x -o -d -f data2.cab *.bqm'.split(' '))  
-call('i12comp.exe x -o -d -f data2.cab *.dat'.split(' '))  
-call('i12comp.exe x -o -d -f data2.cab *.zip'.split(' '))  
+absolutePath = sys.argv[0].split("\\")[:-1]
+if not absolutePath:
+  absolutePath = sys.argv[0].split("/")[:-1]
+  
+clipImageDir =  "/".join(absolutePath) + '/'
+if len(clipImageDir) == 1:
+  clipImageDir = '.' + clipImageDir
 
+filesToExtract = ['DiagOnCa*', '*.xml', '*.bqm', '*.dat', '*.zip']
+  
+if posix:
+  for f in filesToExtract:
+    call(('wine ' + clipImageDir + 'i12comp.exe x -o -d -f ' + clipImageDir +'data2.cab ' + f).split(' '))
+else:
+  for f in filesToExtract:
+    call((clipImageDir + 'i12comp.exe x -o -d -f ' + clipImageDir +'data2.cab ' + f).split(' ')) 
 
-for root, dirs, files in os.walk("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]\CLIP\Data\GenAppli"):
-  targ = root.replace("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]\CLIP\Data\GenAppli",".")
+for root, dirs, files in os.walk("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]/CLIP/Data/GenAppli"):
+  targ = root.replace("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]/CLIP/Data/GenAppli", clipImageDir)
   if   targ[-3:-1]=='__': targ=targ[:-3]
   elif targ[-4:-2]=='__': targ=targ[:-4]
 
@@ -47,22 +64,22 @@ for root, dirs, files in os.walk("[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETD
     os.makedirs(targ)  
 
   for fil in files:
-    src = root+'\\'+fil
-    dst = targ+'\\'+fil[:-4]+fil[-4:].lower()
+    src = root+'/'+fil
+    dst = targ+'/'+fil[:-4]+fil[-4:].lower()
     shutil.copyfile(src,dst)
     print dst
 
 for root, dirs, files in os.walk("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1"):
-  targ = root.replace("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1",".")
+  targ = root.replace("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1", clipImageDir)
 
   for fil in files:
-    src = root+'\\'+fil
-    dst = targ+'\\'+fil[:-4]+fil[-4:].lower()
+    src = root+'/'+fil
+    dst = targ+'/'+fil[:-4]+fil[-4:].lower()
     shutil.copyfile(src,dst)
     print dst
 
 for root, dirs, files in os.walk("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]"):
-  targ = root.replace("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]",".\BVMEXTRACTION")
+  targ = root.replace("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]","./BVMEXTRACTION")
   print targ
   if   targ[-3:-1]=='__': targ=targ[:-3]
   elif targ[-4:-2]=='__': targ=targ[:-4]
@@ -71,29 +88,42 @@ for root, dirs, files in os.walk("[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]"):
     os.makedirs(targ)  
 
   for fil in files:
-    src = root+'\\'+fil
-    dst = targ+'\\'+fil[:-4]+fil[-4:].lower()
+    src = root+'/'+fil
+    dst = targ+'/'+fil[:-4]+fil[-4:].lower()
     shutil.copyfile(src,dst)
     print dst
 
 print "Extracting BVM"
-zipfile.ZipFile(".\BvmConfig.zip").extractall('.\\')
-shutil.move(".\BVM_CONFIG", ".\BVMEXTRACTION")
+zipfile.ZipFile(clipImageDir + "Archives/BvmConfig.zip").extractall(clipImageDir)
+if os.path.exists(clipImageDir + 'BVMEXTRACTION'):
+  if posix:
+    os.system('rm -r {}BVMEXTRACTION'.format(clipImageDir))
+  else:
+    os.system('rmdir "{}BVMEXTRACTION" /S /Q'.format(clipImageDir))
+shutil.move(clipImageDir + "BVM_CONFIG", clipImageDir + "BVMEXTRACTION")
 
+dirsToDelete = [
+  "[Applicatif BORNEO_CLIP_RSM]NS_NSR_PL_1___[TARGETDIR]",
+  "[Applicatif BORNEO_CLIP_RSM]NS_NSR_PL_1___[TARGETDIR]",
+  "[Applicatif BORNEO_CLIP_X91]NS_NSR_PL_2___[WINDIR]__1",
+  "[Applicatif BORNEO_CLIP]NS_NSR_NPL_544___[TARGETDIR]",
+  "[Applicatif BORNEO_CLIP_X91]NS_NSR_PL_1___[TARGETDIR]",
+  "[CONFIG_AUTO_FCT_X91]NS_NSR_NPL_544___[TARGETDIR]",
+  "[DocDiag_CLIP_X91]NS_NSR_PL_1___[TARGETDIR]__1",
+  "[Update Agent]NS_NSR_PL_1___[TARGETDIR]",
+  "[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]",
+  "[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]",
+  "[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1",
+  "BL"
+]
 
 print "Deliting unused files"
-os.system('rmdir "./[Applicatif BORNEO_CLIP_RSM]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[Applicatif BORNEO_CLIP_X91]NS_NSR_PL_2___[WINDIR]__1" /S /Q') 
-os.system('rmdir "./[Applicatif BORNEO_CLIP]NS_NSR_NPL_544___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[Applicatif BORNEO_CLIP_X91]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[CONFIG_AUTO_FCT_X91]NS_NSR_NPL_544___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[DocDiag_CLIP_X91]NS_NSR_PL_1___[TARGETDIR]__1" /S /Q') 
-os.system('rmdir "./[Update Agent]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[Applicatif BORNEO_CLIP]NS_NSR_PL_1___[TARGETDIR]" /S /Q') 
-os.system('rmdir "./[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]" /S /Q')
-os.system('rmdir "./[MTC_CLIP_X91]NS_NSR_NPL_1___[TARGETDIR]__1" /S /Q')
-os.system('rmdir "./BL" /S /Q')
-os.system('del "./BvmConfig.zip"')
+if posix:
+  for directory in dirsToDelete:
+    os.system('rm -r "' + directory + '"')
+else: 
+  for directory in dirsToDelete:
+    os.system('rmdir "' + directory + '" /S /Q')
 
 print "Done" 
 
