@@ -772,7 +772,7 @@ def main():
   sys.stdout.flush()
   
   #loading language data
-  lang = optfile("Location/DiagOnCan_"+mod_globals.opt_lang+".bqm",True)
+  lang = optfile("Location/DiagOnCAN_"+mod_globals.opt_lang+".bqm",True)
   mod_globals.language_dict = lang.dict
   print "Done"
   

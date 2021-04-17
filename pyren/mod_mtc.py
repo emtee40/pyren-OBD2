@@ -162,7 +162,7 @@ def acf_getMTC( VIN, preferFile=False ):
       
   for root, dirs, files in os.walk("../BVMEXTRACTION"):
     for dir in dirs:
-      if dir != VIN1: continue
+      if dir.upper() != VIN1: continue
       cdir = os.path.join(root, dir)
       #print cdir
       for root, dirs, files in os.walk(cdir):
@@ -209,13 +209,16 @@ def acf_getMTC( VIN, preferFile=False ):
     if l.startswith(vindata.split(';')[1]):
       mtcdata = l
 
-  rz = open(vindir+'REF.dat','r')
-  reflist = rz.read().split('\n')
-  rz.close()
-  for l in reflist:
-    if l.startswith(vindata.split(';')[2]):
-      refdata = l
-  
+  try:
+    rz = open(vindir+'REF.dat','r')
+    reflist = rz.read().split('\n')
+    rz.close()
+    for l in reflist:
+      if l.startswith(vindata.split(';')[2]):
+        refdata = l
+  except:
+    print "\n\nREF.dat is absent!!!\n\n"
+ 
   mtcdata = mtcdata[len(vindata.split(';')[1])+1:].strip()
   if mtcdata.endswith('.'): 
     mtcdata = mtcdata[:-1]
