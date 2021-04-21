@@ -2064,6 +2064,9 @@ class ELM:
                     paramToSend += dataids.keys()[lvl]
                 cmd = frameLength + '22' + paramToSend + '1'
                 resp = self.send_raw(cmd)
+                for s in resp.split('\n'):
+                    if s.strip().startswith('037F'):
+                        return False 
             else: # send multiframe command for more than 3 dataids
                 # Some modules can return NO DATA if multi frame command is sent after some no activity time
                 # Sending anything before main command usually helps that command to be accepted
@@ -2076,11 +2079,11 @@ class ELM:
                     paramToSend += dataids.keys()[lvl]
                 cmd = '22' + paramToSend
                 resp = self.send_cmd(cmd)
-            if not any(s in resp for s in ['?', 'NR']):
-                self.performanceModeLevel = level
-                return True
-
-        return False
+                if any(s in resp for s in ['?', 'NR']):
+                    return False
+        
+        self.performanceModeLevel = level
+        return True
 
     def getRefreshRate(self):
         refreshRate = 0
