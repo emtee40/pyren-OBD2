@@ -2079,8 +2079,8 @@ class ELM:
                     paramToSend += dataids.keys()[lvl]
                 cmd = '22' + paramToSend
                 resp = self.send_cmd(cmd)
-                if any(s in resp for s in ['?', 'NR']):
-                    return False
+            if any(s in resp for s in ['?', 'NR']):
+                return False
         
         self.performanceModeLevel = level
         return True
