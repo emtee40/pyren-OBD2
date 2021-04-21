@@ -139,7 +139,7 @@ def run( elm, ecu, command, data ):
   State1_ref = ecu.get_ref_st(ScmParam['State1'])  #Engine state
   value7, datastr7 = ecu.get_st(ScmParam['State1'])
   kb = KBHit()
-  while pyren_encode(State1_ref.caracter[str(value7)])!=pyren_encode( mod_globals.language_dict[ScmParam['TOURNANT']] ):
+  while pyren_encode(value7) != pyren_encode( mod_globals.language_dict[ScmParam['TOURNANT']]):
     value7, datastr7 = ecu.get_st(ScmParam['State1'])
     value5, datastr5 = ecu.get_pr(ScmParam['Param6'])
     value6, datastr6 = ecu.get_pr(ScmParam['Param7'])
