@@ -218,7 +218,7 @@ def run( elm, ecu, command, data ):
     #
     #    Check phase
     #
-    etat    = pyren_encode(Phase_state.caracter[str(value8)])
+    etat    = pyren_encode(value8)
     if   etat == get_message('ETAT1'): phase = get_message('Phase1'); pfe = 0  
     elif etat == get_message('ETAT2'): phase = get_message('Phase2'); pfe = 0  
     elif etat == get_message('ETAT3'): phase = get_message('Phase3'); pfe = 0  
@@ -230,7 +230,7 @@ def run( elm, ecu, command, data ):
     #
     #    Check result
     #
-    rescode = pyren_encode(Result_state.caracter[str(value9)])
+    rescode = pyren_encode(value9)
     result  = pyren_encode( mod_globals.language_dict[ScmSet[rescode]])
 
     clearScreen()
