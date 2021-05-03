@@ -536,6 +536,7 @@ class ELM:
     currentScreenDataIds = [] #dataids displayed on current screen
     rsp_cache = OrderedDict()  # cashes responses for current screen
     l1_cache = {}  # save number of frames in responces
+    tmpNotSupportedCommands = {} #temporary list for requests that were positive and became negative for no reason
     notSupportedCommands = {} # save them to not slow down polling
     ecudump = {}  # for demo only. contains responses for all 21xx and 22xxxx requests
     
@@ -1112,8 +1113,12 @@ class ELM:
                     nr = line[6:8]
                 if line.startswith ("NR"):
                     nr = line.split (':')[1]
-                if nr in ['12']: # mark this request as unsupported
-                    self.notSupportedCommands[command] = cmdrsp
+                if nr in ['12']: # mark this request as unsupported only if previous response was also negative
+                    if command in self.tmpNotSupportedCommands.keys():
+                        del self.tmpNotSupportedCommands[command]
+                        self.notSupportedCommands[command] = cmdrsp
+                    else:
+                        self.tmpNotSupportedCommands[command] = cmdrsp
                 if nr in ['21', '23']:  # it is look like the ECU asked us to wait a bit
                     time.sleep (0.5)
                     no_negative_wait_response = False
@@ -1898,6 +1903,7 @@ class ELM:
     def set_can_addr(self, addr, ecu):
         
         self.notSupportedCommands = {}
+        self.tmpNotSupportedCommands = {}
 
         if self.currentprotocol == "can" and self.currentaddress == addr:
             return
@@ -1987,6 +1993,7 @@ class ELM:
     def set_iso_addr(self, addr, ecu):
         
         self.notSupportedCommands = {}
+        self.tmpNotSupportedCommands = {}
 
         if self.currentprotocol == "iso" and self.currentaddress == addr and self.currentsubprotocol == ecu['protocol']:
             return
