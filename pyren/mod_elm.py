@@ -1114,11 +1114,14 @@ class ELM:
                 if line.startswith ("NR"):
                     nr = line.split (':')[1]
                 if nr in ['12']: # mark this request as unsupported only if previous response was also negative
-                    if command in self.tmpNotSupportedCommands.keys():
-                        del self.tmpNotSupportedCommands[command]
+                    if mod_globals.opt_csv_only: # all unsupported commands must be removed immediately in csv_only mode
                         self.notSupportedCommands[command] = cmdrsp
                     else:
-                        self.tmpNotSupportedCommands[command] = cmdrsp
+                        if command in self.tmpNotSupportedCommands.keys():
+                            del self.tmpNotSupportedCommands[command]
+                            self.notSupportedCommands[command] = cmdrsp
+                        else:
+                            self.tmpNotSupportedCommands[command] = cmdrsp
                 if nr in ['21', '23']:  # it is look like the ECU asked us to wait a bit
                     time.sleep (0.5)
                     no_negative_wait_response = False
