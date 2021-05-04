@@ -987,6 +987,22 @@ class ELM:
         if not mod_globals.opt_demo and  req in self.rsp_cache.keys():
             del self.rsp_cache[req]
 
+    def checkIfCommandUnsupported(self, req, res):
+        if "NR" in res:
+            nr = res.split (':')[1]
+            if nr in ['12']:
+                if mod_globals.opt_csv_only: # all unsupported commands must be removed immediately in csv_only mode
+                    self.notSupportedCommands[req] = res
+                else:
+                    if req in self.tmpNotSupportedCommands.keys():
+                        del self.tmpNotSupportedCommands[req]
+                        self.notSupportedCommands[req] = res
+                    else:
+                        self.tmpNotSupportedCommands[req] = res
+        else:
+            if req in self.tmpNotSupportedCommands.keys(): # if previous response was negative and now it is positive
+                del self.tmpNotSupportedCommands[req]  # remove it from negative commands queue, because of false negative
+
     def request(self, req, positive='', cache=True, serviceDelay="0"):
         """ Check if request is saved in L2 cache.
         If not then
@@ -1102,6 +1118,8 @@ class ELM:
             
             self.lastCMDtime = tc = time.time ()
             cmdrsp = self.send_cmd (command)
+            
+            self.checkIfCommandUnsupported(command, cmdrsp) # check if response for this command is NR:12
 
             # if command[0:2] not in AllowedList:
             #  break
@@ -1113,15 +1131,6 @@ class ELM:
                     nr = line[6:8]
                 if line.startswith ("NR"):
                     nr = line.split (':')[1]
-                if nr in ['12']: # mark this request as unsupported only if previous response was also negative
-                    if mod_globals.opt_csv_only: # all unsupported commands must be removed immediately in csv_only mode
-                        self.notSupportedCommands[command] = cmdrsp
-                    else:
-                        if command in self.tmpNotSupportedCommands.keys():
-                            del self.tmpNotSupportedCommands[command]
-                            self.notSupportedCommands[command] = cmdrsp
-                        else:
-                            self.tmpNotSupportedCommands[command] = cmdrsp
                 if nr in ['21', '23']:  # it is look like the ECU asked us to wait a bit
                     time.sleep (0.5)
                     no_negative_wait_response = False
