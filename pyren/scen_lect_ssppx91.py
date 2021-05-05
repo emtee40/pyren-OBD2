@@ -107,7 +107,7 @@ def run( elm, ecu, command, data ):
   codeRed = codeInfo.split('-')[1].strip()
   codeOrange = codeInfo.split('-')[2].strip()
   codeGreen = codeInfo.split('-')[3].strip()
-  oneValveText = get_message_by_id('14964')
+  oneValveText = get_message_by_id('14964', False)
   fourValveText = get_message_by_id('14966', False)
 
   NR10 = get_message('Nack10')
@@ -178,7 +178,7 @@ def run( elm, ecu, command, data ):
   notUpdatedText.append(datastr1)
   notUpdatedText.append('*'*80)
   tyreCodesTable = []
-  if get_message('Text_ET469_ETE') in datastr1:
+  if get_message('Text_ET469_ETE', False) in datastr1:
     summerTyresSet = True
     tyreCodesTable.append("%-50s %-20s"%(tyresLabels[0], summerTyreCodes[0]))
     tyreCodesTable.append("%-50s %-20s"%(tyresLabels[1], summerTyreCodes[1]))
