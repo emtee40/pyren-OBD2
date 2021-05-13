@@ -152,8 +152,7 @@ class ECU:
     self.elm.start_session( self.ecudata['startDiagReq'] )
 
     if mod_globals.os == 'android' or mod_globals.opt_csv:
-      if self.ecudata['pin'].lower()=='can' and self.DataIds:
-        mod_globals.opt_perform = True
+      if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_perform:
         self.elm.checkModulePerformaceLevel(self.DataIds)
 
     print "Done"  

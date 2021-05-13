@@ -11,7 +11,7 @@ def get_state( st, mn, se, elm, calc, dataids = {} ):
   comp = st.computation
   comp = comp.replace("&amp;","&")
   for m in sorted(st.mnemolist, key=len, reverse=True):
-    if dataids:
+    if dataids and mn[m].request.startswith("22"):
       hex_val = get_SnapShotMnemonic(mn[m], se, elm, dataids )
     else:
       hex_val = get_mnemonic( mn[m], se, elm )

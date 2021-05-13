@@ -64,7 +64,7 @@ def get_mnemonic( m, se, elm, raw = False ):
 
 def get_SnapShotMnemonic(m, se, elm, dataids):
   snapshotService = ""
-  byteLength = 3
+  byteLength = 3 #number of chars in one byte string (two chars with one whitespace)
   dataIdByteLength = 2
 
   for sid in se:
@@ -81,24 +81,35 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
   numberOfIdentifiers = int("0x" + resp[7*byteLength:8*byteLength-1],16)
   resp = resp[8*byteLength:]
 
-  didDict = {}
+  didDict = {} #dataIds with their corresponding data
+  numberOfPossibleDataId = 0 #number of unknown dataIds
   posInResp = 0
-  dataIdLength = dataIdByteLength * byteLength
+  dataIdLength = dataIdByteLength * byteLength 
   
-  for x in range(numberOfIdentifiers):
+  for idNum in range(numberOfIdentifiers):
+    #break if unknown dataids number plus current number dataid number is larger than overall number of dataids in the response
+    if (idNum + numberOfPossibleDataId > numberOfIdentifiers):
+      break
+
     dataId = resp[posInResp:posInResp + dataIdLength].replace(" ", "")
     posInResp += dataIdLength
-    if dataId not in dataids.keys():
+    
+    if dataId not in dataids.keys(): #unknown dataId in the snapShot response
       bytePos = 1
       restOfResp = resp[posInResp:]
 
-      while True:
+      while True: #try to find a next dataId that is defined in the module file
         posInRestResp = bytePos*byteLength
+        
+        #using '2' as possible start of dataId is not the best approach, to fix in the future 
         if len(restOfResp) > posInRestResp + dataIdLength and restOfResp[posInRestResp] == '2':
+          numberOfPossibleDataId = numberOfPossibleDataId + 1
           possibleDataId = restOfResp[posInRestResp:posInRestResp + dataIdLength].replace(" ", "")
           if possibleDataId in dataids.keys():
             posInResp += posInRestResp
             break
+          else:
+            bytePos += 1  
         else:
           bytePos += 1
       continue
@@ -108,8 +119,8 @@ def get_SnapShotMnemonic(m, se, elm, dataids):
     posInResp += didDataLength*byteLength
     didDict[dataId] = didData
 
-  startByte = ""
-  startBit = ""
+  startByte = "1"
+  startBit = "0"
   dataId = ""
   for did in dataids.keys():
     for mn in dataids[did].mnemolocations.keys():

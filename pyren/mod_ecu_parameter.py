@@ -15,7 +15,7 @@ def get_parameter( pr, mn, se, elm, calc, dataids = {} ):
 
   for m in sorted(pr.mnemolist, key=len, reverse=True):
     
-    if dataids:
+    if dataids and mn[m].request.startswith("22"):
       val = get_SnapShotMnemonic(mn[m], se, elm, dataids )
     else:
       val = get_mnemonic( mn[m], se, elm )
