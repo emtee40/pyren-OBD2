@@ -1398,7 +1398,6 @@ class ELM:
             else:
                frsp = self.send_raw (raw_command[Fc] + '1')  # we'll get only 1 frame: fc, ff or sf
 
-            frsp = self.send_raw(raw_command[Fc])
             Fc = Fc + 1
 
             # analyse response
