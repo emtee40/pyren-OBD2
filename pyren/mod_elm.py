@@ -1198,7 +1198,10 @@ class ELM:
         if self.ATCFC0:
             return self.send_can_cfc0 (command)
         else:
-            rsp = self.send_can (command)
+            if mod_globals.opt_obdlink:
+                rsp = self.send_can_cfc(command)
+            else:
+                rsp = self.send_can (command)
             if self.error_frame > 0 or self.error_bufferfull > 0:  # then fallback to cfc0
                 self.ATCFC0 = True
                 self.cmd ("at cfc0")
@@ -1343,6 +1346,7 @@ class ELM:
     def send_can_cfc(self, command):
 
         command = command.strip().replace(' ', '').upper()
+        uncutCommand = command
 
         if len(command) == 0:
             return
@@ -1374,36 +1378,51 @@ class ELM:
         ST = 0  # Frame Interval
         Fc = 0  # Current frame
         Fn = len(raw_command)  # Number of frames
+        frsp = ''
 
-        if Fn > 1:
-            self.send_raw('at cfc1')
+        # if Fn > 1:
+        #     self.send_raw('at cfc1')
             # print 'cfc1', raw_command
 
-        while Fc < Fn:
+        if raw_command[Fc].startswith('0'):
+            if uncutCommand in self.l1_cache.keys():
+                frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + self.l1_cache[uncutCommand])  # we'll get only 1 frame: fc, ff or sf
+            else:
+                frsp = self.send_raw ('STPX D:' + raw_command[Fc])
+        
+        if raw_command[Fc].startswith('1'):
+            frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + '1')
 
-            if Fn > 1 and (Fn - Fc) == 1:
-                self.send_raw('at cfc0')
-                # print 'cfc0:', Fn, Fc
+        while Fc < Fn:
+            # if Fn > 1 and (Fn - Fc) == 1:
+            #     self.send_raw('at cfc0')
+            #     # print 'cfc0:', Fn, Fc
 
             # enable responses
-            frsp = ''
-            if not self.ATR1:
-                frsp = self.send_raw('at r1')
-                self.ATR1 = True
+            
+            # if not self.ATR1:
+            #     frsp = self.send_raw('at r1')
+            #     self.ATR1 = True
 
             tb = time.time()  # time of sending (ff)
 
-            if len (raw_command[Fc]) == 16:
-               frsp = self.send_raw (raw_command[Fc])
-            else:
-               frsp = self.send_raw (raw_command[Fc] + '1')  # we'll get only 1 frame: fc, ff or sf
+            # if len (raw_command[Fc]) == 16:
+            #    frsp = self.send_raw (raw_command[Fc])
+            # else:
+            #    frsp = self.send_raw (raw_command[Fc] + '1')  # we'll get only 1 frame: fc, ff or sf
 
-            Fc = Fc + 1
+            # if raw_command[Fc].startswith('0'):
+            #    frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ', R:' + l1_cache[command])  # we'll get only 1 frame: fc, ff or sf
+            # if raw_command[Fc].startswith('1'):
+            #    frsp = self.send_raw (raw_command[Fc] + '1')
+
+            if raw_command[Fc][:1] != '2':
+                Fc = Fc + 1
 
             # analyse response
             for s in frsp.split('\n'):
 
-                if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
+                if s.strip()[:4] == "STPX":  # echo cancelation
                     continue
 
                 s = s.strip().replace(' ', '')
@@ -1432,34 +1451,52 @@ class ELM:
                         continue
 
             # sending consequent frames according to FlowControl
-
-            cf = min({BS - 1, (Fn - Fc) - 1})  # number of frames to send without response
+            frames_left = (Fn - Fc)
+            cf = min({BS, frames_left})  # number of frames to send without response
 
             # disable responses
-            if cf > 0:
-                if self.ATR1:
-                    frsp = self.send_raw('at r0')
-                    self.ATR1 = False
+            # if cf > 0:
+            #     if self.ATR1:
+            #         frsp = self.send_raw('at r0')
+            #         self.ATR1 = False
 
             while cf > 0:
-                cf = cf - 1
-
+                burstSizeCommand = ''
+                for f in range(0, cf):
+                    burstSizeCommand += raw_command[Fc + f]
+                
+                if burstSizeCommand.endswith(raw_command[-1]):
+                    if uncutCommand in self.l1_cache.keys():
+                        burstSizeCommandRequest = 'STPX D:' + burstSizeCommand + ",R:"  + self.l1_cache[uncutCommand]
+                    else:
+                        burstSizeCommandRequest = 'STPX D:' + burstSizeCommand
+                else:
+                    burstSizeCommandRequest = 'STPX D:' + burstSizeCommand + ",R:1"
+                    
                 # Ensure time gap between frames according to FlowControl
                 tc = time.time()  # current time
                 if (tc - tb) * 1000. < ST:
                     time.sleep(ST / 1000. - (tc - tb))
                 tb = tc
 
-                frsp = self.send_raw(raw_command[Fc])
-                Fc = Fc + 1
+                frsp = self.send_raw(burstSizeCommandRequest)
+                Fc = Fc + cf
+                cf = 0
+                if burstSizeCommand.endswith(raw_command[-1]):
+                    for s in frsp.split('\n'):
+                        if s.strip()[:4] == "STPX":  # echo cancelation
+                            continue
+                        else:
+                            responses.append(s)
+                            continue
 
         # now we are going to receive data. st or ff should be in responses[0]
-        if len(responses) != 1:
+        # if len(responses) != 1:
             # print "Something went wrong. len responces != 1"
-            return "WRONG RESPONSE"
+            # return "WRONG RESPONSE"
 
         result = ""
-        noErrors = True
+        noerrors = True
         cFrame = 0  # frame counter
         nBytes = 0  # number bytes in response
         nFrames = 0  # numer frames in response
@@ -1481,15 +1518,12 @@ class ELM:
             # while len (result) / 2 < nBytes:
             while cFrame < nFrames:
                 # now we should send ff
-                sBS = hex(min({nFrames - cFrame, MaxBurst}))[2:]
-                frsp = self.send_raw('300' + sBS + '00' + sBS)
+                # sBS = hex(min({nFrames - cFrame, MaxBurst}))[2:]
+                # frsp = self.send_raw('300' + sBS + '00' + sBS)
 
                 # analyse response
                 nodataflag = False
-                for s in frsp.split('\n'):
-
-                    if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
-                        continue
+                for s in responses:
 
                     if 'NO DATA' in s:
                         nodataflag = True
@@ -1500,12 +1534,12 @@ class ELM:
                         continue
 
                     if all(c in string.hexdigits for c in s):  # some data
-                        responses.append(s)
+                        # responses.append(s)
                         if s[:1] == '2':  # consecutive frames (cf)
                             tmp_fn = int(s[1:2], 16)
                             if tmp_fn != (cFrame % 16):  # wrong response (frame lost)
                                 self.error_frame += 1
-                                noErrors = False
+                                noerrors = False
                                 continue
                             cFrame += 1
                             result += s[2:16]
@@ -1516,9 +1550,16 @@ class ELM:
 
         else:  # wrong response (first frame omitted)
             self.error_frame += 1
-            noErrors = False
+            noerrors = False
+        
+        # Check for negative
+        if result[:2] == '7F': noerrors = False
 
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        # populate L1 cache
+        if noerrors and uncutCommand[:2] in AllowedList:
+            self.l1_cache[uncutCommand] = str(nFrames)
+
+        if noerrors and len(result) / 2 >= nBytes:
             # split by bytes and return
             result = ' '.join(a + b for a, b in zip(result[::2], result[1::2]))
             return result
