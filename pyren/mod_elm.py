@@ -11,6 +11,8 @@ import time
 import string
 import threading
 import socket
+import ctypes
+from math import ceil
 from datetime import datetime
 from collections import OrderedDict
 
@@ -1476,7 +1478,9 @@ class ELM:
                 # Ensure time gap between frames according to FlowControl
                 tc = time.time()  # current time
                 if (tc - tb) * 1000. < ST:
-                    time.sleep(ST / 1000. - (tc - tb))
+                    target_time = time.clock() + (ST / 1000. - (tc - tb))
+                    while time.clock() < target_time:
+                        pass
                 tb = tc
 
                 frsp = self.send_raw(burstSizeCommandRequest)
@@ -2108,7 +2112,7 @@ class ELM:
                 break
 
         if self.performanceModeLevel == 3 and mod_globals.opt_obdlink:
-            for level in reversed(range(4,26)): #26 - 1 = 25  parameters per page
+            for level in reversed(range(4,100)): #26 - 1 = 25  parameters per page
                 isLevelAccepted = self.checkPerformaceLevel(level, dataids)
                 if isLevelAccepted: 
                     return
