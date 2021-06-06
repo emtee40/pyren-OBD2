@@ -1503,6 +1503,9 @@ class ELM:
         nBytes = 0  # number bytes in response
         nFrames = 0  # numer frames in response
 
+        if len (responses) == 0:  # no data in response
+            return ""
+
         if responses[0][:1] == '0':  # single frame (sf)
             nBytes = int(responses[0][1:2], 16)
             nFrames = 1
