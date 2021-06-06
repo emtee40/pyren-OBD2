@@ -11,8 +11,6 @@ import time
 import string
 import threading
 import socket
-import ctypes
-from math import ceil
 from datetime import datetime
 from collections import OrderedDict
 
