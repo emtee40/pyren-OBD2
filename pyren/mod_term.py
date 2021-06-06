@@ -793,7 +793,7 @@ def main():
     optParser()
 
     # disable auto flow control
-    mod_globals.opt_cfc0 = True
+    mod_globals.opt_cfc0 = False
     
     print 'Opening ELM'
     elm = mod_elm.ELM( mod_globals.opt_port, mod_globals.opt_speed, True )

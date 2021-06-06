@@ -23,7 +23,7 @@ init_can {
   at l0
   at al
   at caf0
-  at cfc0
+  at cfc1
   at sh $txa
   at cra $rxa
   at fc sh $txa
@@ -47,7 +47,8 @@ can500 {
   init_can
   at st ff
   at at 0
-  at sp 6
+  STP 53
+  STPBR 500000
   at at 1
   $prompt = CAN500
 }
