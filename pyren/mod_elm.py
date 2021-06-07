@@ -1386,12 +1386,12 @@ class ELM:
 
         if raw_command[Fc].startswith('0'):
             if uncutCommand in self.l1_cache.keys():
-                frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + self.l1_cache[uncutCommand])  # we'll get only 1 frame: fc, ff or sf
+                frsp = self.send_raw (raw_command[Fc] + self.l1_cache[uncutCommand])  # we'll get only 1 frame: fc, ff or sf
             else:
-                frsp = self.send_raw ('STPX D:' + raw_command[Fc])
+                frsp = self.send_raw (raw_command[Fc])
         
         if raw_command[Fc].startswith('1'):
-            frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + '1')
+            frsp = self.send_raw (raw_command[Fc] + '1')
 
         while Fc < Fn:
             # if Fn > 1 and (Fn - Fc) == 1:
@@ -1422,7 +1422,7 @@ class ELM:
             # analyse response
             for s in frsp.split('\n'):
 
-                if s.strip()[:4] == "STPX":  # echo cancelation
+                if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
                     continue
 
                 s = s.strip().replace(' ', '')
@@ -1467,11 +1467,11 @@ class ELM:
                 
                 if burstSizeCommand.endswith(raw_command[-1]):
                     if uncutCommand in self.l1_cache.keys():
-                        burstSizeCommandRequest = 'STPX D:' + burstSizeCommand + ",R:"  + self.l1_cache[uncutCommand]
+                        burstSizeCommandRequest = burstSizeCommand + self.l1_cache[uncutCommand]
                     else:
-                        burstSizeCommandRequest = 'STPX D:' + burstSizeCommand
+                        burstSizeCommandRequest = burstSizeCommand
                 else:
-                    burstSizeCommandRequest = 'STPX D:' + burstSizeCommand + ",R:1"
+                    burstSizeCommandRequest = burstSizeCommand + "1"
                     
                 # Ensure time gap between frames according to FlowControl
                 tc = time.time()  # current time
@@ -1486,7 +1486,7 @@ class ELM:
                 cf = 0
                 if burstSizeCommand.endswith(raw_command[-1]):
                     for s in frsp.split('\n'):
-                        if s.strip()[:4] == "STPX":  # echo cancelation
+                        if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
                             continue
                         else:
                             responses.append(s)

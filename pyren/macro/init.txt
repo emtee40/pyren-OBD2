@@ -49,6 +49,7 @@ can500 {
   at at 0
   STP 53
   STPBR 500000
+  STI
   at at 1
   $prompt = CAN500
 }
