@@ -136,7 +136,7 @@ class Port:
     else try to open serial port
     """
     
-    portType = 0  # 0-serial 1-tcp 2-androidBlueTooth
+    portType = 0  # 0-serial 1-tcp/bt 2-androidBlueTooth
     ipaddr = '192.168.0.10'
     tcpprt = 35000
     portName = ""
@@ -160,7 +160,20 @@ class Port:
         
         portName = portName.strip ()
 
-        if re.match (r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$", portName):
+        if re.match (r"^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$", portName):
+            try:
+                self.macaddr = portName
+                self.channel = 1
+                self.portType = 1
+                self.hdr = socket.socket (socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+                self.hdr.settimeout(10)
+                self.hdr.connect ((self.macaddr, self.channel))
+                self.hdr.setblocking (True)
+            except Exception, e:
+                print " \n\nERROR: Can not connect to Bluetooth ELM\n\n", e
+                mod_globals.opt_demo = True
+                sys.exit()
+        elif re.match (r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$", portName):
             try:
                 self.ipaddr, self.tcpprt = portName.split (':')
                 self.tcpprt = int (self.tcpprt)
@@ -217,11 +230,12 @@ class Port:
         '''
         if self.portType != 1: return
 
-        self.hdr.close()
-        self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-        self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.hdr.connect ((self.ipaddr, self.tcpprt))
-        self.hdr.setblocking (True)
+        if not hasattr(self, 'macaddr'):
+          self.hdr.close()
+          self.hdr = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+          self.hdr.setsockopt (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+          self.hdr.connect ((self.ipaddr, self.tcpprt))
+          self.hdr.setblocking (True)
 
         self.write("AT\r")
         self.expect(">",1)
@@ -392,7 +406,7 @@ class Port:
             return
         
         if self.portType == 1:  # wifi is not supported
-            print "ERROR - wifi do not support changing boud rate"
+            print "ERROR - wifi/bluetooth do not support changing boud rate"
             return
         
         # stop any read/write
