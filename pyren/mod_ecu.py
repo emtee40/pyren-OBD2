@@ -577,8 +577,8 @@ class ECU:
               csvline += ";" + pyren_encode(c)
               continue
             kb.set_normal_term()
+            self.saveFavList()
             if mod_globals.opt_csv and csvf!=0:
-              self.saveFavList()
               if mod_globals.opt_csv_human:
                 csvf.close()
                 return
