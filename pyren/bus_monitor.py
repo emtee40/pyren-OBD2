@@ -100,7 +100,7 @@ class DDT_MON():
     else:                                                   #else
       self.decu = DDTECU( None )                               #init class
       self.decu.setELM(self.elm)                               #define ELM for it
-      self.decu.loadXml( mod_globals.ddtroot+'/ecus/'+xmlfile )#loading original data for chosen ECU
+      self.decu.loadXml( 'ecus/'+xmlfile )                     #loading original data for chosen ECU
       self.decu.setELM( None )                                 #clear elm before serialization
       if len(self.decu.ecufname)>0:
         pickle.dump( self.decu, open( decucashfile, "wb" ) )   #and save cache
