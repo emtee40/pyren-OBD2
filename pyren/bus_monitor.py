@@ -7,6 +7,7 @@ import pickle
 import codecs
 import string
 import threading
+import mod_utils
 import mod_ddt_utils
 
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -14,6 +15,7 @@ os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 import pickle
 
 import mod_globals
+import mod_db_manager
 import mod_elm
 
 from mod_elm       import ELM
@@ -412,7 +414,10 @@ def main():
   global show_loc
   
   optParser()
-  
+
+  mod_utils.chkDirTree()
+  mod_db_manager.find_DBs()
+
   if len(candef)==0:
     candef = chooseXml()
   
