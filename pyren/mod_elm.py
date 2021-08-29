@@ -604,9 +604,19 @@ class ELM:
             self.lf.flush()
 
         # check OBDLink
-        elm_rsp = self.cmd("STPR")
+        elm_rsp = self.cmd("STI")
         if elm_rsp and '?' not in elm_rsp:
-            mod_globals.opt_obdlink = True
+            firmware_version = elm_rsp.split(" ")[-1]
+            try:
+                firmware_version = firmware_version.split(".")
+                version_number = int(''.join([re.sub('\D', '', version) for version in firmware_version]))
+                stpx_introduced_in_version_number = 420 #STN1110 got STPX last in version v4.2.0
+                if version_number >= stpx_introduced_in_version_number:
+                    mod_globals.opt_obdlink = True
+            except:
+                raw_input("\nCannot determine OBDLink version.\n" +
+                "OBDLink performance may be decreased.\n" + 
+                "Press any key to continue...\n")
 
             # check STN
             elm_rsp = self.cmd("STP 53")
@@ -1212,7 +1222,13 @@ class ELM:
         if self.ATCFC0:
             return self.send_can_cfc0 (command)
         else:
-            rsp = self.send_can (command)
+            if mod_globals.opt_obdlink:
+                if mod_globals.opt_caf:
+                    rsp = self.send_can_cfc_caf(command)
+                else:
+                    rsp = self.send_can_cfc(command)
+            else:
+                rsp = self.send_can (command)
             if self.error_frame > 0 or self.error_bufferfull > 0:  # then fallback to cfc0
                 self.ATCFC0 = True
                 self.cmd ("at cfc0")
@@ -1222,7 +1238,6 @@ class ELM:
     def send_can(self, command):
         command = command.strip ().replace (' ', '').upper ()
         isCommandInCache = command in self.l1_cache.keys()
-        commandString = command
 
         if len(command) == 0:
             return
@@ -1236,7 +1251,7 @@ class ELM:
         cmd_len = len (command) / 2
         if cmd_len < 8:  # single frame
             # check L1 cache here
-            if isCommandInCache and int('0x' + self.l1_cache[commandString], 16) < 16:
+            if isCommandInCache and int('0x' + self.l1_cache[command], 16) < 16:
                 raw_command.append (("%0.2X" % cmd_len) + command + self.l1_cache[command])
             else:
                 raw_command.append (("%0.2X" % cmd_len) + command)
@@ -1250,17 +1265,7 @@ class ELM:
                 raw_command.append ("2" + ("%X" % frame_number)[-1:] + command[:14])
                 frame_number = frame_number + 1
                 command = command[14:]
-
-            # add response frames number to each frame to increase polling
-            if mod_globals.opt_obdlink and mod_globals.opt_perform:
-                if commandString[:2] in AllowedList and isCommandInCache:
-                    for index in range(len(raw_command) - 1):
-                        raw_command[index] = raw_command[index] + '1'
-                    if int('0x' + self.l1_cache[commandString], 16) < 16:
-                        raw_command[-1] = raw_command[-1] + self.l1_cache[commandString]
-                    else:
-                        raw_command[-1] =  "STPX D:" +  raw_command[-1] + ",R:" + self.l1_cache[commandString]
-        
+         
         responses = []
         
         # send farmes
@@ -1328,11 +1333,8 @@ class ELM:
         if result[:2] == '7F': noerrors = False
         
         # populate L1 cache
-        if noerrors and commandString[:2] in AllowedList and not mod_globals.opt_n1c:
-            if nframes < 16:
-                self.l1_cache[commandString] = str(hex(nframes))[2:].upper()
-            else: #for OBDLink STPX command
-                self.l1_cache[commandString] = str(nframes)
+        if noerrors and command[:2] in AllowedList and not mod_globals.opt_n1c:
+            self.l1_cache[command] = str(hex(nframes))[2:].upper()
         
         if len (result) / 2 >= nbytes and noerrors:
             # split by bytes and return
@@ -1354,9 +1356,72 @@ class ELM:
             else:
                 return "WRONG RESPONSE"
 
+    # Can be used only with OBDLink based ELM, wireless especially.
+    def send_can_cfc_caf(self, command):
+        if len(command) == 0:
+            return
+        if len(command) % 2 != 0:
+            return "ODD ERROR"
+        if not all(c in string.hexdigits for c in command):
+            return "HEX ERROR"
+
+        frsp = self.send_raw('STPX D:' + command + ',R:' + '1')
+
+        responses = []
+
+        for s in frsp.split('\n'):
+            if s.strip()[:4] == "STPX":  # echo cancelation
+                continue
+
+            s = s.strip().replace(' ', '')
+            if len(s) == 0:  # empty string
+                continue
+
+            responses.append(s)
+        
+        result = ""
+        noerrors = True
+
+        if len (responses) == 0:  # no data in response
+            return ""
+
+        nodataflag = False
+        for s in responses:
+
+            if 'NO DATA' in s:
+                nodataflag = True
+                break
+
+            if all(c in string.hexdigits for c in s):  # some data
+                result = s
+
+        # Check for negative
+        if result[:2] == '7F': noerrors = False
+
+        if noerrors:
+            # split by bytes and return
+            result = ' '.join(a + b for a, b in zip(result[::2], result[1::2]))
+            return result
+        else:
+            # check for negative response (repeat the same as in cmd())
+            # debug
+            # print "Size error: ", result
+            if result[:2] == '7F' and result[4:6] in negrsp.keys():
+                if self.vf != 0:
+                    tmstr = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                    self.vf.write(
+                        tmstr + ";" + dnat[self.currentaddress] + ";" + command + ";" + result + ";" + negrsp[
+                            result[4:6]] + "\n")
+                    self.vf.flush()
+                return "NR:" + result[4:6] + ':' + negrsp[result[4:6]]
+            else:
+                return "WRONG RESPONSE"
+    
+    # Can be used only with OBDLink based ELM
     def send_can_cfc(self, command):
 
         command = command.strip().replace(' ', '').upper()
+        init_command = command
 
         if len(command) == 0:
             return
@@ -1388,37 +1453,26 @@ class ELM:
         ST = 0  # Frame Interval
         Fc = 0  # Current frame
         Fn = len(raw_command)  # Number of frames
+        frsp = ''
 
-        if Fn > 1:
-            self.send_raw('at cfc1')
-            # print 'cfc1', raw_command
+        if raw_command[Fc].startswith('0') and init_command in self.l1_cache.keys():
+            frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + self.l1_cache[init_command])
+        elif raw_command[Fc].startswith('1'):
+            frsp = self.send_raw ('STPX D:' + raw_command[Fc] + ',R:' + '1')
+        else:
+            frsp = self.send_raw ('STPX D:' + raw_command[Fc])
+    
 
         while Fc < Fn:
-
-            if Fn > 1 and (Fn - Fc) == 1:
-                self.send_raw('at cfc0')
-                # print 'cfc0:', Fn, Fc
-
-            # enable responses
-            frsp = ''
-            if not self.ATR1:
-                frsp = self.send_raw('at r1')
-                self.ATR1 = True
-
             tb = time.time()  # time of sending (ff)
 
-            if len (raw_command[Fc]) == 16:
-               frsp = self.send_raw (raw_command[Fc])
-            else:
-               frsp = self.send_raw (raw_command[Fc] + '1')  # we'll get only 1 frame: fc, ff or sf
-
-            frsp = self.send_raw(raw_command[Fc])
-            Fc = Fc + 1
+            if raw_command[Fc][:1] != '2':
+                Fc = Fc + 1
 
             # analyse response
             for s in frsp.split('\n'):
 
-                if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
+                if s.strip()[:4] == "STPX":  # echo cancelation
                     continue
 
                 s = s.strip().replace(' ', '')
@@ -1447,37 +1501,49 @@ class ELM:
                         continue
 
             # sending consequent frames according to FlowControl
-
-            cf = min({BS - 1, (Fn - Fc) - 1})  # number of frames to send without response
-
-            # disable responses
-            if cf > 0:
-                if self.ATR1:
-                    frsp = self.send_raw('at r0')
-                    self.ATR1 = False
+            frames_left = (Fn - Fc)
+            cf = min({BS, frames_left})  # number of frames to send without response
 
             while cf > 0:
-                cf = cf - 1
-
+                burst_size_command = ''
+                for f in range(0, cf):
+                    burst_size_command += raw_command[Fc + f]
+                
+                if burst_size_command.endswith(raw_command[-1]):
+                    if init_command in self.l1_cache.keys():
+                        burst_size_request = 'STPX D:' + burst_size_command + ",R:"  + self.l1_cache[init_command]
+                    else:
+                        burst_size_request = 'STPX D:' + burst_size_command
+                else:
+                    burst_size_request = 'STPX D:' + burst_size_command + ",R:1"
+                    
                 # Ensure time gap between frames according to FlowControl
                 tc = time.time()  # current time
                 if (tc - tb) * 1000. < ST:
-                    time.sleep(ST / 1000. - (tc - tb))
+                    target_time = time.clock() + (ST / 1000. - (tc - tb))
+                    while time.clock() < target_time:
+                        pass
                 tb = tc
 
-                frsp = self.send_raw(raw_command[Fc])
-                Fc = Fc + 1
-
-        # now we are going to receive data. st or ff should be in responses[0]
-        if len(responses) != 1:
-            # print "Something went wrong. len responces != 1"
-            return "WRONG RESPONSE"
+                frsp = self.send_raw(burst_size_request)
+                Fc = Fc + cf
+                cf = 0
+                if burst_size_command.endswith(raw_command[-1]):
+                    for s in frsp.split('\n'):
+                        if s.strip()[:4] == "STPX":  # echo cancelation
+                            continue
+                        else:
+                            responses.append(s)
+                            continue
 
         result = ""
-        noErrors = True
+        noerrors = True
         cFrame = 0  # frame counter
         nBytes = 0  # number bytes in response
         nFrames = 0  # numer frames in response
+
+        if len (responses) == 0:  # no data in response
+            return ""
 
         if responses[0][:1] == '0':  # single frame (sf)
             nBytes = int(responses[0][1:2], 16)
@@ -1492,19 +1558,11 @@ class ELM:
 
             result = responses[0][4:16]
 
-            # receiving consecutive frames
-            # while len (result) / 2 < nBytes:
             while cFrame < nFrames:
-                # now we should send ff
-                sBS = hex(min({nFrames - cFrame, MaxBurst}))[2:]
-                frsp = self.send_raw('300' + sBS + '00' + sBS)
 
                 # analyse response
                 nodataflag = False
-                for s in frsp.split('\n'):
-
-                    if s.strip()[:len(raw_command[Fc - 1])] == raw_command[Fc - 1]:  # echo cancelation
-                        continue
+                for s in responses:
 
                     if 'NO DATA' in s:
                         nodataflag = True
@@ -1515,12 +1573,12 @@ class ELM:
                         continue
 
                     if all(c in string.hexdigits for c in s):  # some data
-                        responses.append(s)
+                        # responses.append(s)
                         if s[:1] == '2':  # consecutive frames (cf)
                             tmp_fn = int(s[1:2], 16)
                             if tmp_fn != (cFrame % 16):  # wrong response (frame lost)
                                 self.error_frame += 1
-                                noErrors = False
+                                noerrors = False
                                 continue
                             cFrame += 1
                             result += s[2:16]
@@ -1531,9 +1589,16 @@ class ELM:
 
         else:  # wrong response (first frame omitted)
             self.error_frame += 1
-            noErrors = False
+            noerrors = False
+        
+        # Check for negative
+        if result[:2] == '7F': noerrors = False
 
-        if len(result) / 2 >= nBytes and noErrors and result[:2] != '7F':
+        # populate L1 cache
+        if noerrors and init_command[:2] in AllowedList:
+            self.l1_cache[init_command] = str(nFrames)
+
+        if noerrors and len(result) / 2 >= nBytes:
             # split by bytes and return
             result = ' '.join(a + b for a, b in zip(result[::2], result[1::2]))
             return result
@@ -1886,7 +1951,14 @@ class ELM:
         self.check_answer(self.cmd("at h0"))
         self.check_answer(self.cmd("at l0"))
         self.check_answer(self.cmd("at al"))
-        self.check_answer(self.cmd("at caf0"))
+
+        if mod_globals.opt_obdlink and mod_globals.opt_caf:
+            self.check_answer(self.cmd("AT CAF1"))
+            self.check_answer(self.cmd("STCSEGR 1"))
+            self.check_answer(self.cmd("STCSEGT 1"))
+        else:
+            self.check_answer(self.cmd("at caf0"))
+        
         if self.ATCFC0:
             self.check_answer(self.cmd("at cfc0"))
         else:
@@ -1969,6 +2041,9 @@ class ELM:
         self.check_answer (self.cmd ("at fc sm 1"))
         self.check_answer (self.cmd ("at st ff"))  # reset adaptive timing step 1
         self.check_answer (self.cmd ("at at 0"))  # reset adaptive timing step 2
+
+        if mod_globals.opt_obdlink and mod_globals.opt_caf:
+            self.check_answer (self.cmd ("STCFCPA " + TXa + ", " + RXa))
         
         # some models of cars may have different CAN buses
         if 'brp' in ecu.keys () and '1' in ecu['brp'] and '0' in ecu['brp']:  # double brp
@@ -2082,7 +2157,7 @@ class ELM:
                 break
 
         if self.performanceModeLevel == 3 and mod_globals.opt_obdlink:
-            for level in reversed(range(4,26)): #26 - 1 = 25  parameters per page
+            for level in reversed(range(4,100)): #26 - 1 = 25  parameters per page
                 isLevelAccepted = self.checkPerformaceLevel(level, dataids)
                 if isLevelAccepted: 
                     return
@@ -2095,7 +2170,12 @@ class ELM:
                 frameLength = '{:02X}'.format(1 + level * 2)
                 for lvl in range(level):
                     paramToSend += dataids.keys()[lvl]
-                cmd = frameLength + '22' + paramToSend + '1'
+                
+                if mod_globals.opt_caf:
+                    cmd = '22' + paramToSend + '1'
+                else:
+                    cmd = frameLength + '22' + paramToSend + '1'
+                
                 resp = self.send_raw(cmd)
                 for s in resp.split('\n'):
                     if s.strip().startswith('037F'):
@@ -2103,7 +2183,7 @@ class ELM:
             else: # send multiframe command for more than 3 dataids
                 # Some modules can return NO DATA if multi frame command is sent after some no activity time
                 # Sending anything before main command usually helps that command to be accepted
-                self.send_raw ("0322" + dataids.keys()[0] + "1")  
+                self.send_cmd ("22" + dataids.keys()[0] + "1")  
 
                 for lvl in range(level):
                     resp = self.request("22" + dataids.keys()[lvl])
