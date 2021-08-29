@@ -23,6 +23,7 @@ opt_cmd       = False
 opt_ddt       = False
 opt_si        = False    #try slow init every time
 opt_cfc0      = False    #turn off automatic FC and do it by script 
+opt_caf       = False    #turn on CAN Automatic Formatting
 opt_n1c       = False    #turn off L1 cache
 opt_dev       = False    #switch to development session for commands from DevList
 opt_devses    = '1086'   #development session for commands from DevList
