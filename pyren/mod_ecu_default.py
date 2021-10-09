@@ -56,10 +56,12 @@ def get_default_std_a( df, mn, se, elm, calc, getDTCmnemo ):
       hex_val = get_mnemonicDTC( mn[m], '57 01 '+ DTCs )
       comp = comp.replace(m, "0x"+hex_val) 
     isExists = calc.calculate(comp)
-    # if isExists==0: 		 #ignore error if it's definition does not exist
-    #   DTCs = DTCs[9:]
-    #   continue     
-        
+    
+    if not mod_globals.opt_minordtc:
+      if isExists==0: 		 #ignore error if it's definition does not exist
+        DTCs = DTCs[9:]
+        continue     
+          
     # Check if the default is alive
 
     infoPeriod = df[dtc].interpInfoPeri
@@ -76,16 +78,18 @@ def get_default_std_a( df, mn, se, elm, calc, getDTCmnemo ):
     
     # if the self.status eq 1 then default is alive
     # if the self.status eq 2 then default is memorised
-    # if df[dtc].status==0: 		     #ignore error if it's definition does not exist
-    #   DTCs = DTCs[9:]
-    #   continue 
+    if not mod_globals.opt_minordtc:
+      if df[dtc].status==0: 		     #ignore error if it's definition does not exist
+        DTCs = DTCs[9:]
+        continue 
           
     isAlive = ""
     if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
     else:                 isAlive = mod_globals.language_dict['646']    #MEMORISED
-    # if df[dtc].status==0: 		     #ignore error if it's definition does not exist
-    #   DTCs = DTCs[9:]
-    #   continue        
+      if not mod_globals.opt_minordtc:
+        if df[dtc].status==0: 		     #ignore error if it's definition does not exist
+          DTCs = DTCs[9:]
+          continue        
     
     # Now get the interpretation
     
@@ -167,9 +171,10 @@ def get_default_std_b( df, mn, se, elm, calc, getDTCmnemo ):
       comp = comp.replace(m, "0x"+hex_val) 
     isExists = calc.calculate(comp)
     
-    # if isExists==0: 		 #ignore error if it's definition does not exist
-    #   DTCs = DTCs[12:]
-    #   continue     
+    if not mod_globals.opt_minordtc:
+      if isExists==0: 		 #ignore error if it's definition does not exist
+        DTCs = DTCs[12:]
+        continue     
         
     # Check if the default is alive
 
@@ -186,9 +191,10 @@ def get_default_std_b( df, mn, se, elm, calc, getDTCmnemo ):
     
     # if the self.status eq 1 then default is alive
     # if the self.status eq 2 then default is memorised
-    # if df[dtc].status==0:      #ignore error if it's definition does not exist
-    #   DTCs = DTCs[12:]
-    #   continue
+    if not mod_globals.opt_minordtc:
+      if df[dtc].status==0:      #ignore error if it's definition does not exist
+        DTCs = DTCs[12:]
+        continue
 
     isAlive = ""
     if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
