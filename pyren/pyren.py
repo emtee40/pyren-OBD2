@@ -202,6 +202,12 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--minordtc",
+      help="use to show all DTCs without checking computation formula",
+      dest="minordtc",
+      default=False,
+      action="store_true")
+
   options = parser.parse_args()
   
   if not options.port and mod_globals.os != 'android':
@@ -239,6 +245,7 @@ def optParser():
     mod_globals.opt_can2      = options.can2
     mod_globals.opt_perform   = options.perform
     mod_globals.opt_sd        = options.sd
+    mod_globals.opt_minordtc  = options.minordtc
     if options.dev=='' or len(options.dev)!=4 or options.dev[0:2]!='10':
       mod_globals.opt_dev       = False
       mod_globals.opt_devses    = '1086'   

@@ -248,6 +248,11 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--minordtc",
+      help="use to show all DTCs without checking computation formula",
+      dest="minordtc",
+      default=False,
+      action="store_true")
 
   options = parser.parse_args()
   
@@ -270,6 +275,7 @@ def optParser():
     mod_globals.opt_si        = options.si
     mod_globals.opt_cfc0      = options.cfc
     mod_globals.opt_n1c       = options.n1c
+    mod_globals.opt_minordtc  = options.minordtc
     auto_dia                  = options.dia
     debug_mode                = options.dbg
 
