@@ -84,8 +84,10 @@ def get_default_std_a( df, mn, se, elm, calc, getDTCmnemo ):
         continue 
           
     isAlive = ""
-    if df[dtc].status==1: isAlive = mod_globals.language_dict['16882']  #ALIVE
-    else:                 isAlive = mod_globals.language_dict['646']    #MEMORISED
+    if df[dtc].status==1: 
+      isAlive = mod_globals.language_dict['16882']  #ALIVE
+    else:                 
+      isAlive = mod_globals.language_dict['646']    #MEMORISED
       if not mod_globals.opt_minordtc:
         if df[dtc].status==0: 		     #ignore error if it's definition does not exist
           DTCs = DTCs[9:]
