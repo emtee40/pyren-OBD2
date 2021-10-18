@@ -127,6 +127,12 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--caf",
+      help="turn on CAN Auto Formatting. Available only for OBDLink",
+      dest="caf",
+      default=False,
+      action="store_true")
+
   parser.add_argument("--n1c",
       help="turn off L1 cache",
       dest="n1c",
@@ -239,6 +245,7 @@ def optParser():
     mod_globals.opt_verbose   = options.verbose
     mod_globals.opt_si        = options.si
     mod_globals.opt_cfc0      = options.cfc
+    mod_globals.opt_caf       = options.caf
     mod_globals.opt_n1c       = options.n1c
     mod_globals.opt_exp       = options.exp
     mod_globals.opt_dump      = options.dump

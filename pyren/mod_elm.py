@@ -1505,11 +1505,10 @@ class ELM:
             cf = min({BS, frames_left})  # number of frames to send without response
 
             while cf > 0:
-                burst_size_command = ''
-                for f in range(0, cf):
-                    burst_size_command += raw_command[Fc + f]
+                burst_size_command = ''.join(raw_command[Fc: Fc + cf])
+                burst_size_command_last_frame = burst_size_command[len(''.join(raw_command[Fc: Fc + cf - 1])):]
                 
-                if burst_size_command.endswith(raw_command[-1]):
+                if burst_size_command_last_frame == raw_command[-1]:
                     if init_command in self.l1_cache.keys():
                         burst_size_request = 'STPX D:' + burst_size_command + ",R:"  + self.l1_cache[init_command]
                     else:
@@ -1519,6 +1518,7 @@ class ELM:
                     
                 # Ensure time gap between frames according to FlowControl
                 tc = time.time()  # current time
+                self.screenRefreshTime += ST /1000.
                 if (tc - tb) * 1000. < ST:
                     target_time = time.clock() + (ST / 1000. - (tc - tb))
                     while time.clock() < target_time:
@@ -1528,7 +1528,7 @@ class ELM:
                 frsp = self.send_raw(burst_size_request)
                 Fc = Fc + cf
                 cf = 0
-                if burst_size_command.endswith(raw_command[-1]):
+                if burst_size_command_last_frame == raw_command[-1]:
                     for s in frsp.split('\n'):
                         if s.strip()[:4] == "STPX":  # echo cancelation
                             continue
@@ -2041,9 +2041,6 @@ class ELM:
         self.check_answer (self.cmd ("at fc sm 1"))
         self.check_answer (self.cmd ("at st ff"))  # reset adaptive timing step 1
         self.check_answer (self.cmd ("at at 0"))  # reset adaptive timing step 2
-
-        if mod_globals.opt_obdlink and mod_globals.opt_caf:
-            self.check_answer (self.cmd ("STCFCPA " + TXa + ", " + RXa))
         
         # some models of cars may have different CAN buses
         if 'brp' in ecu.keys () and '1' in ecu['brp'] and '0' in ecu['brp']:  # double brp
@@ -2065,6 +2062,9 @@ class ELM:
         
         self.check_answer (self.cmd ("at at 1"))  # reset adaptive timing step 3
         self.check_answer (self.cmd ("at cra " + RXa))
+
+        if mod_globals.opt_obdlink and mod_globals.opt_caf:
+            self.check_answer (self.cmd ("STCFCPA " + TXa + ", " + RXa))
 
         self.check_adapter ()
     
@@ -2171,15 +2171,21 @@ class ELM:
                 for lvl in range(level):
                     paramToSend += dataids.keys()[lvl]
                 
-                if mod_globals.opt_caf:
-                    cmd = '22' + paramToSend + '1'
-                else:
-                    cmd = frameLength + '22' + paramToSend + '1'
+                cmd = '22' + paramToSend
                 
-                resp = self.send_raw(cmd)
-                for s in resp.split('\n'):
-                    if s.strip().startswith('037F'):
-                        return False 
+                resp = self.cmd(cmd).replace(" ", "")   #check response length first
+                if not all (c in string.hexdigits for c in resp):
+                    return False 
+                
+                if self.l1_cache.get(cmd, ""):
+                    if mod_globals.opt_caf:
+                        resp = self.send_raw(cmd + self.l1_cache.get(cmd)) # get all frames, not only first one
+                    else:                                                  # prevents from triggering false error_frame error
+                        resp = self.send_raw(frameLength + cmd + self.l1_cache.get(cmd))
+                    for s in resp.split('\n'):
+                        if s.strip().startswith("037F") or "?" in s:
+                            return False 
+            
             else: # send multiframe command for more than 3 dataids
                 # Some modules can return NO DATA if multi frame command is sent after some no activity time
                 # Sending anything before main command usually helps that command to be accepted
