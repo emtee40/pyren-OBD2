@@ -357,11 +357,11 @@ def run( elm, ecu, command, data ):
       print
       print '*'*80
 
-      if value2 == 3 and len(readCodes) < 4:
+      if pyren_encode(value2) == pyren_encode(mod_globals.language_dict[ScmParam['StateNO']]) and len(readCodes) < 4:
         print "%-50s %-20s"%(readCodeMessage, readCode)
         print
         print "No codes read"
-      elif value2 == 2 and len(readCodes) < 4:
+      elif pyren_encode(value2) == pyren_encode(mod_globals.language_dict[ScmParam['StateYES']]) and len(readCodes) < 4:
         print "%-50s %-20s"%(readCodeMessage, readCode)
         print
 
