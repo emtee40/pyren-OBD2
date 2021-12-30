@@ -184,7 +184,7 @@ def run( elm, ecu, command, data ):
   def resetValues():
     info = get_message('Informations')
     infoContent = get_message('InformationsContent')
-    inProgressMessage = get_message('CommandInProgressMessage')
+    inProgressMessage = get_message('CommandInProgress')
 
     clearScreen()
 
