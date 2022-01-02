@@ -137,15 +137,15 @@ def run( elm, ecu, command, data ):
   }
 
   searchInProgress = []
-  searchInProgress.append(get_message('Label_AVG_En_Cours', False))
-  searchInProgress.append(get_message('Label_AVD_En_Cours', False))
-  searchInProgress.append(get_message('Label_ARD_En_Cours', False))
-  searchInProgress.append(get_message('Label_ARG_En_Cours', False))
+  searchInProgress.append(get_message('Label_AVG_En_Cours'))
+  searchInProgress.append(get_message('Label_AVD_En_Cours'))
+  searchInProgress.append(get_message('Label_ARD_En_Cours'))
+  searchInProgress.append(get_message('Label_ARG_En_Cours'))
   searchFinished = []
-  searchFinished.append(get_message('Label_AVG_Terminee', False))
-  searchFinished.append(get_message('Label_AVD_Terminee', False))
-  searchFinished.append(get_message('Label_ARD_Terminee', False))
-  searchFinished.append(get_message('Label_ARG_Terminee', False))
+  searchFinished.append(get_message('Label_AVG_Terminee'))
+  searchFinished.append(get_message('Label_AVD_Terminee'))
+  searchFinished.append(get_message('Label_ARD_Terminee'))
+  searchFinished.append(get_message('Label_ARG_Terminee'))
   summerFLCode = ecu.get_id(ScmParam['ID_AVG_ETE'], 1)
   summerFRCode = ecu.get_id(ScmParam['ID_AVD_ETE'], 1)
   summerRRCode = ecu.get_id(ScmParam['ID_ARD_ETE'], 1)
@@ -272,13 +272,13 @@ def run( elm, ecu, command, data ):
         selectedValve = valveLabelsDict[key]
         selectedValveKey = key
       
-    userCode = raw_input(selectedValve + ': ').upper()
+    userCode = raw_input(pyren_encode(selectedValve) + ': ').upper()
     while not len(userCode) == 6 or not all(c in string.hexdigits for c in userCode):
       if not len(userCode) == 6:
         print 'Valve code should be 6 characters long.'
       else:
         print 'Illegal characters in the valve code'
-      userCode = raw_input(selectedValve + ': ').upper()
+      userCode = raw_input(pyren_encode(selectedValve) + ': ').upper()
 
     paramToSend = ''
     if summerTyresSet:
@@ -297,7 +297,7 @@ def run( elm, ecu, command, data ):
     clearScreen()
     print screen
     print
-    print tyreCodesTable[selectedValveKey], userCode
+    print pyren_encode(tyreCodesTable[selectedValveKey]), userCode
     print
     writeCodes(paramToSend)
 
@@ -358,11 +358,11 @@ def run( elm, ecu, command, data ):
       print '*'*80
 
       if pyren_encode(value2) == pyren_encode(mod_globals.language_dict[ScmParam['StateNO']]) and len(readCodes) < 4:
-        print "%-50s %-20s"%(readCodeMessage, readCode)
+        print "%-50s %-20s"%(readCodeMessage, pyren_encode(readCode))
         print
         print "No codes read"
       elif pyren_encode(value2) == pyren_encode(mod_globals.language_dict[ScmParam['StateYES']]) and len(readCodes) < 4:
-        print "%-50s %-20s"%(readCodeMessage, readCode)
+        print "%-50s %-20s"%(readCodeMessage, pyren_encode(readCode))
         print
 
         if readCode != '000000' and readCode not in readCodes.keys():
@@ -378,7 +378,7 @@ def run( elm, ecu, command, data ):
         print
         
         for code in range(len(readCodes)):
-          print "%-60s %-8s"%(searchFinished[code], readCodes[readCodes.keys()[code]])
+          print "%-60s %-8s"%(searchFinished[code], pyren_encode(readCodes[readCodes.keys()[code]]))
       
       print '*'*80
       print
