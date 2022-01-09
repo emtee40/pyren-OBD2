@@ -1,3 +1,9 @@
+/.idea/
+/.DS_Store
+/EcuDacia/
+/EcuRsm/
+/Output/
+/pyren/*.zip
 cache/
 csv/
 dumps/
@@ -30,3 +36,4 @@ pyren/parser.out
 pyren/parsetab.py
 pyren/scen_appr_4valves.py
 pyren/scen_ecri_fap2.py
+
