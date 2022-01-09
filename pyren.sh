@@ -1,6 +1,6 @@
 #!/bin/bash
 #chmod +x ./venv/bin/activate
-#chmod +x ./ddt4all.py
+#chmod +x ./_pyren_launcher.py
 ## Linux ubuntu fixes uncomment next lines
 #printf "Install new venv ...\n"
 #Install venv if not present
