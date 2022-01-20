@@ -250,11 +250,20 @@ class DDTScreen (tk.Frame):
         if req is None or rsp is None:
             return
 
+        request_list = []
         # find appropriate request
         if self.decu.req4sent[req] in self.decu.requests.keys():
             r = self.decu.requests[self.decu.req4sent[req]]
+            for k in self.decu.requests.keys():
+                if self.decu.requests[k].SentBytes == req:
+                    request_list.append(self.decu.requests[k])
         else:
             return
+        
+        for request in request_list:
+            if (any(key in request.ReceivedDI.keys() for key in self.dValue.keys()) or 
+                any(key in request.ReceivedDI.keys() for key in self.iValue.keys())):
+                r = request
 
         tmstr = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
         self.addToLog(tmstr + '>' + req + '  Rcvd:' + rsp)
