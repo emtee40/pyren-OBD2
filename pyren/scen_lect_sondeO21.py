@@ -134,11 +134,11 @@ def run( elm, ecu, command, data ):
     print '*'*80
     state_ref = ecu.get_ref_st(etat['Index'])
     value1, datastr1 = ecu.get_st(etat['Index'])
-    print datastr1
-    if pyren_encode(state_ref.caracter[str(value1)])!=pyren_encode( mod_globals.language_dict[etat['RefOK']] ):
+    print(pyren_encode(datastr1))
+    if pyren_encode(value1)!=pyren_encode( mod_globals.language_dict[etat['RefOK']] ):
       value2, datastr2 = ecu.get_st(etat['Donne1'])
       print pyren_encode( mod_globals.language_dict[etat['TexteSortie']] )
-      print datastr2
+      print (pyren_encode(datastr2))
       print '*'*80
       ch = raw_input('Press ENTER to exit')
       #return
@@ -173,8 +173,8 @@ def run( elm, ecu, command, data ):
     # get all values before showing them for avoid screen flickering
     value0, datastr0 = ecu.get_st(ScmParam['EtatComTer'])
     value1, datastr1 = ecu.get_st(ScmParam['EtatResultatTest'])
-    phase   = pyren_encode(Phase_state.caracter[str(value0)])
-    rescode = pyren_encode(Result_state.caracter[str(value1)])
+    phase   = pyren_encode(value0)
+    rescode = pyren_encode(value1)
     result   = rescode
     for m in ScmList_Messages:
       if rescode in pyren_encode(mod_globals.language_dict[m['Valeur']]):
@@ -193,10 +193,10 @@ def run( elm, ecu, command, data ):
     print '\tTime   - ',"{hours:02d}:{minutes:02d}:{seconds:02d}".format(**vars())
     print '\tPhase  - ', phase
     print '*'*90
-    print datastr0
-    print datastr1
+    print (pyren_encode(datastr0))
+    print (pyren_encode(datastr1))
     print '*'*90
-    if int(value0)==3: 
+    if value0==Phase_state.caracter["3"]: 
       pfe = 1
       break
     print 'Press Q to emergency exit'
