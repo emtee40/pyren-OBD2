@@ -90,6 +90,7 @@ def run( elm, ecu, command, data ):
         ScmParam[name] = value
   
   confirm = get_message_by_id('19800')
+  missing_data_message = get_message_by_id('882')
   title = get_message('Title')
   messageInfo = get_message('Message1')
   succesMessage = get_message('CommandFinished')
@@ -108,11 +109,20 @@ def run( elm, ecu, command, data ):
   byteTo = int(re.findall('\d+',mnemo2)[1])
   byteCount = byteTo - byteFrom - 1
   resetBytes = byteCount * '00'
+  params_to_send_length = int(mnemo2[-2:])
 
   mnemo1Data = mod_ecu_mnemonic.get_mnemonic(ecu.Mnemonics[mnemo1], ecu.Services, elm, 1)
   mnemo2Data = mod_ecu_mnemonic.get_mnemonic(ecu.Mnemonics[mnemo2], ecu.Services, elm, 1)
 
   paramsToSend = mnemo1Data + resetBytes + mnemo2Data
+
+  fap_command_sids = ecu.get_ref_cmd(ScmParam['Cmde1']).serviceID
+  if len(fap_command_sids) and not mod_globals.opt_demo:
+    for sid in fap_command_sids:
+      if len(ecu.Services[sid].params):
+        if (len(ecu.Services[sid].startReq + paramsToSend)/2 != params_to_send_length):
+          raw_input(missing_data_message + "\n\nPress ENTER to exit")
+          return
 
   clearScreen()
 
