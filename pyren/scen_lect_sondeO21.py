@@ -135,7 +135,7 @@ def run( elm, ecu, command, data ):
     state_ref = ecu.get_ref_st(etat['Index'])
     value1, datastr1 = ecu.get_st(etat['Index'])
     print(pyren_encode(datastr1))
-    if pyren_encode(value1)!=pyren_encode( mod_globals.language_dict[etat['RefOK']] ):
+    if pyren_encode(value1)!=mod_globals.language_dict[etat['RefOK']]:
       value2, datastr2 = ecu.get_st(etat['Donne1'])
       print pyren_encode( mod_globals.language_dict[etat['TexteSortie']] )
       print (pyren_encode(datastr2))
@@ -196,7 +196,7 @@ def run( elm, ecu, command, data ):
     print (pyren_encode(datastr0))
     print (pyren_encode(datastr1))
     print '*'*90
-    if value0==Phase_state.caracter["3"]: 
+    if pyren_encode(value0)==get_message_by_id("19532"):
       pfe = 1
       break
     print 'Press Q to emergency exit'
