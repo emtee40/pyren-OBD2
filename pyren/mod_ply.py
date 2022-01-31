@@ -110,6 +110,13 @@ class Calc(Parser):
         t.value = int(t.value,0)
         return t
     t_HEX.func_doc=r'0x[a-fA-F0-9][a-fA-F0-9]*'
+
+    def t_HEXSTR(self,t):
+        r'[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
+        #r'[a-fA-F0-9][a-fA-F0-9]*'
+        t.value = t.value
+        return t
+    t_HEXSTR.func_doc=r'[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
     
     def t_NAME(self,t):
         r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -122,13 +129,6 @@ class Calc(Parser):
         t.value = float(t.value)
         return t
     t_FLOAT.func_doc=r'((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
-
-    def t_HEXSTR(self,t):
-        r'[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
-        #r'[a-fA-F0-9][a-fA-F0-9]*'
-        t.value = t.value
-        return t
-    t_HEXSTR.func_doc=r'[a-fA-F0-9]*[a-fA-F][a-fA-F0-9]*'
  
     def t_NUMBER(self, t):
         r'\d+'
