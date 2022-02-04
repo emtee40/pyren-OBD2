@@ -100,7 +100,6 @@ def pars_macro( file ):
       l = l.strip()
       if l == '': continue
       if '{' in l:
-        print("line { :", l)
         if macroname=='':
           literals =  l.split('{')
           macroname = literals[0].strip()
@@ -115,7 +114,6 @@ def pars_macro( file ):
           var = {}
           return
       if '}' in l:
-        print("line } :", l)
         if macroname!='':
           literals =  l.split('}')
           cmd = literals[0].strip()
@@ -431,11 +429,6 @@ class FileChooser():
                 return self.eventloop()
             finally:
                 self.droid.fullDismiss()
-
-def play_macro(mname, elm):
-    global macro
-    global var
-    global stack
 
 def run_init_function(mname, elm):
     global var
