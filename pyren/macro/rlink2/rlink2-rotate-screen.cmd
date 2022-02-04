@@ -1,7 +1,7 @@
 # Rotate R-Link2 screen
 $addr = 13
 
-can500  # init can macro
+init_can_500 # init can macro
 
 1003
 

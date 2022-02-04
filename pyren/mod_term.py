@@ -100,6 +100,7 @@ def pars_macro( file ):
       l = l.strip()
       if l == '': continue
       if '{' in l:
+        print("line { :", l)
         if macroname=='':
           literals =  l.split('{')
           macroname = literals[0].strip()
@@ -114,6 +115,7 @@ def pars_macro( file ):
           var = {}
           return
       if '}' in l:
+        print("line } :", l)
         if macroname!='':
           literals =  l.split('}')
           cmd = literals[0].strip()
@@ -224,6 +226,12 @@ def optParser():
       default=False,
       action="store_true")
 
+  parser.add_argument("--caf",
+      help="turn on CAN Auto Formatting. Available only for OBDLink",
+      dest="caf",
+      default=False,
+      action="store_true")
+
   parser.add_argument("--n1c",
       help="turn off L1 cache",
       dest="n1c",
@@ -274,6 +282,7 @@ def optParser():
     mod_globals.opt_demo      = options.demo
     mod_globals.opt_si        = options.si
     mod_globals.opt_cfc0      = options.cfc
+    mod_globals.opt_caf       = options.caf
     mod_globals.opt_n1c       = options.n1c
     mod_globals.opt_minordtc  = options.minordtc
     auto_dia                  = options.dia
@@ -428,21 +437,21 @@ def play_macro(mname, elm):
     global var
     global stack
 
-    if mname in stack:
-        print 'Error: recursion prohibited:', mname
-        return
-    else:
-        stack.append(mname)
+def run_init_function(mname, elm):
+    global var
 
-    for l in macro[mname]:
-
-        if l in macro.keys():
-            play_macro(l, elm)
-            continue
-
-        proc_line( l, elm )
-
-    stack.remove(mname)
+    if mname in ["init_can_250", "init_can_500"]:
+        elm.init_can()
+        if mname == "init_can_250":
+            elm.set_can_addr(var['$addr'], {'brp': '1'})
+        else:
+            elm.set_can_addr(var['$addr'], {})
+    elif mname in ["init_iso_slow", "init_iso_fast"]:
+        elm.init_iso()
+        if mname == "init_iso_slow":
+            elm.set_iso_addr(var['$addr'], {'protocol': 'PRNA2000'})
+        else:
+            elm.set_iso_addr(var['$addr'], {})
 
 def term_cmd( c, elm ):
     global var
@@ -682,8 +691,8 @@ def proc_line( l, elm ):
         mod_utils.clearScreen()
         return
 
-    if l in macro.keys():
-        play_macro(l, elm)
+    if l.startswith("init"):
+        run_init_function(l, elm)
         return
 
     m = re.search('\$\S+\s*=\s*\S+', l)
@@ -713,7 +722,7 @@ def proc_line( l, elm ):
     l_parts = l.split()
     if len(l_parts) > 0 and l_parts[0] in ['wait', 'sleep']:
         try:
-            wait_kb(int(l_parts[1]))
+            wait_kb(float(l_parts[1]))
             return
         except:
             pass
@@ -726,7 +735,7 @@ def proc_line( l, elm ):
             pass
 
     if len(l_parts) > 0 and l_parts[0] in ['delay']:
-        cmd_delay = int(l_parts[1])
+        cmd_delay = float(l_parts[1])
         return
 
     if l.lower().startswith('set_bits'):
@@ -797,9 +806,6 @@ def main():
     load_macro()
     
     optParser()
-
-    # disable auto flow control
-    mod_globals.opt_cfc0 = True
     
     print 'Opening ELM'
     elm = mod_elm.ELM( mod_globals.opt_port, mod_globals.opt_speed, True )
@@ -835,8 +841,8 @@ def main():
             f.close()
 
     if auto_macro != '':
-      if auto_macro in macro.keys():
-        play_macro( auto_macro, elm )
+      if auto_macro.startswith("init"):
+        run_init_function(auto_macro, elm)
       else:
         print 'Error: unknown macro name:', auto_macro
 

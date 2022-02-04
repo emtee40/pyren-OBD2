@@ -1,7 +1,7 @@
 # Phone_acoustic and SPVR for RadNav 3.3 and 7.0
 $addr = 13
 
-can500  # init can macro
+init_can_500 # init can macro
 
 delay 2
 

@@ -1,7 +1,7 @@
 # Enable AndroidAuto and CarPlay on R-Link2
 $addr = 13
 
-can500  # init can macro
+init_can_500 # init can macro
 
 1003
 

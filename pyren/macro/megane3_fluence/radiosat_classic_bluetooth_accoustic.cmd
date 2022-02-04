@@ -1,7 +1,7 @@
 #Accoustics for R2_08_v3_81
 $addr = 13
 
-can500  # init can macro
+init_can_500  # init can macro
 
 delay 2
 

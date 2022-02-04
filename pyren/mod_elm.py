@@ -2006,11 +2006,11 @@ class ELM:
         if self.currentprotocol == "can" and self.currentaddress == addr:
             return
 
-        if len (ecu['idTx']): dnat[addr] = ecu['idTx']
-        if len (ecu['idRx']): snat[addr] = ecu['idRx']
+        if len(ecu.get('idTx', '')): dnat[addr] = ecu['idTx']
+        if len(ecu.get('idRx', '')): snat[addr] = ecu['idRx']
         
         if self.lf != 0:
-            self.lf.write ('#' * 60 + "\n#connect to: " + ecu['ecuname'] + " Addr:" + addr + "\n" + '#' * 60 + "\n")
+            self.lf.write ('#' * 60 + "\n#connect to: " + ecu.get('ecuname', '') + " Addr:" + addr + "\n" + '#' * 60 + "\n")
             self.lf.flush ()
         
         self.currentprotocol = "can"
@@ -2096,19 +2096,19 @@ class ELM:
         self.notSupportedCommands = {}
         self.tmpNotSupportedCommands = {}
 
-        if self.currentprotocol == "iso" and self.currentaddress == addr and self.currentsubprotocol == ecu['protocol']:
+        if self.currentprotocol == "iso" and self.currentaddress == addr and self.currentsubprotocol == ecu.get('protocol', ''):
             return
 
         if self.lf != 0:
-            self.lf.write ('#' * 60 + "\n#connect to: " + ecu['ecuname'] + " Addr:" + addr + " Protocol:" + ecu[
-                'protocol'] + "\n" + '#' * 60 + "\n")
+            self.lf.write ('#' * 60 + "\n#connect to: " + ecu.get('ecuname', '') + " Addr:" + addr + " Protocol:" + 
+                            ecu.get('protocol', '') + "\n" + '#' * 60 + "\n")
             self.lf.flush ()
 
         if self.currentprotocol == "iso":
             self.check_answer(self.cmd("82"))  # close previous session
 
         self.currentprotocol = "iso"
-        self.currentsubprotocol = ecu['protocol']
+        self.currentsubprotocol = ecu.get('protocol', '')
         self.currentaddress = addr
         self.startSession = ""
         self.lastCMDtime = 0
@@ -2123,13 +2123,13 @@ class ELM:
         self.check_answer (self.cmd ("at st ff"))  # set timeout to 1 second
         self.check_answer (self.cmd ("at at 0"))  # disable adaptive timing
         
-        if 'PRNA2000' in ecu['protocol'].upper () or mod_globals.opt_si:
+        if 'PRNA2000' in ecu.get('protocol', '').upper () or mod_globals.opt_si:
             self.cmd ("at sp 4")  # slow init mode 4
-            if len (ecu['slowInit']) > 0:
+            if len (ecu.get('slowInit', '')) > 0:
                 self.cmd ("at iia " + ecu['slowInit'])  # address for slow init
             rsp = self.lastinitrsp = self.cmd ("at si")  # for slow init mode 4
             # rsp = self.cmd("81")
-            if 'ERROR' in rsp and len (ecu['fastInit']) > 0:
+            if 'ERROR' in rsp and len (ecu.get('fastInit', '')) > 0:
                 ecu['protocol'] = ''
                 if self.lf != 0:
                     self.lf.write ('### Try fast init\n')
