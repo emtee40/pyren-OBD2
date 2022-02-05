@@ -26,7 +26,7 @@ This mode allows you:
 Getting started video
 https://www.youtube.com/watch?v=DazsvlnLCoA
 
-## Supported cars with CLIP DB v202
+## Supported cars with CLIP DB v213
 
 | id  | ISO   | CAN1  | CAN2  | Vehicle               | Platform | PyRen | DocDB |
 |-----|-------|-------|-------|-----------------------|----------|-------|-------|
@@ -229,9 +229,10 @@ Firs run pyren without options
 $cd c:\CLIP\Data\GenAppli\pyren
 $python.exe ./pyren.py 
 usage: pyren.py [-h] [-v] [-p PORT] [-s SPEED] [-r RATE] [-L LANG] [-m CAR]
-                [-vv] [-e ECUID] [-e CAR] [--si] [--cfc] [--n1c] [--csv] 
+                [-vv] [-e ECUID] [-e CAR] [--si] [--cfc] [--caf] [--n1c] [--csv] 
                 [--csv_only] [--csv_human] [--usr_key USR_KEY] [--log LOGFILE] 
-                [--scan] [--demo] [--dump] [--dev DEV] [--exp] [--can2]
+                [--scan] [--demo] [--dump] [--dev DEV] [--exp] [--can2] [--performance]
+                [--minordtc]
 
 pyRen - python program for diagnostic Renault cars
 
@@ -250,6 +251,7 @@ optional arguments:
   -e CAR             number of car model for DEMO MODE
   --si               try SlowInit first
   --cfc              turn off automatic FC and do it by script
+  --caf              turn on CAN Auto Formatting [OBDLink]
   --n1c              turn off L1 cache
   --csv              save data in csv format
   --csv_only         data doesnt show on screen for speed up
@@ -264,6 +266,8 @@ optional arguments:
                      session, like a 1086
   --exp              swith to Expert mode (allow to use buttons in DDT)
   --can2             CAN network connected to pin 13 (H) and pin 12 (L)
+  --performance      use UDS performance mode (read multiple DIDs in one request)
+  --minordtc         use to show all DTCs without checking computation formula
 
 Available COM ports:
 COM3:              

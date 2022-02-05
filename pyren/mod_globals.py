@@ -34,7 +34,7 @@ opt_ddtxml    = ""
 opt_obdlink   = False    #basically, STN(PIC24) based ELM327
 opt_stn       = False    #STN(PIC24) ELM327 which has ability to automatically switch beetween two CAN lines
 opt_sd        = False    #separate doc files
-opt_perform   = False
+opt_performance = False
 opt_minordtc  = False
 dumpName = ""
 

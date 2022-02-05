@@ -152,7 +152,7 @@ class ECU:
     self.elm.start_session( self.ecudata['startDiagReq'] )
 
     if mod_globals.os == 'android' or mod_globals.opt_csv:
-      if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_perform:
+      if self.ecudata['pin'].lower()=='can' and self.DataIds and mod_globals.opt_performance:
         self.elm.checkModulePerformaceLevel(self.DataIds)
 
     print "Done"  
@@ -471,7 +471,7 @@ class ECU:
         csvline = datetime.now().strftime("%H:%M:%S.%f")
 
       #Collect all the requests from the current screen
-      if mod_globals.opt_perform and self.elm.performanceModeLevel > 1 and mod_globals.opt_csv_only:
+      if mod_globals.opt_performance and self.elm.performanceModeLevel > 1 and mod_globals.opt_csv_only:
         if self.elm.rsp_cache:
           if not requests:
             requests = self.generateRequestsList()
@@ -559,7 +559,7 @@ class ECU:
       if mod_globals.opt_csv_only:
         responseHistory[datarefsRequestTime] = self.elm.rsp_cache #Collect data to generate a file
 
-      if mod_globals.opt_perform and self.elm.performanceModeLevel > 1:
+      if mod_globals.opt_performance and self.elm.performanceModeLevel > 1:
         self.elm.currentScreenDataIds = self.getDataIds(self.elm.rsp_cache, self.DataIds)
         if self.elm.currentScreenDataIds: #DataIds list is generated only at first data read pass in csv_only mode
           displayedDataIds = self.elm.currentScreenDataIds #We save it for file generating function

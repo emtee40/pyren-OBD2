@@ -202,9 +202,9 @@ def optParser():
       default=False,
       action="store_true")
 
-  parser.add_argument("--perform",
-      help="use UDS performance mode, not fully developed yet",
-      dest="perform",
+  parser.add_argument("--performance",
+      help="use UDS performance mode (read multiple DIDs in one request)",
+      dest="performance",
       default=False,
       action="store_true")
 
@@ -250,7 +250,7 @@ def optParser():
     mod_globals.opt_exp       = options.exp
     mod_globals.opt_dump      = options.dump
     mod_globals.opt_can2      = options.can2
-    mod_globals.opt_perform   = options.perform
+    mod_globals.opt_performance   = options.performance
     mod_globals.opt_sd        = options.sd
     mod_globals.opt_minordtc  = options.minordtc
     if options.dev=='' or len(options.dev)!=4 or options.dev[0:2]!='10':

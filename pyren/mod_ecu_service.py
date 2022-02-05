@@ -59,7 +59,7 @@ def executeService( service, elm, status = [], param = "", cache = False ):
   #tc = tb
 
   sentDataIdentifires = [] #dataids sent in one 22 request, nedded for a response parse
-  performanceMode = mod_globals.opt_perform and elm.performanceModeLevel > 1 
+  performanceMode = mod_globals.opt_performance and elm.performanceModeLevel > 1 
 
   commandToSend = service.startReq
 
