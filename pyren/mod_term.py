@@ -430,6 +430,27 @@ class FileChooser():
             finally:
                 self.droid.fullDismiss()
 
+def play_macro(mname, elm):
+    global macro
+    global var
+    global stack
+
+    if mname in stack:
+        print 'Error: recursion prohibited:', mname
+        return
+    else:
+        stack.append(mname)
+
+    for l in macro[mname]:
+
+        if l in macro.keys():
+            play_macro(l, elm)
+            continue
+
+        proc_line( l, elm )
+
+    stack.remove(mname)
+
 def run_init_function(mname, elm):
     global var
 
@@ -445,6 +466,8 @@ def run_init_function(mname, elm):
             elm.set_iso_addr(var['$addr'], {'protocol': 'PRNA2000'})
         else:
             elm.set_iso_addr(var['$addr'], {})
+    else:
+        print("Unrecognized init command: ", mname)
 
 def term_cmd( c, elm ):
     global var
@@ -687,6 +710,9 @@ def proc_line( l, elm ):
     if l.startswith("init"):
         run_init_function(l, elm)
         return
+    elif l in macro.keys():
+        play_macro(l, elm)
+        return
 
     m = re.search('\$\S+\s*=\s*\S+', l)
     if m:
@@ -836,6 +862,8 @@ def main():
     if auto_macro != '':
       if auto_macro.startswith("init"):
         run_init_function(auto_macro, elm)
+      elif auto_macro in macro.keys():
+        play_macro( auto_macro, elm )
       else:
         print 'Error: unknown macro name:', auto_macro
 
