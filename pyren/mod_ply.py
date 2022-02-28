@@ -196,7 +196,7 @@ class Calc(Parser):
         
     def p_expression_plus(self, p):
         'expression : expression PLUS expression'
-        if type(p[1]) is str or type(p[3]) is str:
+        if type(p[1]) is str or type(p[1]) is unicode or type(p[3]) is str or type(p[3]) is unicode:
           p[0] = str(p[1]).replace('"', '') + str(p[3])
         else:
           p[0] = p[1] + p[3]
