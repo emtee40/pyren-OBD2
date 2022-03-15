@@ -1544,6 +1544,9 @@ class ELM:
 
         if len (responses) == 0:  # no data in response
             return ""
+            
+        if len (responses) > 1 and responses[0].startswith('037F') and responses[0][6:8] == '78':
+            responses = responses[1:]
 
         if responses[0][:1] == '0':  # single frame (sf)
             nBytes = int(responses[0][1:2], 16)
