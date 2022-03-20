@@ -1392,7 +1392,7 @@ class DDTLauncher():
         self.var_log.set(self.save.log)
         self.var_logName.set(self.save.logName)
 
-        self.var_speedList = ['38400', '115200', '230400', '500000', ]
+        self.var_speedList = ['38400', '115200', '230400', '500000', '1000000', '2000000' ]
         self.var_portList = mod_ddt_utils.getPortList()
 
         if len(self.var_port.get()) == 0:
