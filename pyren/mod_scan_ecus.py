@@ -950,7 +950,7 @@ def readECUIds( elm ):
     # debug
     # vinRsp = '61 81 56 46 31 30 30 30 30 30 30 30 30 30 30 30 30 30 30 00 00 00 00 00 00 00 00'
     if len(vinRsp)>55 and 'NR' not in vinRsp:
-      VIN = vinRsp[6:56].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
+      VIN = vinRsp[6:56].strip().replace('00', '30').replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
 
   else:
     try:
@@ -979,7 +979,7 @@ def readECUIds( elm ):
       # Vin F190
       vinRsp = elm.request(req='22F190', positive='62', cache=False)
       if len(vinRsp) > 58:
-        VIN = vinRsp[9:59].strip().replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
+        VIN = vinRsp[9:59].strip().replace('00', '30').replace(' ', '').decode('hex').decode('ASCII', errors='ignore')
     except:
       pass
 
