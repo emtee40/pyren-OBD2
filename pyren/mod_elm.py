@@ -308,7 +308,7 @@ class Port:
             print '*' * 40
             print '*       Connection to ELM was lost'
             mod_globals.opt_demo = True
-            exit (2)
+
         return byte
     
     def write(self, data):
@@ -337,7 +337,6 @@ class Port:
             print '*' * 40
             print '*       Connection to ELM was lost'
             mod_globals.opt_demo = True
-            exit (2)
     
     def expect(self, pattern, time_out=1):
         

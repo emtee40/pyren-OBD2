@@ -831,7 +831,6 @@ def main():
 
     # change serial port baud rate
     if not mod_globals.opt_demo and elm.port and elm.port.portType==0:
-        elm.port.check_elm()
         if mod_globals.opt_speed < mod_globals.opt_rate:
             elm.port.soft_boudrate(mod_globals.opt_rate)
 
@@ -866,7 +865,6 @@ def main():
         play_macro( auto_macro, elm )
       else:
         print 'Error: unknown macro name:', auto_macro
-
 
     while True:
         print var['$addr']+':'+var['$txa']+':'+var['$prompt'] + '#',

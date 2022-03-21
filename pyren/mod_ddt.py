@@ -557,6 +557,7 @@ class DDTLauncher():
         self.applySettings()
 
         try:
+            mod_globals.opt_demo = False
             self.elm = ELM(mod_globals.opt_port, mod_globals.opt_speed, mod_globals.opt_log)
         except:
             result = tkMessageBox.askquestion("Warning", "ELM is not connected. Would you like to work OFF-line?", icon='warning')
