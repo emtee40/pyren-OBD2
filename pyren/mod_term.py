@@ -454,15 +454,15 @@ def play_macro(mname, elm):
 def run_init_function(mname, elm):
     global var
 
-    if mname in ["init_can_250", "init_can_500"]:
+    if mname in ["init_can_250", "can250", "init_can_500", "can500"]:
         elm.init_can()
-        if mname == "init_can_250":
+        if mname in ["init_can_250", "can250"]:
             elm.set_can_addr(var['$addr'], {'brp': '1'})
         else:
             elm.set_can_addr(var['$addr'], {})
-    elif mname in ["init_iso_slow", "init_iso_fast"]:
+    elif mname in ["init_iso_slow", "slow", "init_iso_fast", "fast"]:
         elm.init_iso()
-        if mname == "init_iso_slow":
+        if mname in ["init_iso_slow", "slow"]:
             elm.set_iso_addr(var['$addr'], {'protocol': 'PRNA2000'})
         else:
             elm.set_iso_addr(var['$addr'], {})
@@ -707,7 +707,7 @@ def proc_line( l, elm ):
         mod_utils.clearScreen()
         return
 
-    if l.startswith("init"):
+    if len(l) > 2 and l[0:3] in ["ini", "can", "slo", "fas"]::
         run_init_function(l, elm)
         return
     elif l in macro.keys():
@@ -859,7 +859,7 @@ def main():
             f.close()
 
     if auto_macro != '':
-      if auto_macro.startswith("init"):
+      if len(auto_macro) > 2 and auto_macro[0:3] in ["ini", "can", "slo", "fas"]:
         run_init_function(auto_macro, elm)
       elif auto_macro in macro.keys():
         play_macro( auto_macro, elm )
