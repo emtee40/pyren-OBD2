@@ -707,7 +707,7 @@ def proc_line( l, elm ):
         mod_utils.clearScreen()
         return
 
-    if len(l) > 2 and l[0:3] in ["ini", "can", "slo", "fas"]::
+    if len(l) > 2 and l[0:3] in ["ini", "can", "slo", "fas"]:
         run_init_function(l, elm)
         return
     elif l in macro.keys():
